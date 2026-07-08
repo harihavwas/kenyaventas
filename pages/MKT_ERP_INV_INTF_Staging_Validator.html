@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MKT_ERP_INV_INTF Staging Validator</title>
+<style>
+  :root{
+    --ink:#12161c; --ink-2:#1b212b; --ink-3:#242c38;
+    --paper:#f5f6f8; --paper-2:#ffffff; --line:#dfe3ea;
+    --text:#1b212b; --text-soft:#5b6472; --text-dim:#8b93a1;
+    --accent:#1c8c8c; --accent-dark:#146b6b; --accent-soft:#e3f3f2;
+    --ok:#1f9d55; --ok-bg:#e8f7ee; --ok-line:#bfe8cf;
+    --bad:#d64545; --bad-bg:#fdecec; --bad-line:#f4c2c2;
+    --warn:#b9781a; --warn-bg:#fbf1de; --warn-line:#eed4a3;
+    --mono:'IBM Plex Mono','SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--sans); background:var(--paper); color:var(--text);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent);}
+
+  /* ---------- Shell ---------- */
+  .shell{display:flex; min-height:100vh;}
+  .sidebar{
+    width:272px; flex:0 0 272px; background:var(--ink); color:#cfd6e0;
+    position:sticky; top:0; height:100vh; overflow-y:auto;
+    display:flex; flex-direction:column;
+  }
+  .sidebar-head{padding:26px 22px 18px; border-bottom:1px solid #232a35;}
+  .sidebar-head .eyebrow{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:1.5px; color:#7c8798;
+    text-transform:uppercase; margin:0 0 8px;
+  }
+  .sidebar-head h1{font-size:17px; line-height:1.35; margin:0; color:#fff; font-weight:650;}
+  .sidebar-head p{font-size:12px; color:#9aa4b3; margin:10px 0 0; line-height:1.55;}
+
+  .nav-list{list-style:none; margin:0; padding:14px 12px; flex:1;}
+  .nav-item{margin-bottom:8px;}
+  .nav-btn{
+    width:100%; text-align:left; background:transparent; border:1px solid transparent;
+    border-radius:10px; padding:12px 13px; cursor:pointer; color:#c3cad6;
+    display:flex; align-items:center; gap:12px; transition:background .15s, border-color .15s;
+  }
+  .nav-btn:hover{background:#1b212b;}
+  .nav-btn.active{background:#1b212b; border-color:#2c3542;}
+  .nav-badge{
+    font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:.5px;
+    width:42px; flex:0 0 42px; text-align:center; padding:5px 0; border-radius:6px;
+    background:#242c38; color:#8fd6d0;
+  }
+  .nav-btn.active .nav-badge{background:var(--accent); color:#03211f;}
+  .nav-text .t1{font-size:13px; font-weight:600; color:#e7ebf1;}
+  .nav-text .t2{font-size:11px; color:#8b93a1; margin-top:2px;}
+
+  .sidebar-foot{padding:16px 22px 22px; border-top:1px solid #232a35;}
+  .sidebar-foot p{font-size:11px; color:#7c8798; line-height:1.6; margin:0;}
+  .sidebar-foot code{font-family:var(--mono); color:#9aa4b3;}
+
+  .main{flex:1; min-width:0; padding:34px 40px 60px;}
+  .page{display:none;}
+  .page.active{display:block;}
+
+  .page-head{max-width:900px; margin-bottom:26px;}
+  .type-chip{
+    display:inline-flex; align-items:center; gap:8px; font-family:var(--mono);
+    font-size:11px; font-weight:700; letter-spacing:.6px; padding:5px 10px 5px 8px;
+    border-radius:999px; background:var(--accent-soft); color:var(--accent-dark);
+    border:1px solid #bfe0de; margin-bottom:12px;
+  }
+  .type-chip .dot{width:6px; height:6px; border-radius:50%; background:var(--accent-dark);}
+  .page-head h2{font-size:24px; margin:0 0 8px; letter-spacing:-.2px;}
+  .page-head p{font-size:14px; color:var(--text-soft); line-height:1.6; margin:0; max-width:760px;}
+  .page-head .proc-ref{
+    display:inline-block; margin-top:12px; font-family:var(--mono); font-size:11.5px;
+    color:var(--text-dim); background:#fff; border:1px solid var(--line); padding:6px 10px; border-radius:8px;
+  }
+
+  /* ---------- Input card ---------- */
+  .card{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:14px;
+    padding:22px 24px; margin-bottom:22px; max-width:1040px;
+  }
+  .card h3{font-size:14px; margin:0 0 4px; font-weight:650;}
+  .card .sub{font-size:12.5px; color:var(--text-soft); margin:0 0 16px; line-height:1.55;}
+
+  textarea.paste-box{
+    width:100%; min-height:150px; resize:vertical; font-family:var(--mono); font-size:12px;
+    line-height:1.6; border:1px solid var(--line); border-radius:10px; padding:14px;
+    background:#fbfcfd; color:var(--text); outline:none;
+  }
+  textarea.paste-box:focus{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft);}
+
+  .input-row{display:flex; align-items:center; gap:12px; margin-top:14px; flex-wrap:wrap;}
+  .file-btn{
+    display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600;
+    padding:9px 14px; border-radius:9px; border:1px solid var(--line); background:#fff;
+    color:var(--text); cursor:pointer;
+  }
+  .file-btn:hover{border-color:var(--accent); color:var(--accent-dark);}
+  .file-btn input{display:none;}
+  .file-name{font-size:12px; color:var(--text-dim); font-family:var(--mono);}
+
+  .btn{
+    font-size:13px; font-weight:650; padding:10px 18px; border-radius:9px; border:none;
+    cursor:pointer; transition:transform .05s, background .15s;
+  }
+  .btn-primary{background:var(--accent); color:#fff;}
+  .btn-primary:hover{background:var(--accent-dark);}
+  .btn-ghost{background:#fff; color:var(--text); border:1px solid var(--line);}
+  .btn-ghost:hover{border-color:var(--text-dim);}
+  .btn:active{transform:translateY(1px);}
+  .btn-row{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;}
+
+  /* ---------- Results ---------- */
+  .results{max-width:1040px;}
+  .empty-hint{
+    border:1px dashed var(--line); border-radius:12px; padding:26px; text-align:center;
+    color:var(--text-dim); font-size:13px; max-width:1040px;
+  }
+  .summary-bar{
+    display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap;
+  }
+  .summary-stat{
+    flex:1; min-width:130px; background:#fff; border:1px solid var(--line); border-radius:12px;
+    padding:14px 16px;
+  }
+  .summary-stat .num{font-family:var(--mono); font-size:22px; font-weight:700;}
+  .summary-stat .lbl{font-size:11px; color:var(--text-soft); margin-top:2px; text-transform:uppercase; letter-spacing:.4px;}
+  .summary-stat.ok .num{color:var(--ok);}
+  .summary-stat.bad .num{color:var(--bad);}
+
+  .header-issue{
+    border:1px solid var(--warn-line); background:var(--warn-bg); color:#7a5312;
+    border-radius:10px; padding:12px 14px; font-size:12.5px; margin-bottom:16px; line-height:1.6;
+  }
+
+  .group-card{
+    border:1px solid var(--line); border-radius:14px; margin-bottom:16px; overflow:hidden; background:#fff;
+  }
+  .group-head{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:14px 18px; cursor:pointer; user-select:none;
+  }
+  .group-head:hover{background:#fafbfc;}
+  .group-head .left{display:flex; align-items:center; gap:12px; min-width:0;}
+  .status-dot{width:10px; height:10px; border-radius:50%; flex:0 0 10px;}
+  .status-dot.pass{background:var(--ok);}
+  .status-dot.fail{background:var(--bad);}
+  .group-ref{font-family:var(--mono); font-size:13px; font-weight:650;}
+  .group-meta{font-size:11.5px; color:var(--text-dim);}
+  .group-badge{
+    font-family:var(--mono); font-size:11px; font-weight:700; padding:4px 10px; border-radius:999px;
+  }
+  .group-badge.pass{background:var(--ok-bg); color:var(--ok); border:1px solid var(--ok-line);}
+  .group-badge.fail{background:var(--bad-bg); color:var(--bad); border:1px solid var(--bad-line);}
+  .chevron{transition:transform .15s; color:var(--text-dim); flex:0 0 auto;}
+  .group-card.open .chevron{transform:rotate(90deg);}
+
+  .group-body{display:none; border-top:1px solid var(--line);}
+  .group-card.open .group-body{display:block;}
+
+  .structural-note{
+    margin:14px 18px 0; padding:12px 14px; border-radius:10px; font-size:12.5px; line-height:1.6;
+    background:var(--bad-bg); border:1px solid var(--bad-line); color:#8a2b2b;
+  }
+
+  .row-block{padding:14px 18px; border-top:1px solid #eef0f3;}
+  .row-block:first-of-type{border-top:none;}
+  .row-block-head{
+    display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap;
+  }
+  .row-kind{font-size:12.5px; font-weight:650;}
+  .row-code{font-family:var(--mono); font-size:11.5px; color:var(--text-dim);}
+  .row-ref{font-family:var(--mono); font-size:10.5px; color:var(--text-dim); margin-left:auto;}
+  .row-pass-pill{
+    font-family:var(--mono); font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:999px;
+  }
+  .row-pass-pill.pass{background:var(--ok-bg); color:var(--ok);}
+  .row-pass-pill.fail{background:var(--bad-bg); color:var(--bad);}
+
+  .check-fail{
+    border:1px solid var(--bad-line); background:var(--bad-bg); border-radius:10px;
+    padding:10px 12px; margin-bottom:8px;
+  }
+  .check-fail .field{font-family:var(--mono); font-size:11.5px; font-weight:700; color:#8a2b2b; margin-bottom:4px;}
+  .check-ev{display:flex; gap:18px; flex-wrap:wrap; font-size:12px; margin-bottom:6px;}
+  .check-ev .ev-lbl{color:var(--text-dim); font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; display:block;}
+  .check-ev .ev-val{font-family:var(--mono); font-size:12.5px; font-weight:650;}
+  .check-ev .expected .ev-val{color:var(--ok);}
+  .check-ev .actual .ev-val{color:var(--bad);}
+  .check-msg{font-size:11.5px; color:#6b5320; line-height:1.55; margin-bottom:4px;}
+  .check-fix{font-size:11.5px; color:var(--accent-dark); font-weight:600;}
+
+  .all-pass-line{font-size:12px; color:var(--ok); display:flex; align-items:center; gap:6px;}
+
+  .details-toggle{
+    font-size:11px; color:var(--text-dim); cursor:pointer; margin-top:6px; display:inline-block;
+    text-decoration:underline; text-decoration-style:dotted;
+  }
+  .info-list{display:none; margin-top:8px; padding-top:8px; border-top:1px dashed var(--line);}
+  .info-list.show{display:block;}
+  .info-row{font-size:11px; color:var(--text-dim); font-family:var(--mono); margin-bottom:3px;}
+  .info-row .ok-tick{color:var(--ok); font-family:var(--sans);}
+
+  @media (max-width: 880px){
+    .shell{flex-direction:column;}
+    .sidebar{position:relative; width:100%; height:auto; flex:none;}
+    .nav-list{display:flex; overflow-x:auto; padding:12px;}
+    .nav-item{flex:0 0 auto; margin:0 8px 0 0;}
+    .nav-btn{width:220px;}
+    .main{padding:24px 18px 40px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <p class="eyebrow">POSUSER &rarr; ESBUSER.MKT_ERP_INV_INTF</p>
+      <h1>Staging Insert Validator</h1>
+      <p>Paste or upload the rows your procedure produced. Each page checks one transaction type against its own PL/SQL logic &mdash; row shapes, tax math, and static fields.</p>
+    </div>
+    <ul class="nav-list" id="navList"></ul>
+    <div class="sidebar-foot">
+      <p>Formulas replicate <code>ROUND(...,7)</code> Oracle rounding and the exact <code>UNION ALL</code> row shapes from <code>all_procedures.txt</code>.</p>
+    </div>
+  </aside>
+
+  <main class="main" id="mainArea"></main>
+</div>
+
+<script>
+// =====================================================================
+// MKT_ERP_INV_INTF staging validation engine
+// Mirrors PRC_INSERT_ERP_SELLIN_STAGING / _SELLIN_RETURN_STAGING /
+//         PRC_INSERT_ERP_SELLOUT_STAGING / _SELLOUT_RETURN_STAGING
+// =====================================================================
+
+const EXPECTED_HEADERS = [
+  'OPERATING_UNIT','CUSTOMER_NUMBER','CUSTOMER_LOCATION','TRANSACTION_NO',
+  'TRANSACTION_DATE','DESCRIPTION','CURRENCY','REFERENCE_NO','QUANTITY',
+  'UNIT_PRICE','SELLING_AMOUNT','ERP_ITEM_CODE','INVOICE_TYPE','TYPE',
+  'TRANSACTION_REF_NO','TRANSACTION_REF_DATE','PROCESS_FLAG','ERROR_MESSAGE',
+  'CREATION_DATE','CUSTOMER_ID','PROCESSING_DATE','ORG_ID','GL_DATE',
+  'ORGANIZATION_CODE','POSTED_TO_ERP','TAX_CODE','TAX_CODE_AMOUNT',
+  'ITEM_TAX_CATEGORY','ITEM_TAX_CATEGORY_AMOUNT','LINE_TYPE','TAXABLE_AMOUNT'
+];
+
+// ---------------------------------------------------------------------
+// CSV parsing (handles quoted fields, embedded commas/quotes, CRLF/LF)
+// ---------------------------------------------------------------------
+function parseCSV(text) {
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  const s = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (s[i + 1] === '"') { field += '"'; i++; }
+        else inQuotes = false;
+      } else field += c;
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else field += c;
+    }
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row); }
+  // drop fully-empty trailing rows
+  while (rows.length && rows[rows.length - 1].every(v => v.trim() === '')) rows.pop();
+  if (!rows.length) return { headers: [], records: [] };
+  const headers = rows[0].map(h => h.trim().toUpperCase());
+  const records = rows.slice(1).map((r, idx) => {
+    const obj = { __row: idx + 2 }; // spreadsheet-style row number incl header
+    headers.forEach((h, i) => { obj[h] = (r[i] === undefined ? '' : r[i]).trim(); });
+    return obj;
+  });
+  return { headers, records };
+}
+
+// ---------------------------------------------------------------------
+// Numeric helpers
+// ---------------------------------------------------------------------
+function isBlank(v) {
+  return v === undefined || v === null || v === '' ||
+         v.toString().trim().toUpperCase() === 'NULL';
+}
+function num(v) {
+  if (isBlank(v)) return NaN;
+  const n = parseFloat(v.toString().replace(/,/g, ''));
+  return n;
+}
+// Oracle ROUND(x,7) = round-half-away-from-zero
+function round7(x) {
+  if (!isFinite(x)) return x;
+  const f = 1e7;
+  const sign = x < 0 ? -1 : 1;
+  return sign * Math.round(Math.abs(x) * f + 1e-9) / f;
+}
+function approxEqual(a, b, eps) {
+  if (isNaN(a) || isNaN(b)) return false;
+  eps = eps === undefined ? 5e-6 : eps;
+  return Math.abs(a - b) <= eps;
+}
+function fmtNum(n) {
+  if (n === undefined || n === null || isNaN(n)) return String(n);
+  // trim trailing zeros but keep up to 7dp
+  return round7(n).toFixed(7).replace(/0+$/, '').replace(/\.$/, '');
+}
+function sign(n) { return n > 0 ? 1 : (n < 0 ? -1 : 0); }
+
+// ---------------------------------------------------------------------
+// Check result builder
+// ---------------------------------------------------------------------
+function check(field, pass, expected, actual, message, suggestion, info) {
+  return { field, pass, expected, actual, message: message || '', suggestion: suggestion || '', info: !!info };
+}
+
+// ---------------------------------------------------------------------
+// Common static-field checks applied to every row of every type
+// ---------------------------------------------------------------------
+function commonChecks(row, cfg) {
+  const c = [];
+  c.push(check('OPERATING_UNIT', row.OPERATING_UNIT === '2815', '2815', row.OPERATING_UNIT,
+    'OPERATING_UNIT is hard-coded to 2815 in every INSERT branch of the procedure.'));
+  c.push(check('ORG_ID', row.ORG_ID === '2815', '2815', row.ORG_ID,
+    'ORG_ID is hard-coded to 2815 in every INSERT branch of the procedure.'));
+  c.push(check('CURRENCY', row.CURRENCY === 'KES', 'KES', row.CURRENCY,
+    "CURRENCY is hard-coded to 'KES'."));
+  c.push(check('PROCESS_FLAG', row.PROCESS_FLAG === 'N', 'N', row.PROCESS_FLAG,
+    "PROCESS_FLAG is always inserted as 'N' (unprocessed) by the staging procedure."));
+  c.push(check('GL_DATE', isBlank(row.GL_DATE), '(blank)', row.GL_DATE || '(blank)',
+    "GL_DATE is always inserted blank ('') by the staging procedure."));
+  c.push(check('ERROR_MESSAGE', isBlank(row.ERROR_MESSAGE), '(blank)', row.ERROR_MESSAGE || '(blank)',
+    'ERROR_MESSAGE should be blank on a freshly staged row.'));
+  c.push(check('TAX_CODE_AMOUNT', isBlank(row.TAX_CODE_AMOUNT), '(blank)', row.TAX_CODE_AMOUNT || '(blank)',
+    'TAX_CODE_AMOUNT is never populated by any branch of the procedure.'));
+  c.push(check('ITEM_TAX_CATEGORY_AMOUNT', isBlank(row.ITEM_TAX_CATEGORY_AMOUNT), '(blank)', row.ITEM_TAX_CATEGORY_AMOUNT || '(blank)',
+    'ITEM_TAX_CATEGORY_AMOUNT is never populated by any branch of the procedure.'));
+  c.push(check('TYPE', row.TYPE === cfg.type, cfg.type, row.TYPE,
+    `TYPE must always be '${cfg.type}' for rows produced by ${cfg.procedureName}.`));
+  c.push(check('INVOICE_TYPE', row.INVOICE_TYPE === cfg.invoiceType, cfg.invoiceType, row.INVOICE_TYPE,
+    `INVOICE_TYPE is hard-coded to '${cfg.invoiceType}' for ${cfg.type} rows.`));
+  // existence-only (can't verify exact value without source order data)
+  ['CUSTOMER_NUMBER','CUSTOMER_LOCATION','CUSTOMER_ID','TRANSACTION_NO','TRANSACTION_DATE',
+   'ORGANIZATION_CODE','PROCESSING_DATE','CREATION_DATE','REFERENCE_NO'].forEach(f => {
+    c.push(check(f, !isBlank(row[f]), 'non-blank', row[f] || '(blank)',
+      `${f} is copied from the source order/customer tables and must not be blank.`, undefined, true));
+  });
+  if (cfg.refRequired) {
+    c.push(check('TRANSACTION_REF_NO', !isBlank(row.TRANSACTION_REF_NO), 'non-blank (original order id)', row.TRANSACTION_REF_NO || '(blank)',
+      `${cfg.type} rows must carry TRANSACTION_REF_NO pointing back to the original order.`));
+    c.push(check('TRANSACTION_REF_DATE', !isBlank(row.TRANSACTION_REF_DATE), 'non-blank (original order date)', row.TRANSACTION_REF_DATE || '(blank)',
+      `${cfg.type} rows must carry TRANSACTION_REF_DATE from the original order.`));
+  } else {
+    c.push(check('TRANSACTION_REF_NO', isBlank(row.TRANSACTION_REF_NO), '(blank)', row.TRANSACTION_REF_NO || '(blank)',
+      `${cfg.type} rows always leave TRANSACTION_REF_NO blank (there is no original order to reference).`));
+    c.push(check('TRANSACTION_REF_DATE', isBlank(row.TRANSACTION_REF_DATE), '(blank)', row.TRANSACTION_REF_DATE || '(blank)',
+      `${cfg.type} rows always leave TRANSACTION_REF_DATE blank.`));
+  }
+  // informational only, never fails the row
+  c.push(check('POSTED_TO_ERP', true, "'N' at staging time, may flip to 'Y' once posted", row.POSTED_TO_ERP,
+    'Informational: the procedure inserts N; a downstream ERP-post job may later flip this to Y.', undefined, true));
+  return c;
+}
+
+function checkQtyTimesPrice(row) {
+  const q = num(row.QUANTITY), u = num(row.UNIT_PRICE), s = num(row.SELLING_AMOUNT);
+  const expected = round7(q * u);
+  const pass = approxEqual(expected, round7(s));
+  return check('SELLING_AMOUNT', pass, fmtNum(expected), fmtNum(s),
+    'SELLING_AMOUNT must equal QUANTITY \u00d7 UNIT_PRICE, rounded to 7 decimals (Oracle ROUND(...,7)).',
+    pass ? '' : `Set SELLING_AMOUNT to ${fmtNum(expected)}.`);
+}
+
+function checkTaxableEqualsSelling(row) {
+  const s = num(row.SELLING_AMOUNT), t = num(row.TAXABLE_AMOUNT);
+  const pass = approxEqual(round7(s), round7(t));
+  return check('TAXABLE_AMOUNT', pass, fmtNum(s), fmtNum(t),
+    'TAXABLE_AMOUNT is populated with the exact same computed expression as SELLING_AMOUNT for this row type.',
+    pass ? '' : `Set TAXABLE_AMOUNT to ${fmtNum(s)} (same value as SELLING_AMOUNT).`);
+}
+
+function checkTaxableBlank(row) {
+  const pass = isBlank(row.TAXABLE_AMOUNT);
+  return check('TAXABLE_AMOUNT', pass, '(blank)', row.TAXABLE_AMOUNT || '(blank)',
+    'TAXABLE_AMOUNT is left blank for this row type in the procedure SQL.',
+    pass ? '' : 'Clear TAXABLE_AMOUNT (should be blank/NULL).');
+}
+
+// ---------------------------------------------------------------------
+// PRI / SLR — tax-aware, multi-row validator
+// ---------------------------------------------------------------------
+function classifyBundles(rows) {
+  // group by ERP_ITEM_CODE
+  const byCode = {};
+  rows.forEach(r => {
+    const code = r.ERP_ITEM_CODE || '(blank code)';
+    (byCode[code] = byCode[code] || []).push(r);
+  });
+  const bundles = Object.keys(byCode).map(code => {
+    const rs = byCode[code];
+    const taxRows = rs.filter(r => r.LINE_TYPE === 'TAX');
+    const invoiceRows = rs.filter(r => r.LINE_TYPE !== 'TAX');
+    return { code, taxRows, invoiceRows, hasTax: taxRows.length > 0 };
+  });
+  return bundles;
+}
+
+function validateTaxedGroup(rows, cfg) {
+  const results = []; // {rowIndex, kind, code, checks:[...]}
+  const structural = [];
+  const bundles = classifyBundles(rows);
+  const taxedBundles = bundles.filter(b => b.hasTax);
+  const untaxedBundles = bundles.filter(b => !b.hasTax);
+
+  let baseBundle = null, discountRows = [];
+
+  if (taxedBundles.length > 0) {
+    // primary product = the (first) taxed bundle
+    baseBundle = taxedBundles[0];
+    if (taxedBundles.length > 1) {
+      structural.push(`This order has ${taxedBundles.length} distinct taxed product codes in one REFERENCE_NO group. ` +
+        `Only the first (${taxedBundles[0].code}) was validated as the primary line; validate additional products separately if needed.`);
+    }
+    // any untaxed bundle with an INVOICE row = discount row(s)
+    untaxedBundles.forEach(b => discountRows.push(...b.invoiceRows));
+  } else if (untaxedBundles.length >= 1) {
+    // fully tax-exempt product: first bundle = base, second (if any) = discount
+    baseBundle = untaxedBundles[0];
+    untaxedBundles.slice(1).forEach(b => discountRows.push(...b.invoiceRows));
+  }
+
+  if (!baseBundle || baseBundle.invoiceRows.length === 0) {
+    structural.push('No INVOICE base row could be identified for this REFERENCE_NO group.');
+    return { structural, results };
+  }
+  if (baseBundle.invoiceRows.length > 1) {
+    structural.push(`Found ${baseBundle.invoiceRows.length} INVOICE rows sharing item code ${baseBundle.code}; expected exactly 1 base row. Extra rows were still checked individually.`);
+  }
+
+  baseBundle.invoiceRows.forEach(base => {
+    const checks = commonChecks(base, cfg);
+    const qty = num(base.QUANTITY), price = num(base.UNIT_PRICE);
+    checks.push(check('QUANTITY sign', sign(qty) === cfg.qtySign, cfg.qtySign > 0 ? 'positive' : 'negative', base.QUANTITY,
+      `${cfg.type} base rows should carry a ${cfg.qtySign > 0 ? 'positive' : 'negative'} QUANTITY.`,
+      `Change QUANTITY to ${cfg.qtySign > 0 ? Math.abs(qty) : -Math.abs(qty)}.`));
+    checks.push(check('UNIT_PRICE', price > 0, '> 0', base.UNIT_PRICE,
+      'UNIT_PRICE holds the tax-excluded price and should never be negative on the base row.'));
+    checks.push(checkQtyTimesPrice(base));
+    checks.push(checkTaxableEqualsSelling(base));
+    checks.push(check('LINE_TYPE', base.LINE_TYPE === 'INVOICE', 'INVOICE', base.LINE_TYPE));
+    checks.push(check('TAX_CODE', isBlank(base.TAX_CODE), '(blank)', base.TAX_CODE || '(blank)'));
+    checks.push(check('ITEM_TAX_CATEGORY', isBlank(base.ITEM_TAX_CATEGORY), '(blank)', base.ITEM_TAX_CATEGORY || '(blank)'));
+    results.push({ rowRef: base.__row, kind: 'BASE INVOICE line', code: base.ERP_ITEM_CODE, checks });
+  });
+
+  const baseRow = baseBundle.invoiceRows[0];
+  const baseQty = Math.abs(num(baseRow.QUANTITY));
+  const basePrice = num(baseRow.UNIT_PRICE);
+  const totalMagnitude = round7(baseQty * basePrice);
+  const expectedSign = cfg.qtySign; // sign that tax rows should carry
+
+  let exciseRow = null, vatRow = null, expectedExciseMag = 0;
+  baseBundle.taxRows.forEach(tr => {
+    const pctText = (tr.ITEM_TAX_CATEGORY || '').replace('%', '').trim();
+    const pct = parseFloat(pctText);
+    const isExcise = /EXCISE|DUTY/i.test(tr.TAX_CODE || '');
+    const isVat = /VAT/i.test(tr.TAX_CODE || '');
+    if (isExcise) exciseRow = tr;
+    else if (isVat) vatRow = tr;
+    else {
+      // unrecognised tax code — decide by ordering later
+      if (!exciseRow) exciseRow = tr; else vatRow = tr;
+    }
+  });
+
+  if (exciseRow) {
+    const checks = commonChecks(exciseRow, cfg);
+    const pct = parseFloat((exciseRow.ITEM_TAX_CATEGORY || '').replace('%', '').trim());
+    checks.push(check('QUANTITY', num(exciseRow.QUANTITY) === 1, '1', exciseRow.QUANTITY,
+      'Tax rows always carry QUANTITY = 1 in the procedure SQL.'));
+    checks.push(check('ITEM_TAX_CATEGORY', !isNaN(pct), '<rate> %', exciseRow.ITEM_TAX_CATEGORY,
+      "ITEM_TAX_CATEGORY should read like '15.0 %'."));
+    if (!isNaN(pct)) {
+      expectedExciseMag = round7(totalMagnitude * pct / 100);
+      const expectedVal = expectedSign * expectedExciseMag;
+      ['UNIT_PRICE', 'SELLING_AMOUNT', 'TAXABLE_AMOUNT'].forEach(f => {
+        const actual = num(exciseRow[f]);
+        const pass = approxEqual(round7(actual), round7(expectedVal));
+        checks.push(check(f, pass, fmtNum(expectedVal), fmtNum(actual),
+          `EXCISE amount = BASE (${fmtNum(totalMagnitude)}) \u00d7 ${pct}% = ${fmtNum(expectedExciseMag)}, ` +
+          `signed to match the ${cfg.type} row (${expectedSign > 0 ? '+' : '-'}).`,
+          pass ? '' : `Set ${f} to ${fmtNum(expectedVal)}.`));
+      });
+    }
+    checks.push(check('LINE_TYPE', exciseRow.LINE_TYPE === 'TAX', 'TAX', exciseRow.LINE_TYPE));
+    checks.push(check('TAX_CODE', !isBlank(exciseRow.TAX_CODE) && /EXCISE|DUTY/i.test(exciseRow.TAX_CODE), "contains 'EXCISE'/'DUTY'", exciseRow.TAX_CODE));
+    if (!vatRow) {
+      structural.push(`EXCISE row found for item ${baseBundle.code} without a matching VAT row. ` +
+        `The procedure only ever emits an EXCISE row via an inner join to td_excise AND td_vat together — ` +
+        `an EXCISE row can never legitimately exist without a VAT row for the same product. Check the VAT tax configuration.`);
+    }
+    results.push({ rowRef: exciseRow.__row, kind: 'EXCISE (duty) line', code: exciseRow.ERP_ITEM_CODE, checks });
+  }
+
+  if (vatRow) {
+    const checks = commonChecks(vatRow, cfg);
+    const pct = parseFloat((vatRow.ITEM_TAX_CATEGORY || '').replace('%', '').trim());
+    checks.push(check('QUANTITY', num(vatRow.QUANTITY) === 1, '1', vatRow.QUANTITY,
+      'Tax rows always carry QUANTITY = 1 in the procedure SQL.'));
+    checks.push(check('ITEM_TAX_CATEGORY', !isNaN(pct), '<rate> %', vatRow.ITEM_TAX_CATEGORY,
+      "ITEM_TAX_CATEGORY should read like '16.0 %'."));
+    if (!isNaN(pct)) {
+      const vatTaxableMag = round7(totalMagnitude + expectedExciseMag);
+      const expectedVatMag = round7(vatTaxableMag * pct / 100);
+      const expectedVal = expectedSign * expectedVatMag;
+      ['UNIT_PRICE', 'SELLING_AMOUNT', 'TAXABLE_AMOUNT'].forEach(f => {
+        const actual = num(vatRow[f]);
+        const pass = approxEqual(round7(actual), round7(expectedVal));
+        checks.push(check(f, pass, fmtNum(expectedVal), fmtNum(actual),
+          `VAT amount = (BASE + EXCISE) (${fmtNum(vatTaxableMag)}) \u00d7 ${pct}% = ${fmtNum(expectedVatMag)}, ` +
+          `signed to match the ${cfg.type} row (${expectedSign > 0 ? '+' : '-'}).`,
+          pass ? '' : `Set ${f} to ${fmtNum(expectedVal)}.`));
+      });
+    }
+    checks.push(check('LINE_TYPE', vatRow.LINE_TYPE === 'TAX', 'TAX', vatRow.LINE_TYPE));
+    checks.push(check('TAX_CODE', !isBlank(vatRow.TAX_CODE) && /VAT/i.test(vatRow.TAX_CODE), "contains 'VAT'", vatRow.TAX_CODE));
+    results.push({ rowRef: vatRow.__row, kind: 'VAT line', code: vatRow.ERP_ITEM_CODE, checks });
+  }
+
+  discountRows.forEach(dr => {
+    const checks = commonChecks(dr, cfg);
+    const q = num(dr.QUANTITY), u = num(dr.UNIT_PRICE), s = num(dr.SELLING_AMOUNT);
+    checks.push(checkQtyTimesPrice(dr));
+    checks.push(checkTaxableEqualsSelling(dr));
+    checks.push(check('|QUANTITY|', approxEqual(Math.abs(q), baseQty, 1e-6), fmtNum(baseQty), fmtNum(Math.abs(q)),
+      'A discount line should cover the same quantity as its base product line.'));
+    const baseSelling = num(baseRow.SELLING_AMOUNT);
+    checks.push(check('SELLING_AMOUNT sign', sign(s) !== 0 && sign(s) === -sign(baseSelling), 'opposite sign of base SELLING_AMOUNT', fmtNum(s),
+      'A discount line always reduces revenue, so its SELLING_AMOUNT sign is opposite the base row\u2019s.'));
+    checks.push(check('ERP_ITEM_CODE', dr.ERP_ITEM_CODE !== baseRow.ERP_ITEM_CODE, `different from base code (${baseRow.ERP_ITEM_CODE})`, dr.ERP_ITEM_CODE,
+      'The discount row uses DISCOUNT_ERP_CODE, a distinct code from the product\u2019s MATERIAL_CODE.', undefined, true));
+    checks.push(check('LINE_TYPE', dr.LINE_TYPE === 'INVOICE', 'INVOICE', dr.LINE_TYPE));
+    checks.push(check('TAX_CODE', isBlank(dr.TAX_CODE), '(blank)', dr.TAX_CODE || '(blank)'));
+    results.push({ rowRef: dr.__row, kind: 'DISCOUNT line', code: dr.ERP_ITEM_CODE, checks });
+  });
+
+  return { structural, results };
+}
+
+// ---------------------------------------------------------------------
+// POS / PRV — simple single-row-per-line validator (never any tax rows)
+// ---------------------------------------------------------------------
+function validateSimpleGroup(rows, cfg) {
+  const results = [];
+  rows.forEach(row => {
+    const checks = commonChecks(row, cfg);
+    const q = num(row.QUANTITY), u = num(row.UNIT_PRICE);
+    checks.push(check('QUANTITY sign', sign(q) === cfg.qtySign, cfg.qtySign > 0 ? 'positive' : 'negative', row.QUANTITY,
+      `${cfg.type} rows should carry a ${cfg.qtySign > 0 ? 'positive' : 'negative'} QUANTITY.`));
+    checks.push(check('UNIT_PRICE', u > 0, '> 0', row.UNIT_PRICE,
+      'UNIT_PRICE holds the tax-excluded price directly from the order line and is never negated for this row type.'));
+    checks.push(checkQtyTimesPrice(row));
+    checks.push(cfg.taxableBlank ? checkTaxableBlank(row) : checkTaxableEqualsSelling(row));
+    checks.push(check('LINE_TYPE', isBlank(row.LINE_TYPE), '(blank)', row.LINE_TYPE || '(blank)',
+      `${cfg.type} never sets LINE_TYPE \u2014 SELLOUT staging has no tax/discount rows at all.`));
+    checks.push(check('TAX_CODE', isBlank(row.TAX_CODE), '(blank)', row.TAX_CODE || '(blank)',
+      `${cfg.type} never produces a TAX line.`));
+    checks.push(check('ITEM_TAX_CATEGORY', isBlank(row.ITEM_TAX_CATEGORY), '(blank)', row.ITEM_TAX_CATEGORY || '(blank)'));
+    results.push({ rowRef: row.__row, kind: 'BASE line', code: row.ERP_ITEM_CODE, checks });
+  });
+  return { structural: [], results };
+}
+
+// ---------------------------------------------------------------------
+// Top-level entry point
+// ---------------------------------------------------------------------
+const TYPE_CONFIG = {
+  PRI: { type: 'PRI', invoiceType: 'INVOICE', qtySign: 1, refRequired: false, hasTax: true,
+         procedureName: 'PRC_INSERT_ERP_SELLIN_STAGING' },
+  SLR: { type: 'SLR', invoiceType: 'CREDIT MEMO', qtySign: -1, refRequired: true, hasTax: true,
+         procedureName: 'PRC_INSERT_ERP_SELLIN_RETURN_STAGING' },
+  POS: { type: 'POS', invoiceType: 'INVOICE', qtySign: 1, refRequired: false, hasTax: false, taxableBlank: false,
+         procedureName: 'PRC_INSERT_ERP_SELLOUT_STAGING' },
+  PRV: { type: 'PRV', invoiceType: 'CREDIT MEMO', qtySign: -1, refRequired: true, hasTax: false, taxableBlank: true,
+         procedureName: 'PRC_INSERT_ERP_SELLOUT_RETURN_STAGING' }
+};
+
+function validateCSV(text, typeKey) {
+  const cfg = TYPE_CONFIG[typeKey];
+  const { headers, records } = parseCSV(text);
+  const missingHeaders = EXPECTED_HEADERS.filter(h => !headers.includes(h));
+  const extraHeaders = headers.filter(h => !EXPECTED_HEADERS.includes(h) && h !== '');
+
+  if (!records.length) {
+    return { cfg, missingHeaders, extraHeaders, groups: [], error: 'No data rows found in the pasted/uploaded CSV.' };
+  }
+
+  const byRef = {};
+  records.forEach(r => { (byRef[r.REFERENCE_NO || '(blank REFERENCE_NO)'] = byRef[r.REFERENCE_NO || '(blank REFERENCE_NO)'] || []).push(r); });
+
+  const groups = Object.keys(byRef).map(ref => {
+    const rows = byRef[ref];
+    const wrongType = rows.filter(r => r.TYPE && r.TYPE !== cfg.type);
+    const out = cfg.hasTax ? validateTaxedGroup(rows, cfg) : validateSimpleGroup(rows, cfg);
+    if (wrongType.length) {
+      out.structural = out.structural || [];
+      out.structural.unshift(`${wrongType.length} row(s) in this REFERENCE_NO group have TYPE \u2260 '${cfg.type}' \u2014 they were still checked but likely belong on a different validation page.`);
+    }
+    const allChecks = out.results.reduce((a, r) => a.concat(r.checks), []);
+    const failCount = allChecks.filter(c => !c.pass && !c.info).length;
+    const infoCount = allChecks.filter(c => c.info).length;
+    const pass = failCount === 0 && out.structural.length === 0;
+    return { ref, rows, results: out.results, structural: out.structural, pass, failCount, infoCount };
+  });
+
+  return { cfg, missingHeaders, extraHeaders, groups };
+}
+
+// (browser build: no module.exports)
+
+</script>
+<script>
+// =====================================================================
+// UI wiring for the ERP staging validator
+// =====================================================================
+(function () {
+  const PAGES = [
+    {
+      key: 'PRI',
+      badge: 'PRI',
+      title: 'Sell-In',
+      subtitle: 'PRC_INSERT_ERP_SELLIN_STAGING',
+      sheet: 'ERP_SELLIN_STAGING',
+      heading: 'Sell-In staging \u2014 PRI',
+      desc: 'Validates rows produced when a completed SELLIN order is staged: a base INVOICE line, an optional EXCISE line, an optional VAT line, and an optional DISCOUNT line \u2014 all sharing one REFERENCE_NO (the ORDER_ID).',
+      sample: 'PRI_SAMPLE'
+    },
+    {
+      key: 'SLR',
+      badge: 'SLR',
+      title: 'Sell-In Return',
+      subtitle: 'PRC_INSERT_ERP_SELLIN_RETURN_STAGING',
+      sheet: 'ERP_SELLIN_RETURN_STAGING',
+      heading: 'Sell-In Return staging \u2014 SLR',
+      desc: 'Validates CREDIT MEMO rows produced for a completed SELLIN_RETURN order \u2014 same row shapes as PRI (base / EXCISE / VAT / DISCOUNT) but sign-flipped, and always carrying TRANSACTION_REF_NO/DATE back to the original sell-in order.',
+      sample: 'SLR_SAMPLE'
+    },
+    {
+      key: 'POS',
+      badge: 'POS',
+      title: 'Sell-Out',
+      subtitle: 'PRC_INSERT_ERP_SELLOUT_STAGING',
+      sheet: 'ERP_SELLOUT_STAGING',
+      heading: 'Sell-Out staging \u2014 POS',
+      desc: 'Validates rows produced for a completed SELLOUT order. SELLOUT staging never emits tax or discount rows \u2014 one INVOICE row per order line, LINE_TYPE always blank.',
+      sample: 'POS_SAMPLE'
+    },
+    {
+      key: 'PRV',
+      badge: 'PRV',
+      title: 'Sell-Out Return',
+      subtitle: 'PRC_INSERT_ERP_SELLOUT_RETURN_STAGING',
+      sheet: 'ERP_SELLOUT_RETURN_STAGING',
+      heading: 'Sell-Out Return staging \u2014 PRV',
+      desc: 'Validates CREDIT MEMO rows for a completed SELLOUT_RETURN order. Like POS, there are never tax rows \u2014 and unlike every other type, TAXABLE_AMOUNT is always left blank by this procedure.',
+      sample: 'PRV_SAMPLE'
+    }
+  ];
+
+  const SAMPLES = {
+    PRI_SAMPLE: `OPERATING_UNIT,CUSTOMER_NUMBER,CUSTOMER_LOCATION,TRANSACTION_NO,TRANSACTION_DATE,DESCRIPTION,CURRENCY,REFERENCE_NO,QUANTITY,UNIT_PRICE,SELLING_AMOUNT,ERP_ITEM_CODE,INVOICE_TYPE,TYPE,TRANSACTION_REF_NO,TRANSACTION_REF_DATE,PROCESS_FLAG,ERROR_MESSAGE,CREATION_DATE,CUSTOMER_ID,PROCESSING_DATE,ORG_ID,GL_DATE,ORGANIZATION_CODE,POSTED_TO_ERP,TAX_CODE,TAX_CODE_AMOUNT,ITEM_TAX_CATEGORY,ITEM_TAX_CATEGORY_AMOUNT,LINE_TYPE,TAXABLE_AMOUNT
+2815,229493,610676,2542542000472480,2026-07-08 14:30:56.000,,KES,2549990072070,1,749.625187,749.625187,100007052,INVOICE,PRI,,,N,,2026-07-08 14:35:26.000,3000121053,2026-07-08 14:35:26.000,2815,,016,Y,,,,,INVOICE,763.3587779
+2815,229493,610676,2542542000472480,2026-07-08 14:30:56.000,,KES,2549990072070,1,-65,-65,100090722,INVOICE,PRI,,,N,,2026-07-08 14:35:26.000,3000121053,2026-07-08 14:35:26.000,2815,,016,Y,,,,,INVOICE,-65
+2815,229493,610676,2542542000472480,2026-07-08 14:30:56.000,,KES,2549990072070,1,137.9310343,137.9310343,100007052,INVOICE,PRI,,,N,,2026-07-08 14:35:26.000,3000121053,2026-07-08 14:35:26.000,2815,,016,Y,VAT 16%,,16.0 %,,TAX,137.9310343
+2815,229493,610676,2542542000472480,2026-07-08 14:30:56.000,,KES,2549990072070,1,112.443778,112.443778,100007052,INVOICE,PRI,,,N,,2026-07-08 14:35:26.000,3000121053,2026-07-08 14:35:26.000,2815,,016,Y,KE-EXCISE DUTY,,15.0 %,,TAX,114.5038167`,
+    SLR_SAMPLE: `OPERATING_UNIT,CUSTOMER_NUMBER,CUSTOMER_LOCATION,TRANSACTION_NO,TRANSACTION_DATE,DESCRIPTION,CURRENCY,REFERENCE_NO,QUANTITY,UNIT_PRICE,SELLING_AMOUNT,ERP_ITEM_CODE,INVOICE_TYPE,TYPE,TRANSACTION_REF_NO,TRANSACTION_REF_DATE,PROCESS_FLAG,ERROR_MESSAGE,CREATION_DATE,CUSTOMER_ID,PROCESSING_DATE,ORG_ID,GL_DATE,ORGANIZATION_CODE,POSTED_TO_ERP,TAX_CODE,TAX_CODE_AMOUNT,ITEM_TAX_CATEGORY,ITEM_TAX_CATEGORY_AMOUNT,LINE_TYPE,TAXABLE_AMOUNT
+2815,229493,610676,2542542000472490,2026-07-08 18:46:05.000,,KES,2549990072099,-1,749.625187,-749.625187,100007052,CREDIT MEMO,SLR,2549990072070,2026-07-08 14:29:34.000,N,,2026-07-08 18:57:55.000,3000121053,2026-07-08 18:57:55.000,2815,,016,Y,,,,,INVOICE,-749.625187
+2815,229493,610676,2542542000472490,2026-07-08 18:46:05.000,,KES,2549990072099,-1,-65,65,100090722,CREDIT MEMO,SLR,2549990072070,2026-07-08 14:29:34.000,N,,2026-07-08 18:57:55.000,3000121053,2026-07-08 18:57:55.000,2815,,016,Y,,,,,INVOICE,65
+2815,229493,610676,2542542000472490,2026-07-08 18:46:05.000,,KES,2549990072099,1,-137.9310343,-137.9310343,100007052,CREDIT MEMO,SLR,2549990072070,2026-07-08 14:29:34.000,N,,2026-07-08 18:57:55.000,3000121053,2026-07-08 18:57:55.000,2815,,016,Y,VAT 16%,,16.0 %,,TAX,-137.9310343
+2815,229493,610676,2542542000472490,2026-07-08 18:46:05.000,,KES,2549990072099,1,-112.443778,-112.443778,100007052,CREDIT MEMO,SLR,2549990072070,2026-07-08 14:29:34.000,N,,2026-07-08 18:57:55.000,3000121053,2026-07-08 18:57:55.000,2815,,016,Y,KE-EXCISE DUTY,,15.0 %,,TAX,-112.443778`,
+    POS_SAMPLE: `OPERATING_UNIT,CUSTOMER_NUMBER,CUSTOMER_LOCATION,TRANSACTION_NO,TRANSACTION_DATE,DESCRIPTION,CURRENCY,REFERENCE_NO,QUANTITY,UNIT_PRICE,SELLING_AMOUNT,ERP_ITEM_CODE,INVOICE_TYPE,TYPE,TRANSACTION_REF_NO,TRANSACTION_REF_DATE,PROCESS_FLAG,ERROR_MESSAGE,CREATION_DATE,CUSTOMER_ID,PROCESSING_DATE,ORG_ID,GL_DATE,ORGANIZATION_CODE,POSTED_TO_ERP,TAX_CODE,TAX_CODE_AMOUNT,ITEM_TAX_CATEGORY,ITEM_TAX_CATEGORY_AMOUNT,LINE_TYPE,TAXABLE_AMOUNT
+2815,299488,673777,2542542000472488,2026-07-08 18:38:01.000,,KES,2549990072097,1,17.241379,17.241379,102483788,INVOICE,POS,,,N,,2026-07-08 21:34:18.000,3000121318,2026-07-08 21:34:18.000,2815,,KS5,Y,,,,,,17.241379`,
+    PRV_SAMPLE: `OPERATING_UNIT,CUSTOMER_NUMBER,CUSTOMER_LOCATION,TRANSACTION_NO,TRANSACTION_DATE,DESCRIPTION,CURRENCY,REFERENCE_NO,QUANTITY,UNIT_PRICE,SELLING_AMOUNT,ERP_ITEM_CODE,INVOICE_TYPE,TYPE,TRANSACTION_REF_NO,TRANSACTION_REF_DATE,PROCESS_FLAG,ERROR_MESSAGE,CREATION_DATE,CUSTOMER_ID,PROCESSING_DATE,ORG_ID,GL_DATE,ORGANIZATION_CODE,POSTED_TO_ERP,TAX_CODE,TAX_CODE_AMOUNT,ITEM_TAX_CATEGORY,ITEM_TAX_CATEGORY_AMOUNT,LINE_TYPE,TAXABLE_AMOUNT
+2815,299488,673777,2542542000472489,2026-07-08 18:39:30.000,,KES,2549990072098,-1,17.241379,-17.241379,102483788,CREDIT MEMO,PRV,2549990072097,2026-07-08 18:38:01.000,N,,2026-07-08 21:38:52.000,3000121318,2026-07-08 21:38:52.000,2815,,KS5,Y,,,,,,`
+  };
+
+  const nav = document.getElementById('navList');
+  const main = document.getElementById('mainArea');
+
+  PAGES.forEach((p, idx) => {
+    const li = document.createElement('li');
+    li.className = 'nav-item';
+    li.innerHTML = `<button class="nav-btn${idx === 0 ? ' active' : ''}" data-page="${p.key}">
+        <span class="nav-badge">${p.badge}</span>
+        <span class="nav-text"><span class="t1">${p.title}</span><span class="t2">${p.sheet}</span></span>
+      </button>`;
+    nav.appendChild(li);
+
+    const page = document.createElement('section');
+    page.className = 'page' + (idx === 0 ? ' active' : '');
+    page.id = 'page-' + p.key;
+    page.innerHTML = `
+      <div class="page-head">
+        <span class="type-chip"><span class="dot"></span>TYPE = '${p.key}'</span>
+        <h2>${p.heading}</h2>
+        <p>${p.desc}</p>
+        <span class="proc-ref">${p.subtitle}()</span>
+      </div>
+
+      <div class="card">
+        <h3>1. Provide the staged rows</h3>
+        <p class="sub">Paste comma-separated values including the header row, or upload a .csv exported from ${p.sheet}.</p>
+        <textarea class="paste-box" id="paste-${p.key}" placeholder="OPERATING_UNIT,CUSTOMER_NUMBER,...&#10;2815,229493,...,${p.key},..."></textarea>
+        <div class="input-row">
+          <label class="file-btn">
+            &#128193; Upload .csv
+            <input type="file" accept=".csv,text/csv" id="file-${p.key}">
+          </label>
+          <span class="file-name" id="filename-${p.key}"></span>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" data-action="validate" data-page="${p.key}">Validate rows</button>
+          <button class="btn btn-ghost" data-action="sample" data-page="${p.key}">Load sample data</button>
+          <button class="btn btn-ghost" data-action="clear" data-page="${p.key}">Clear</button>
+        </div>
+      </div>
+
+      <div class="card" style="padding-top:18px;">
+        <h3>2. Results</h3>
+        <p class="sub">Grouped by REFERENCE_NO (one order = one group). Click a group to see row-by-row checks.</p>
+        <div class="results" id="results-${p.key}">
+          <div class="empty-hint">No rows validated yet. Paste or upload data above, then click <b>Validate rows</b>.</div>
+        </div>
+      </div>
+    `;
+    main.appendChild(page);
+  });
+
+  // ---- tab switching ----
+  nav.addEventListener('click', function (e) {
+    const btn = e.target.closest('.nav-btn');
+    if (!btn) return;
+    const key = btn.getAttribute('data-page');
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b === btn));
+    document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + key));
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  });
+
+  // ---- file upload ----
+  PAGES.forEach(p => {
+    const fileInput = document.getElementById('file-' + p.key);
+    fileInput.addEventListener('change', function () {
+      const f = fileInput.files[0];
+      if (!f) return;
+      document.getElementById('filename-' + p.key).textContent = f.name;
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        document.getElementById('paste-' + p.key).value = ev.target.result;
+      };
+      reader.readAsText(f);
+    });
+  });
+
+  // ---- button actions ----
+  main.addEventListener('click', function (e) {
+    const btn = e.target.closest('button[data-action]');
+    if (btn) {
+      const action = btn.getAttribute('data-action');
+      const key = btn.getAttribute('data-page');
+      if (action === 'sample') {
+        const p = PAGES.find(pp => pp.key === key);
+        document.getElementById('paste-' + key).value = SAMPLES[p.sample];
+        document.getElementById('filename-' + key).textContent = '';
+      } else if (action === 'clear') {
+        document.getElementById('paste-' + key).value = '';
+        document.getElementById('filename-' + key).textContent = '';
+        document.getElementById('results-' + key).innerHTML =
+          '<div class="empty-hint">No rows validated yet. Paste or upload data above, then click <b>Validate rows</b>.</div>';
+      } else if (action === 'validate') {
+        runValidation(key);
+      }
+      return;
+    }
+    const gh = e.target.closest('.group-head');
+    if (gh) {
+      gh.closest('.group-card').classList.toggle('open');
+      return;
+    }
+    const dt = e.target.closest('.details-toggle');
+    if (dt) {
+      const list = dt.nextElementSibling;
+      const showing = list.classList.toggle('show');
+      dt.textContent = showing ? 'Hide informational checks' : 'Show informational checks';
+    }
+  });
+
+  function esc(s) {
+    return (s === undefined || s === null) ? '' : String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function renderRowBlock(r) {
+    const fails = r.checks.filter(c => !c.pass && !c.info);
+    const infos = r.checks.filter(c => c.info);
+    const passIcon = fails.length === 0;
+    let html = `<div class="row-block">
+      <div class="row-block-head">
+        <span class="row-kind">${esc(r.kind)}</span>
+        <span class="row-code">code ${esc(r.code)}</span>
+        <span class="row-pass-pill ${passIcon ? 'pass' : 'fail'}">${passIcon ? 'PASS' : fails.length + ' issue' + (fails.length > 1 ? 's' : '')}</span>
+        <span class="row-ref">csv row #${r.rowRef}</span>
+      </div>`;
+
+    if (passIcon) {
+      html += `<div class="all-pass-line">&#10003; All formula and static-field checks passed for this row.</div>`;
+    } else {
+      fails.forEach(c => {
+        html += `<div class="check-fail">
+          <div class="field">${esc(c.field)}</div>
+          <div class="check-ev">
+            <div class="expected"><span class="ev-lbl">Expected</span><span class="ev-val">${esc(c.expected)}</span></div>
+            <div class="actual"><span class="ev-lbl">Actual (pasted)</span><span class="ev-val">${esc(c.actual)}</span></div>
+          </div>
+          ${c.message ? `<div class="check-msg">${esc(c.message)}</div>` : ''}
+          ${c.suggestion ? `<div class="check-fix">Fix: ${esc(c.suggestion)}</div>` : ''}
+        </div>`;
+      });
+    }
+
+    if (infos.length) {
+      html += `<span class="details-toggle">Show informational checks</span><div class="info-list">`;
+      infos.forEach(c => {
+        html += `<div class="info-row"><span class="ok-tick">&#8226;</span> ${esc(c.field)}: ${esc(c.actual)} <span style="opacity:.7">(${esc(c.message)})</span></div>`;
+      });
+      html += `</div>`;
+    }
+
+    html += `</div>`;
+    return html;
+  }
+
+  function renderGroup(g) {
+    const rowCount = g.rows.length;
+    let html = `<div class="group-card">
+      <div class="group-head">
+        <div class="left">
+          <span class="status-dot ${g.pass ? 'pass' : 'fail'}"></span>
+          <div>
+            <div class="group-ref">REFERENCE_NO ${esc(g.ref)}</div>
+            <div class="group-meta">${rowCount} row${rowCount > 1 ? 's' : ''} pasted</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="group-badge ${g.pass ? 'pass' : 'fail'}">${g.pass ? 'SUCCESS' : 'FAILURE'}</span>
+          <span class="chevron">&#9656;</span>
+        </div>
+      </div>
+      <div class="group-body">`;
+
+    (g.structural || []).forEach(msg => {
+      html += `<div class="structural-note"><b>Structural issue:</b> ${esc(msg)}</div>`;
+    });
+
+    g.results.forEach(r => { html += renderRowBlock(r); });
+
+    html += `</div></div>`;
+    return html;
+  }
+
+  function runValidation(key) {
+    const text = document.getElementById('paste-' + key).value;
+    const resultsEl = document.getElementById('results-' + key);
+    if (!text || !text.trim()) {
+      resultsEl.innerHTML = '<div class="empty-hint">Paste some rows or upload a .csv first.</div>';
+      return;
+    }
+    const res = validateCSV(text, key);
+
+    let html = '';
+    if (res.missingHeaders && res.missingHeaders.length) {
+      html += `<div class="header-issue"><b>Missing column${res.missingHeaders.length > 1 ? 's' : ''}:</b> ${esc(res.missingHeaders.join(', '))}. These fields were treated as blank for every row \u2014 add them to validate fully.</div>`;
+    }
+    if (res.error) {
+      html += `<div class="empty-hint">${esc(res.error)}</div>`;
+      resultsEl.innerHTML = html;
+      return;
+    }
+
+    const total = res.groups.length;
+    const passed = res.groups.filter(g => g.pass).length;
+    const failed = total - passed;
+
+    html += `<div class="summary-bar">
+      <div class="summary-stat"><div class="num">${total}</div><div class="lbl">Order group${total === 1 ? '' : 's'}</div></div>
+      <div class="summary-stat ok"><div class="num">${passed}</div><div class="lbl">Success</div></div>
+      <div class="summary-stat bad"><div class="num">${failed}</div><div class="lbl">Failure</div></div>
+    </div>`;
+
+    res.groups.forEach(g => { html += renderGroup(g); });
+
+    resultsEl.innerHTML = html;
+    // auto-open failing groups, and open the only group if there's just one
+    resultsEl.querySelectorAll('.group-card').forEach((el, i) => {
+      if (!res.groups[i].pass || res.groups.length === 1) el.classList.add('open');
+    });
+  }
+})();
+
+</script>
+</body>
+</html>

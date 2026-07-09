@@ -1,61 +1,303 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Airtel Ventas</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ"
-        crossorigin="anonymous"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session Library</title>
+<style>
+  :root{
+    --ink:#12161c; --ink-2:#1b212b; --ink-3:#242c38;
+    --paper:#f5f6f8; --paper-2:#ffffff; --line:#dfe3ea;
+    --text:#1b212b; --text-soft:#5b6472; --text-dim:#8b93a1;
+    --accent:#1c8c8c; --accent-dark:#146b6b; --accent-soft:#e3f3f2;
+    --mono:'IBM Plex Mono','SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:var(--sans); background:var(--paper); color:var(--text);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- Shell ---------- */
+  .shell{display:flex; height:100vh; overflow:hidden;}
+
+  .sidebar{
+    width:280px; flex:0 0 280px; background:var(--ink); color:#cfd6e0;
+    height:100vh; overflow-y:auto;
+    display:flex; flex-direction:column;
+    border-right:1px solid #232a35;
+    transition:margin-left .22s ease;
+  }
+  .sidebar.collapsed{ margin-left:-280px; }
+
+  .sidebar-head{padding:24px 22px 18px; border-bottom:1px solid #232a35;}
+  .sidebar-head .eyebrow{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:1.5px; color:#7c8798;
+    text-transform:uppercase; margin:0 0 8px; display:flex; align-items:center; gap:8px;
+  }
+  .sidebar-head .eyebrow .live-dot{width:6px; height:6px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 3px rgba(28,140,140,.25);}
+  .sidebar-head h1{font-size:17px; line-height:1.35; margin:0; color:#fff; font-weight:650;}
+  .sidebar-head p{font-size:12px; color:#9aa4b3; margin:10px 0 0; line-height:1.55;}
+
+  .search-wrap{padding:14px 16px 0;}
+  .search-box{
+    width:100%; background:#1b212b; border:1px solid #2c3542; border-radius:9px;
+    padding:9px 11px; font-family:var(--sans); font-size:12.5px; color:#e7ebf1; outline:none;
+  }
+  .search-box::placeholder{color:#6b7383;}
+  .search-box:focus{border-color:var(--accent);}
+
+  .nav-list{list-style:none; margin:0; padding:14px 12px; flex:1; overflow-y:auto;}
+  .nav-group-label{
+    font-family:var(--mono); font-size:10px; letter-spacing:1.2px; color:#5f6879;
+    text-transform:uppercase; padding:6px 10px 8px; margin-top:4px;
+  }
+  .nav-item{margin-bottom:8px;}
+  .nav-btn{
+    width:100%; text-align:left; background:transparent; border:1px solid transparent;
+    border-radius:10px; padding:12px 13px; cursor:pointer; color:#c3cad6;
+    display:flex; align-items:center; gap:12px; transition:background .15s, border-color .15s;
+    font-family:var(--sans);
+  }
+  .nav-btn:hover{background:#1b212b;}
+  .nav-btn.active{background:#1b212b; border-color:#2c3542;}
+  .nav-badge{
+    font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:.5px;
+    width:38px; height:38px; flex:0 0 38px; display:flex; align-items:center; justify-content:center;
+    border-radius:8px; background:#242c38; color:#8fd6d0;
+  }
+  .nav-btn.active .nav-badge{background:var(--accent); color:#03211f;}
+  .nav-text{min-width:0;}
+  .nav-text .t1{font-size:13px; font-weight:600; color:#e7ebf1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .nav-text .t2{font-size:11px; color:#8b93a1; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .nav-empty{padding:20px 10px; font-size:12px; color:#6b7383; text-align:center; line-height:1.6;}
+
+  .sidebar-foot{padding:14px 22px 20px; border-top:1px solid #232a35;}
+  .sidebar-foot p{font-size:11px; color:#7c8798; line-height:1.6; margin:0;}
+  .sidebar-foot code{font-family:var(--mono); color:#9aa4b3;}
+
+  /* ---------- Main ---------- */
+  .main{flex:1; min-width:0; height:100vh; display:flex; flex-direction:column;}
+
+  .topbar{
+    flex:0 0 auto; display:flex; align-items:center; gap:14px;
+    padding:14px 22px; border-bottom:1px solid var(--line); background:var(--paper-2);
+  }
+  .toggle-btn{
+    width:34px; height:34px; border-radius:8px; border:1px solid var(--line); background:#fff;
+    cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text-soft);
+    flex:0 0 auto; transition:background .15s, border-color .15s;
+  }
+  .toggle-btn:hover{background:var(--paper); border-color:#c7cdd8;}
+  .toggle-btn svg{width:17px; height:17px;}
+
+  .crumb{min-width:0;}
+  .crumb .eyebrow{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:1px; color:var(--text-dim);
+    text-transform:uppercase; margin:0 0 2px;
+  }
+  .crumb h2{font-size:15px; margin:0; font-weight:650; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+
+  .topbar-spacer{flex:1;}
+  .open-btn{
+    font-family:var(--sans); font-size:12px; font-weight:600; color:var(--accent-dark);
+    background:var(--accent-soft); border:1px solid #bfe0de; border-radius:8px; padding:8px 13px;
+    cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+    white-space:nowrap;
+  }
+  .open-btn:hover{background:#d5eeec;}
+
+  .frame-wrap{flex:1; min-height:0; position:relative; background:var(--paper);}
+  iframe{width:100%; height:100%; border:0; display:none; background:#fff;}
+  iframe.active{display:block;}
+
+  .placeholder{
+    height:100%; display:flex; align-items:center; justify-content:center; flex-direction:column;
+    color:var(--text-dim); text-align:center; padding:40px;
+  }
+  .placeholder h3{font-size:15px; color:var(--text-soft); margin:14px 0 6px; font-weight:650;}
+  .placeholder p{font-size:12.5px; margin:0; max-width:340px; line-height:1.6;}
+  .placeholder svg{width:40px; height:40px; opacity:.35;}
+
+  @media (max-width: 860px){
+    .sidebar{position:fixed; z-index:20; box-shadow:0 0 0 2000px rgba(0,0,0,0); }
+    .sidebar.collapsed{margin-left:-280px;}
+    .sidebar:not(.collapsed){ box-shadow:0 0 0 100vmax rgba(10,12,16,.45); }
+  }
+</style>
 </head>
-
 <body>
-    <div class="container">
-        <nav class="navbar navbar-expand-lg bg-body-tertiary">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="#">Airtel Ventas</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <!-- <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Link</a>
-                        </li> -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                Dropdown
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="./pages/MKT_ERP_INV_INTF_Staging_Validator.html">ERP Validation</a></li>
-                                <li><a class="dropdown-item" href="./pages/KE-Airtel_Ventas_Tax_Details.html">Invoice Calculation</a></li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item" href="#">Something else here</a></li>
-                            </ul>
-                        </li>
-                        <!-- <li class="nav-item">
-                            <a class="nav-link disabled" aria-disabled="true">Disabled</a>
-                        </li> -->
-                    </ul>
-                    <form class="d-flex" role="search">
-                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
-                        <button class="btn btn-outline-success" type="submit">Search</button>
-                    </form>
-                </div>
-            </div>
-        </nav>
-    </div>
-</body>
 
+<div class="shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <p class="eyebrow"><span class="live-dot"></span>Session Library</p>
+      <h1>Working Sessions</h1>
+      <p>Reference tools and validators, gathered in one place. Pick a session on the left to open it.</p>
+    </div>
+
+    <div class="search-wrap">
+      <input type="text" class="search-box" id="searchBox" placeholder="Filter sessions…">
+    </div>
+
+    <ul class="nav-list" id="navList"></ul>
+
+    <div class="sidebar-foot">
+      <p>To add a session, drop the .html file into <code>/files</code> and add an entry to the <code>SESSIONS</code> list in <code>index.html</code>.</p>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="toggle-btn" id="toggleBtn" title="Toggle sidebar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      </button>
+      <div class="crumb" id="crumb">
+        <p class="eyebrow">Session Library</p>
+        <h2>Select a session to begin</h2>
+      </div>
+      <div class="topbar-spacer"></div>
+      <a class="open-btn" id="openBtn" href="#" target="_blank" style="display:none;">
+        Open in new tab
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M7 17L17 7M7 7h10v10"/></svg>
+      </a>
+    </div>
+
+    <div class="frame-wrap" id="frameWrap">
+      <div class="placeholder" id="placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <h3>Nothing open yet</h3>
+        <p>Choose a session from the sidebar to load it here. Everything runs in its own frame, so each tool keeps its own layout and behaviour.</p>
+      </div>
+      <!-- iframes injected here -->
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ---- Register sessions here. Add a new object for each new HTML file dropped into /files ----
+  const SESSIONS = [
+    {
+      key: 'mkt-erp',
+      badge: '01',
+      title: 'MKT_ERP_INV_INTF',
+      subtitle: 'Staging Validator',
+      src: 'files/MKT_ERP_INV_INTF_Staging_Validator.html',
+      group: 'Validators'
+    },
+    {
+      key: 'ke-airtel',
+      badge: '02',
+      title: 'KE-Airtel',
+      subtitle: 'Ventas Tax Details',
+      src: 'files/KE-Airtel_Ventas_Tax_Details.html',
+      group: 'Reference'
+    }
+  ];
+
+  const navList = document.getElementById('navList');
+  const frameWrap = document.getElementById('frameWrap');
+  const placeholder = document.getElementById('placeholder');
+  const crumb = document.getElementById('crumb');
+  const openBtn = document.getElementById('openBtn');
+  const searchBox = document.getElementById('searchBox');
+  const sidebar = document.getElementById('sidebar');
+  const toggleBtn = document.getElementById('toggleBtn');
+
+  const loadedFrames = {};
+  let activeKey = null;
+
+  function groupSessions(list){
+    const groups = {};
+    list.forEach(s => {
+      const g = s.group || 'Sessions';
+      if(!groups[g]) groups[g] = [];
+      groups[g].push(s);
+    });
+    return groups;
+  }
+
+  function renderNav(filter = ''){
+    navList.innerHTML = '';
+    const f = filter.trim().toLowerCase();
+    const filtered = SESSIONS.filter(s =>
+      !f || (s.title + ' ' + s.subtitle + ' ' + s.group).toLowerCase().includes(f)
+    );
+
+    if(filtered.length === 0){
+      navList.innerHTML = '<li class="nav-empty">No sessions match your search.</li>';
+      return;
+    }
+
+    const groups = groupSessions(filtered);
+    Object.keys(groups).forEach(groupName => {
+      const label = document.createElement('li');
+      label.className = 'nav-group-label';
+      label.textContent = groupName;
+      navList.appendChild(label);
+
+      groups[groupName].forEach(s => {
+        const li = document.createElement('li');
+        li.className = 'nav-item';
+        li.innerHTML = `
+          <button class="nav-btn${s.key === activeKey ? ' active' : ''}" data-key="${s.key}">
+            <span class="nav-badge">${s.badge}</span>
+            <span class="nav-text">
+              <span class="t1">${s.title}</span>
+              <span class="t2">${s.subtitle}</span>
+            </span>
+          </button>`;
+        navList.appendChild(li);
+      });
+    });
+  }
+
+  function openSession(key){
+    const session = SESSIONS.find(s => s.key === key);
+    if(!session) return;
+    activeKey = key;
+
+    placeholder.style.display = 'none';
+
+    Object.values(loadedFrames).forEach(f => f.classList.remove('active'));
+
+    if(!loadedFrames[key]){
+      const iframe = document.createElement('iframe');
+      iframe.src = session.src;
+      iframe.title = session.title + ' — ' + session.subtitle;
+      frameWrap.appendChild(iframe);
+      loadedFrames[key] = iframe;
+    }
+    loadedFrames[key].classList.add('active');
+
+    crumb.querySelector('.eyebrow').textContent = session.group || 'Session';
+    crumb.querySelector('h2').textContent = session.title + ' — ' + session.subtitle;
+
+    openBtn.href = session.src;
+    openBtn.style.display = 'inline-flex';
+
+    renderNav(searchBox.value);
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.key === key));
+
+    if(window.innerWidth <= 860){ sidebar.classList.add('collapsed'); }
+  }
+
+  navList.addEventListener('click', e => {
+    const btn = e.target.closest('.nav-btn');
+    if(!btn) return;
+    openSession(btn.dataset.key);
+  });
+
+  searchBox.addEventListener('input', () => renderNav(searchBox.value));
+
+  toggleBtn.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
+
+  renderNav();
+</script>
+
+</body>
 </html>

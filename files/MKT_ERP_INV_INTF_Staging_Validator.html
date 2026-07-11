@@ -207,6 +207,68 @@
   .info-row{font-size:11px; color:var(--text-dim); font-family:var(--mono); margin-bottom:3px;}
   .info-row .ok-tick{color:var(--ok); font-family:var(--sans);}
 
+  /* ---------- SQL note card ---------- */
+  .note-card{
+    background:#fbfaf5; border:1px solid #e8e1c8; border-radius:12px;
+    padding:16px 20px; margin-bottom:22px; max-width:1040px;
+  }
+  .note-card h4{font-size:12.5px; margin:0 0 10px; font-weight:700; color:#7a6420; display:flex; align-items:center; gap:6px;}
+  .note-card p{font-size:12px; color:var(--text-soft); margin:0 0 10px; line-height:1.6;}
+  .note-sql{
+    font-family:var(--mono); font-size:11.5px; background:#12161c; color:#d8e0ea;
+    border-radius:8px; padding:12px 14px; margin:8px 0; line-height:1.6; overflow-x:auto;
+    white-space:pre;
+  }
+  .note-sql .kw{color:#8fd6d0;}
+  .note-sql .lbl{color:#e0a15a; font-family:var(--sans); font-size:10.5px; display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:.4px;}
+
+  /* ---------- Sample Reference page ---------- */
+  .ref-scenario{
+    border:1px solid var(--line); border-radius:14px; background:#fff; margin-bottom:18px; overflow:hidden; max-width:1040px;
+  }
+  .ref-scenario-head{padding:16px 20px 12px; border-bottom:1px solid #eef0f3;}
+  .ref-tags{display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap;}
+  .ref-tag{
+    font-family:var(--mono); font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent-dark); letter-spacing:.4px;
+  }
+  .ref-tag.sheet{background:#eef0f3; color:var(--text-soft);}
+  .ref-scenario-head h4{font-size:14.5px; margin:0 0 4px; font-weight:650;}
+  .ref-scenario-head p{font-size:12px; color:var(--text-soft); margin:0; line-height:1.55;}
+  .ref-table-wrap{overflow-x:auto;}
+  table.ref-table{width:100%; border-collapse:collapse; font-size:11.5px;}
+  table.ref-table th{
+    text-align:left; padding:8px 12px; background:#fafbfc; color:var(--text-dim);
+    font-weight:650; text-transform:uppercase; font-size:10px; letter-spacing:.3px;
+    border-bottom:1px solid var(--line); white-space:nowrap;
+  }
+  table.ref-table td{padding:8px 12px; border-bottom:1px solid #f1f2f5; font-family:var(--mono); white-space:nowrap;}
+  table.ref-table tr:last-child td{border-bottom:none;}
+  table.ref-table td.desc-cell{font-family:var(--sans); white-space:normal; min-width:160px;}
+  .ref-line-tag{
+    font-family:var(--sans); font-size:10px; font-weight:700; padding:2px 7px; border-radius:999px;
+  }
+  .ref-line-tag.TAX{background:#eef0f3; color:var(--text-soft);}
+  .ref-line-tag.INVOICE{background:var(--accent-soft); color:var(--accent-dark);}
+  .ref-scenario-foot{
+    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    padding:12px 20px; background:#fafbfc;
+  }
+  .ref-scenario-foot .rowcount{font-size:11.5px; color:var(--text-dim);}
+  .load-btn{
+    font-size:12px; font-weight:650; padding:8px 14px; border-radius:8px; border:1px solid var(--accent);
+    background:#fff; color:var(--accent-dark); cursor:pointer;
+  }
+  .load-btn:hover{background:var(--accent); color:#fff;}
+  .ref-intro{max-width:1040px; margin-bottom:22px;}
+  .ref-intro .card{margin-bottom:0;}
+  .jump-toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:#fff; padding:10px 18px; border-radius:999px; font-size:12.5px;
+    box-shadow:0 8px 24px rgba(0,0,0,.25); z-index:50; opacity:0; pointer-events:none; transition:opacity .2s;
+  }
+  .jump-toast.show{opacity:1;}
+
   @media (max-width: 880px){
     .shell{flex-direction:column;}
     .sidebar{position:relative; width:100%; height:auto; flex:none;}
@@ -224,7 +286,7 @@
     <div class="sidebar-head">
       <p class="eyebrow">POSUSER &rarr; ESBUSER.MKT_ERP_INV_INTF</p>
       <h1>Staging Insert Validator</h1>
-      <p>Paste or upload the rows your procedure produced. Each page checks one transaction type against its own PL/SQL logic &mdash; row shapes, tax math, and static fields.</p>
+      <p>Paste or upload the rows your procedure produced. Each page checks one transaction type against its own PL/SQL logic &mdash; row shapes, tax math, and static fields. Orders with several products in one order are matched up automatically.</p>
     </div>
     <ul class="nav-list" id="navList"></ul>
     <div class="sidebar-foot">
@@ -234,12 +296,15 @@
 
   <main class="main" id="mainArea"></main>
 </div>
+<div class="jump-toast" id="jumpToast"></div>
+
 
 <script>
 // =====================================================================
-// MKT_ERP_INV_INTF staging validation engine
+// MKT_ERP_INV_INTF staging validation engine (v2)
 // Mirrors PRC_INSERT_ERP_SELLIN_STAGING / _SELLIN_RETURN_STAGING /
 //         PRC_INSERT_ERP_SELLOUT_STAGING / _SELLOUT_RETURN_STAGING
+// Supports multiple products per order and a mandatory-field pass.
 // =====================================================================
 
 const EXPECTED_HEADERS = [
@@ -250,6 +315,15 @@ const EXPECTED_HEADERS = [
   'CREATION_DATE','CUSTOMER_ID','PROCESSING_DATE','ORG_ID','GL_DATE',
   'ORGANIZATION_CODE','POSTED_TO_ERP','TAX_CODE','TAX_CODE_AMOUNT',
   'ITEM_TAX_CATEGORY','ITEM_TAX_CATEGORY_AMOUNT','LINE_TYPE','TAXABLE_AMOUNT'
+];
+
+// fields that must never be blank/NULL on a staged row (per business rule)
+const MANDATORY_FIELDS = [
+  'OPERATING_UNIT','CUSTOMER_NUMBER','CUSTOMER_LOCATION','TRANSACTION_NO',
+  'TRANSACTION_DATE','CURRENCY','REFERENCE_NO','QUANTITY','UNIT_PRICE',
+  'SELLING_AMOUNT','ERP_ITEM_CODE','INVOICE_TYPE','TYPE','PROCESS_FLAG',
+  'CUSTOMER_ID','ORG_ID','ORGANIZATION_CODE','POSTED_TO_ERP','LINE_TYPE',
+  'TAXABLE_AMOUNT'
 ];
 
 // ---------------------------------------------------------------------
@@ -274,12 +348,11 @@ function parseCSV(text) {
     }
   }
   if (field.length || row.length) { row.push(field); rows.push(row); }
-  // drop fully-empty trailing rows
   while (rows.length && rows[rows.length - 1].every(v => v.trim() === '')) rows.pop();
   if (!rows.length) return { headers: [], records: [] };
   const headers = rows[0].map(h => h.trim().toUpperCase());
   const records = rows.slice(1).map((r, idx) => {
-    const obj = { __row: idx + 2 }; // spreadsheet-style row number incl header
+    const obj = { __row: idx + 2 };
     headers.forEach((h, i) => { obj[h] = (r[i] === undefined ? '' : r[i]).trim(); });
     return obj;
   });
@@ -295,10 +368,8 @@ function isBlank(v) {
 }
 function num(v) {
   if (isBlank(v)) return NaN;
-  const n = parseFloat(v.toString().replace(/,/g, ''));
-  return n;
+  return parseFloat(v.toString().replace(/,/g, ''));
 }
-// Oracle ROUND(x,7) = round-half-away-from-zero
 function round7(x) {
   if (!isFinite(x)) return x;
   const f = 1e7;
@@ -312,16 +383,40 @@ function approxEqual(a, b, eps) {
 }
 function fmtNum(n) {
   if (n === undefined || n === null || isNaN(n)) return String(n);
-  // trim trailing zeros but keep up to 7dp
   return round7(n).toFixed(7).replace(/0+$/, '').replace(/\.$/, '');
 }
 function sign(n) { return n > 0 ? 1 : (n < 0 ? -1 : 0); }
+// Accepts '16.0 %', '16%', '16', or a raw fraction like '0.16' -> always returns 16
+function parsePercent(raw) {
+  if (isBlank(raw)) return NaN;
+  let s = raw.toString().trim();
+  const hasPct = s.indexOf('%') !== -1;
+  s = s.replace('%', '').trim();
+  let n = parseFloat(s);
+  if (isNaN(n)) return NaN;
+  if (!hasPct && Math.abs(n) <= 1) n = n * 100;
+  return n;
+}
 
 // ---------------------------------------------------------------------
 // Check result builder
 // ---------------------------------------------------------------------
 function check(field, pass, expected, actual, message, suggestion, info) {
   return { field, pass, expected, actual, message: message || '', suggestion: suggestion || '', info: !!info };
+}
+
+// Overrides any check on a blank mandatory field with one clear message,
+// and prepends checks for mandatory fields that had no dedicated check at all.
+function applyMandatory(checks, row, skipFields) {
+  const skip = skipFields || [];
+  const missing = MANDATORY_FIELDS.filter(f => skip.indexOf(f) === -1 && isBlank(row[f]));
+  const missingSet = {};
+  missing.forEach(f => { missingSet[f] = true; });
+  const missingChecks = missing.map(f => check(f, false, 'non-blank (mandatory)', '(missing)',
+    `${f} is a mandatory column in ESBUSER.MKT_ERP_INV_INTF and must not be blank/NULL on any staged row.`,
+    `Populate ${f} before loading this row.`));
+  const kept = checks.filter(c => !missingSet[c.field]);
+  return missingChecks.concat(kept);
 }
 
 // ---------------------------------------------------------------------
@@ -335,25 +430,30 @@ function commonChecks(row, cfg) {
     'ORG_ID is hard-coded to 2815 in every INSERT branch of the procedure.'));
   c.push(check('CURRENCY', row.CURRENCY === 'KES', 'KES', row.CURRENCY,
     "CURRENCY is hard-coded to 'KES'."));
-  c.push(check('PROCESS_FLAG', row.PROCESS_FLAG === 'N', 'N', row.PROCESS_FLAG,
-    "PROCESS_FLAG is always inserted as 'N' (unprocessed) by the staging procedure."));
+  c.push(check('PROCESS_FLAG', row.PROCESS_FLAG === 'N' || row.PROCESS_FLAG === 'I' || row.PROCESS_FLAG === 'Y',
+    "N (unprocessed) \u2014 may later become I/Y once the ERP interface picks it up", row.PROCESS_FLAG,
+    "PROCESS_FLAG is inserted as 'N' by the staging procedure; downstream ERP processing may advance it.",
+    undefined, row.PROCESS_FLAG !== 'N'));
   c.push(check('GL_DATE', isBlank(row.GL_DATE), '(blank)', row.GL_DATE || '(blank)',
     "GL_DATE is always inserted blank ('') by the staging procedure."));
   c.push(check('ERROR_MESSAGE', isBlank(row.ERROR_MESSAGE), '(blank)', row.ERROR_MESSAGE || '(blank)',
     'ERROR_MESSAGE should be blank on a freshly staged row.'));
-  c.push(check('TAX_CODE_AMOUNT', isBlank(row.TAX_CODE_AMOUNT), '(blank)', row.TAX_CODE_AMOUNT || '(blank)',
-    'TAX_CODE_AMOUNT is never populated by any branch of the procedure.'));
+  c.push(check('TAX_CODE_AMOUNT', cfg.hasTax ? isBlank(row.TAX_CODE_AMOUNT) : true,
+    cfg.hasTax ? '(blank)' : "blank for untaxed items, or a combined tax rate (e.g. '33.4') for compound-taxed items",
+    row.TAX_CODE_AMOUNT || '(blank)',
+    cfg.hasTax
+      ? 'TAX_CODE_AMOUNT is never populated on PRI/SLR rows \u2014 EXCISE and VAT are broken into their own separate TAX rows instead.'
+      : `${cfg.type} never splits into separate EXCISE/VAT rows, so a compound-taxed product carries its combined effective rate here (e.g. 15% excise cascaded with 16% VAT = 33.4).`,
+    undefined, !cfg.hasTax));
   c.push(check('ITEM_TAX_CATEGORY_AMOUNT', isBlank(row.ITEM_TAX_CATEGORY_AMOUNT), '(blank)', row.ITEM_TAX_CATEGORY_AMOUNT || '(blank)',
     'ITEM_TAX_CATEGORY_AMOUNT is never populated by any branch of the procedure.'));
   c.push(check('TYPE', row.TYPE === cfg.type, cfg.type, row.TYPE,
     `TYPE must always be '${cfg.type}' for rows produced by ${cfg.procedureName}.`));
   c.push(check('INVOICE_TYPE', row.INVOICE_TYPE === cfg.invoiceType, cfg.invoiceType, row.INVOICE_TYPE,
     `INVOICE_TYPE is hard-coded to '${cfg.invoiceType}' for ${cfg.type} rows.`));
-  // existence-only (can't verify exact value without source order data)
-  ['CUSTOMER_NUMBER','CUSTOMER_LOCATION','CUSTOMER_ID','TRANSACTION_NO','TRANSACTION_DATE',
-   'ORGANIZATION_CODE','PROCESSING_DATE','CREATION_DATE','REFERENCE_NO'].forEach(f => {
+  ['CREATION_DATE','PROCESSING_DATE'].forEach(f => {
     c.push(check(f, !isBlank(row[f]), 'non-blank', row[f] || '(blank)',
-      `${f} is copied from the source order/customer tables and must not be blank.`, undefined, true));
+      `${f} is stamped by the procedure at insert time and should not be blank.`, undefined, true));
   });
   if (cfg.refRequired) {
     c.push(check('TRANSACTION_REF_NO', !isBlank(row.TRANSACTION_REF_NO), 'non-blank (original order id)', row.TRANSACTION_REF_NO || '(blank)',
@@ -366,7 +466,6 @@ function commonChecks(row, cfg) {
     c.push(check('TRANSACTION_REF_DATE', isBlank(row.TRANSACTION_REF_DATE), '(blank)', row.TRANSACTION_REF_DATE || '(blank)',
       `${cfg.type} rows always leave TRANSACTION_REF_DATE blank.`));
   }
-  // informational only, never fails the row
   c.push(check('POSTED_TO_ERP', true, "'N' at staging time, may flip to 'Y' once posted", row.POSTED_TO_ERP,
     'Informational: the procedure inserts N; a downstream ERP-post job may later flip this to Y.', undefined, true));
   return c;
@@ -380,7 +479,6 @@ function checkQtyTimesPrice(row) {
     'SELLING_AMOUNT must equal QUANTITY \u00d7 UNIT_PRICE, rounded to 7 decimals (Oracle ROUND(...,7)).',
     pass ? '' : `Set SELLING_AMOUNT to ${fmtNum(expected)}.`);
 }
-
 function checkTaxableEqualsSelling(row) {
   const s = num(row.SELLING_AMOUNT), t = num(row.TAXABLE_AMOUNT);
   const pass = approxEqual(round7(s), round7(t));
@@ -388,7 +486,6 @@ function checkTaxableEqualsSelling(row) {
     'TAXABLE_AMOUNT is populated with the exact same computed expression as SELLING_AMOUNT for this row type.',
     pass ? '' : `Set TAXABLE_AMOUNT to ${fmtNum(s)} (same value as SELLING_AMOUNT).`);
 }
-
 function checkTaxableBlank(row) {
   const pass = isBlank(row.TAXABLE_AMOUNT);
   return check('TAXABLE_AMOUNT', pass, '(blank)', row.TAXABLE_AMOUNT || '(blank)',
@@ -397,185 +494,256 @@ function checkTaxableBlank(row) {
 }
 
 // ---------------------------------------------------------------------
-// PRI / SLR — tax-aware, multi-row validator
+// Group key: prefer REFERENCE_NO (order id); fall back to TRANSACTION_NO
+// (invoice number) when REFERENCE_NO is blank, so multi-line orders still
+// cluster correctly even if that column wasn't exported.
+// ---------------------------------------------------------------------
+function groupKeyFor(row) {
+  if (!isBlank(row.REFERENCE_NO)) return { key: 'REF#' + row.REFERENCE_NO, basis: 'REFERENCE_NO', value: row.REFERENCE_NO };
+  if (!isBlank(row.TRANSACTION_NO)) return { key: 'TXN#' + row.TRANSACTION_NO, basis: 'TRANSACTION_NO', value: row.TRANSACTION_NO };
+  return { key: '(no order key)', basis: 'none', value: '(missing)' };
+}
+
+// ---------------------------------------------------------------------
+// PRI / SLR \u2014 tax-aware, multi-product validator
 // ---------------------------------------------------------------------
 function classifyBundles(rows) {
-  // group by ERP_ITEM_CODE
   const byCode = {};
+  const order = [];
   rows.forEach(r => {
     const code = r.ERP_ITEM_CODE || '(blank code)';
-    (byCode[code] = byCode[code] || []).push(r);
+    if (!byCode[code]) { byCode[code] = []; order.push(code); }
+    byCode[code].push(r);
   });
-  const bundles = Object.keys(byCode).map(code => {
+  return order.map(code => {
     const rs = byCode[code];
     const taxRows = rs.filter(r => r.LINE_TYPE === 'TAX');
     const invoiceRows = rs.filter(r => r.LINE_TYPE !== 'TAX');
     return { code, taxRows, invoiceRows, hasTax: taxRows.length > 0 };
   });
-  return bundles;
 }
 
 function validateTaxedGroup(rows, cfg) {
-  const results = []; // {rowIndex, kind, code, checks:[...]}
+  const results = [];
   const structural = [];
   const bundles = classifyBundles(rows);
-  const taxedBundles = bundles.filter(b => b.hasTax);
-  const untaxedBundles = bundles.filter(b => !b.hasTax);
 
-  let baseBundle = null, discountRows = [];
+  // "product" bundles: has tax rows, OR has an invoice row with positive
+  // UNIT_PRICE and no tax rows (a legitimately tax-exempt product line).
+  // "discount candidate" bundles: single invoice row, negative UNIT_PRICE, no tax rows.
+  const productBundles = [];
+  const discountCandidates = [];
+  bundles.forEach(b => {
+    if (b.hasTax) { productBundles.push(b); return; }
+    const allNegative = b.invoiceRows.length > 0 && b.invoiceRows.every(r => num(r.UNIT_PRICE) < 0);
+    if (allNegative) discountCandidates.push(b);
+    else productBundles.push(b);
+  });
 
-  if (taxedBundles.length > 0) {
-    // primary product = the (first) taxed bundle
-    baseBundle = taxedBundles[0];
-    if (taxedBundles.length > 1) {
-      structural.push(`This order has ${taxedBundles.length} distinct taxed product codes in one REFERENCE_NO group. ` +
-        `Only the first (${taxedBundles[0].code}) was validated as the primary line; validate additional products separately if needed.`);
-    }
-    // any untaxed bundle with an INVOICE row = discount row(s)
-    untaxedBundles.forEach(b => discountRows.push(...b.invoiceRows));
-  } else if (untaxedBundles.length >= 1) {
-    // fully tax-exempt product: first bundle = base, second (if any) = discount
-    baseBundle = untaxedBundles[0];
-    untaxedBundles.slice(1).forEach(b => discountRows.push(...b.invoiceRows));
-  }
-
-  if (!baseBundle || baseBundle.invoiceRows.length === 0) {
-    structural.push('No INVOICE base row could be identified for this REFERENCE_NO group.');
+  if (productBundles.length === 0) {
+    structural.push('No product line (INVOICE base row, with or without tax rows) could be identified for this order group.');
     return { structural, results };
   }
-  if (baseBundle.invoiceRows.length > 1) {
-    structural.push(`Found ${baseBundle.invoiceRows.length} INVOICE rows sharing item code ${baseBundle.code}; expected exactly 1 base row. Extra rows were still checked individually.`);
+
+  // bucket product bundles and discount candidates by |base quantity|, in
+  // order of first appearance, then zip same-quantity buckets pairwise.
+  const productBuckets = {};
+  productBundles.forEach(b => {
+    const q = fmtNum(Math.abs(num(b.invoiceRows[0] ? b.invoiceRows[0].QUANTITY : NaN)));
+    (productBuckets[q] = productBuckets[q] || []).push(b);
+  });
+  const discountBuckets = {};
+  discountCandidates.forEach(b => {
+    const q = fmtNum(Math.abs(num(b.invoiceRows[0].QUANTITY)));
+    (discountBuckets[q] = discountBuckets[q] || []).push(b);
+  });
+  const discountFor = new Map(); // productBundle -> discount row
+  const usedDiscountBundles = new Set();
+  Object.keys(productBuckets).forEach(q => {
+    const prods = productBuckets[q];
+    const discs = discountBuckets[q] || [];
+    prods.forEach((pb, i) => {
+      if (discs[i]) {
+        discountFor.set(pb, discs[i].invoiceRows[0]);
+        usedDiscountBundles.add(discs[i]);
+      }
+    });
+  });
+  const unmatchedDiscounts = discountCandidates.filter(b => !usedDiscountBundles.has(b));
+  if (unmatchedDiscounts.length) {
+    structural.push(`${unmatchedDiscounts.length} row(s) look like discount lines (negative UNIT_PRICE, no tax rows) ` +
+      `but their QUANTITY didn't line up 1:1 with any product line's quantity in this order: ` +
+      unmatchedDiscounts.map(b => `code ${b.code} (row #${b.invoiceRows[0].__row})`).join(', ') +
+      '. They were still checked individually below, without the "matches its product" checks.');
   }
 
-  baseBundle.invoiceRows.forEach(base => {
-    const checks = commonChecks(base, cfg);
-    const qty = num(base.QUANTITY), price = num(base.UNIT_PRICE);
-    checks.push(check('QUANTITY sign', sign(qty) === cfg.qtySign, cfg.qtySign > 0 ? 'positive' : 'negative', base.QUANTITY,
-      `${cfg.type} base rows should carry a ${cfg.qtySign > 0 ? 'positive' : 'negative'} QUANTITY.`,
-      `Change QUANTITY to ${cfg.qtySign > 0 ? Math.abs(qty) : -Math.abs(qty)}.`));
-    checks.push(check('UNIT_PRICE', price > 0, '> 0', base.UNIT_PRICE,
-      'UNIT_PRICE holds the tax-excluded price and should never be negative on the base row.'));
-    checks.push(checkQtyTimesPrice(base));
-    checks.push(checkTaxableEqualsSelling(base));
-    checks.push(check('LINE_TYPE', base.LINE_TYPE === 'INVOICE', 'INVOICE', base.LINE_TYPE));
-    checks.push(check('TAX_CODE', isBlank(base.TAX_CODE), '(blank)', base.TAX_CODE || '(blank)'));
-    checks.push(check('ITEM_TAX_CATEGORY', isBlank(base.ITEM_TAX_CATEGORY), '(blank)', base.ITEM_TAX_CATEGORY || '(blank)'));
-    results.push({ rowRef: base.__row, kind: 'BASE INVOICE line', code: base.ERP_ITEM_CODE, checks });
+  if (productBundles.length > 1) {
+    structural.push(`This order contains ${productBundles.length} distinct products (multi-line order) \u2014 ` +
+      `each was matched to its own discount row (if any) by equal quantity and validated separately below.`);
+  }
+
+  productBundles.forEach(pb => {
+    if (pb.invoiceRows.length === 0) {
+      structural.push(`Item ${pb.code} has TAX row(s) but no matching INVOICE base row with the same ERP_ITEM_CODE.`);
+      return;
+    }
+    if (pb.invoiceRows.length > 1) {
+      structural.push(`Found ${pb.invoiceRows.length} INVOICE rows sharing item code ${pb.code}; expected exactly 1 base row. Extra rows were still checked individually.`);
+    }
+
+    pb.invoiceRows.forEach(base => {
+      let checks = commonChecks(base, cfg);
+      const qty = num(base.QUANTITY), price = num(base.UNIT_PRICE);
+      checks.push(check('QUANTITY sign', sign(qty) === cfg.qtySign, cfg.qtySign > 0 ? 'positive' : 'negative', base.QUANTITY,
+        `${cfg.type} base rows should carry a ${cfg.qtySign > 0 ? 'positive' : 'negative'} QUANTITY.`,
+        `Change QUANTITY to ${cfg.qtySign > 0 ? Math.abs(qty) : -Math.abs(qty)}.`));
+      checks.push(check('UNIT_PRICE', price > 0, '> 0', base.UNIT_PRICE,
+        'UNIT_PRICE holds the tax-excluded price and should never be negative on the base row.'));
+      checks.push(checkQtyTimesPrice(base));
+      checks.push(checkTaxableEqualsSelling(base));
+      checks.push(check('LINE_TYPE', base.LINE_TYPE === 'INVOICE', 'INVOICE', base.LINE_TYPE));
+      checks.push(check('TAX_CODE', isBlank(base.TAX_CODE), '(blank)', base.TAX_CODE || '(blank)'));
+      checks.push(check('ITEM_TAX_CATEGORY', isBlank(base.ITEM_TAX_CATEGORY), '(blank)', base.ITEM_TAX_CATEGORY || '(blank)'));
+      checks = applyMandatory(checks, base, []);
+      results.push({ rowRef: base.__row, kind: 'BASE INVOICE line', code: base.ERP_ITEM_CODE, checks });
+    });
+
+    const baseRow = pb.invoiceRows[0];
+    const baseQty = Math.abs(num(baseRow.QUANTITY));
+    const basePrice = num(baseRow.UNIT_PRICE);
+    const totalMagnitude = round7(baseQty * basePrice);
+    const expectedSign = cfg.qtySign;
+
+    let exciseRow = null, vatRow = null, expectedExciseMag = 0;
+    pb.taxRows.forEach(tr => {
+      const isExcise = /EXCISE|DUTY/i.test(tr.TAX_CODE || '');
+      const isVat = /VAT/i.test(tr.TAX_CODE || '');
+      if (isExcise) exciseRow = tr;
+      else if (isVat) vatRow = tr;
+      else { if (!exciseRow) exciseRow = tr; else vatRow = tr; }
+    });
+
+    if (exciseRow) {
+      let checks = commonChecks(exciseRow, cfg);
+      const pct = parsePercent(exciseRow.ITEM_TAX_CATEGORY);
+      checks.push(check('QUANTITY', num(exciseRow.QUANTITY) === 1, '1', exciseRow.QUANTITY,
+        'Tax rows always carry QUANTITY = 1 in the procedure SQL.'));
+      checks.push(check('ITEM_TAX_CATEGORY', !isNaN(pct), "a parseable tax rate (e.g. '15.0 %' or '0.15')", exciseRow.ITEM_TAX_CATEGORY,
+        'ITEM_TAX_CATEGORY should encode the EXCISE tax rate.'));
+      if (!isNaN(pct)) {
+        expectedExciseMag = round7(totalMagnitude * pct / 100);
+        const expectedVal = expectedSign * expectedExciseMag;
+        ['UNIT_PRICE', 'SELLING_AMOUNT', 'TAXABLE_AMOUNT'].forEach(f => {
+          const actual = num(exciseRow[f]);
+          const pass = approxEqual(round7(actual), round7(expectedVal));
+          checks.push(check(f, pass, fmtNum(expectedVal), fmtNum(actual),
+            `EXCISE amount = BASE (${fmtNum(totalMagnitude)}) \u00d7 ${pct}% = ${fmtNum(expectedExciseMag)}, ` +
+            `signed to match the ${cfg.type} row (${expectedSign > 0 ? '+' : '-'}).`,
+            pass ? '' : `Set ${f} to ${fmtNum(expectedVal)}.`));
+        });
+      }
+      checks.push(check('LINE_TYPE', exciseRow.LINE_TYPE === 'TAX', 'TAX', exciseRow.LINE_TYPE));
+      checks.push(check('TAX_CODE', !isBlank(exciseRow.TAX_CODE) && /EXCISE|DUTY/i.test(exciseRow.TAX_CODE), "contains 'EXCISE'/'DUTY'", exciseRow.TAX_CODE));
+      if (!vatRow) {
+        structural.push(`EXCISE row found for item ${pb.code} without a matching VAT row. ` +
+          `The procedure only ever emits an EXCISE row via an inner join to td_excise AND td_vat together \u2014 ` +
+          `an EXCISE row can never legitimately exist without a VAT row for the same product. Check the VAT tax configuration.`);
+      }
+      checks = applyMandatory(checks, exciseRow, []);
+      results.push({ rowRef: exciseRow.__row, kind: 'EXCISE (duty) line', code: exciseRow.ERP_ITEM_CODE, checks });
+    }
+
+    if (vatRow) {
+      let checks = commonChecks(vatRow, cfg);
+      const pct = parsePercent(vatRow.ITEM_TAX_CATEGORY);
+      checks.push(check('QUANTITY', num(vatRow.QUANTITY) === 1, '1', vatRow.QUANTITY,
+        'Tax rows always carry QUANTITY = 1 in the procedure SQL.'));
+      checks.push(check('ITEM_TAX_CATEGORY', !isNaN(pct), "a parseable tax rate (e.g. '16.0 %' or '0.16')", vatRow.ITEM_TAX_CATEGORY,
+        'ITEM_TAX_CATEGORY should encode the VAT tax rate.'));
+      if (!isNaN(pct)) {
+        const vatTaxableMag = round7(totalMagnitude + expectedExciseMag);
+        const expectedVatMag = round7(vatTaxableMag * pct / 100);
+        const expectedVal = expectedSign * expectedVatMag;
+        ['UNIT_PRICE', 'SELLING_AMOUNT', 'TAXABLE_AMOUNT'].forEach(f => {
+          const actual = num(vatRow[f]);
+          const pass = approxEqual(round7(actual), round7(expectedVal));
+          checks.push(check(f, pass, fmtNum(expectedVal), fmtNum(actual),
+            `VAT amount = (BASE + EXCISE) (${fmtNum(vatTaxableMag)}) \u00d7 ${pct}% = ${fmtNum(expectedVatMag)}, ` +
+            `signed to match the ${cfg.type} row (${expectedSign > 0 ? '+' : '-'}).`,
+            pass ? '' : `Set ${f} to ${fmtNum(expectedVal)}.`));
+        });
+      }
+      checks.push(check('LINE_TYPE', vatRow.LINE_TYPE === 'TAX', 'TAX', vatRow.LINE_TYPE));
+      checks.push(check('TAX_CODE', !isBlank(vatRow.TAX_CODE) && /VAT/i.test(vatRow.TAX_CODE), "contains 'VAT'", vatRow.TAX_CODE));
+      checks = applyMandatory(checks, vatRow, []);
+      results.push({ rowRef: vatRow.__row, kind: 'VAT line', code: vatRow.ERP_ITEM_CODE, checks });
+    }
+
+    const dr = discountFor.get(pb);
+    if (dr) {
+      let checks = commonChecks(dr, cfg);
+      const q = num(dr.QUANTITY), s = num(dr.SELLING_AMOUNT);
+      checks.push(checkQtyTimesPrice(dr));
+      checks.push(checkTaxableEqualsSelling(dr));
+      checks.push(check('|QUANTITY|', approxEqual(Math.abs(q), baseQty, 1e-6), fmtNum(baseQty), fmtNum(Math.abs(q)),
+        'A discount line should cover the same quantity as its base product line.'));
+      const baseSelling = num(baseRow.SELLING_AMOUNT);
+      checks.push(check('SELLING_AMOUNT sign', sign(s) !== 0 && sign(s) === -sign(baseSelling), 'opposite sign of base SELLING_AMOUNT', fmtNum(s),
+        'A discount line always reduces revenue, so its SELLING_AMOUNT sign is opposite the base row\u2019s.'));
+      checks.push(check('ERP_ITEM_CODE', dr.ERP_ITEM_CODE !== baseRow.ERP_ITEM_CODE, `different from base code (${baseRow.ERP_ITEM_CODE})`, dr.ERP_ITEM_CODE,
+        'The discount row uses DISCOUNT_ERP_CODE, a distinct code from the product\u2019s MATERIAL_CODE.', undefined, true));
+      checks.push(check('LINE_TYPE', dr.LINE_TYPE === 'INVOICE', 'INVOICE', dr.LINE_TYPE));
+      checks.push(check('TAX_CODE', isBlank(dr.TAX_CODE), '(blank)', dr.TAX_CODE || '(blank)'));
+      checks = applyMandatory(checks, dr, []);
+      results.push({ rowRef: dr.__row, kind: `DISCOUNT line (for item ${pb.code})`, code: dr.ERP_ITEM_CODE, checks });
+    }
   });
 
-  const baseRow = baseBundle.invoiceRows[0];
-  const baseQty = Math.abs(num(baseRow.QUANTITY));
-  const basePrice = num(baseRow.UNIT_PRICE);
-  const totalMagnitude = round7(baseQty * basePrice);
-  const expectedSign = cfg.qtySign; // sign that tax rows should carry
-
-  let exciseRow = null, vatRow = null, expectedExciseMag = 0;
-  baseBundle.taxRows.forEach(tr => {
-    const pctText = (tr.ITEM_TAX_CATEGORY || '').replace('%', '').trim();
-    const pct = parseFloat(pctText);
-    const isExcise = /EXCISE|DUTY/i.test(tr.TAX_CODE || '');
-    const isVat = /VAT/i.test(tr.TAX_CODE || '');
-    if (isExcise) exciseRow = tr;
-    else if (isVat) vatRow = tr;
-    else {
-      // unrecognised tax code — decide by ordering later
-      if (!exciseRow) exciseRow = tr; else vatRow = tr;
-    }
-  });
-
-  if (exciseRow) {
-    const checks = commonChecks(exciseRow, cfg);
-    const pct = parseFloat((exciseRow.ITEM_TAX_CATEGORY || '').replace('%', '').trim());
-    checks.push(check('QUANTITY', num(exciseRow.QUANTITY) === 1, '1', exciseRow.QUANTITY,
-      'Tax rows always carry QUANTITY = 1 in the procedure SQL.'));
-    checks.push(check('ITEM_TAX_CATEGORY', !isNaN(pct), '<rate> %', exciseRow.ITEM_TAX_CATEGORY,
-      "ITEM_TAX_CATEGORY should read like '15.0 %'."));
-    if (!isNaN(pct)) {
-      expectedExciseMag = round7(totalMagnitude * pct / 100);
-      const expectedVal = expectedSign * expectedExciseMag;
-      ['UNIT_PRICE', 'SELLING_AMOUNT', 'TAXABLE_AMOUNT'].forEach(f => {
-        const actual = num(exciseRow[f]);
-        const pass = approxEqual(round7(actual), round7(expectedVal));
-        checks.push(check(f, pass, fmtNum(expectedVal), fmtNum(actual),
-          `EXCISE amount = BASE (${fmtNum(totalMagnitude)}) \u00d7 ${pct}% = ${fmtNum(expectedExciseMag)}, ` +
-          `signed to match the ${cfg.type} row (${expectedSign > 0 ? '+' : '-'}).`,
-          pass ? '' : `Set ${f} to ${fmtNum(expectedVal)}.`));
-      });
-    }
-    checks.push(check('LINE_TYPE', exciseRow.LINE_TYPE === 'TAX', 'TAX', exciseRow.LINE_TYPE));
-    checks.push(check('TAX_CODE', !isBlank(exciseRow.TAX_CODE) && /EXCISE|DUTY/i.test(exciseRow.TAX_CODE), "contains 'EXCISE'/'DUTY'", exciseRow.TAX_CODE));
-    if (!vatRow) {
-      structural.push(`EXCISE row found for item ${baseBundle.code} without a matching VAT row. ` +
-        `The procedure only ever emits an EXCISE row via an inner join to td_excise AND td_vat together — ` +
-        `an EXCISE row can never legitimately exist without a VAT row for the same product. Check the VAT tax configuration.`);
-    }
-    results.push({ rowRef: exciseRow.__row, kind: 'EXCISE (duty) line', code: exciseRow.ERP_ITEM_CODE, checks });
-  }
-
-  if (vatRow) {
-    const checks = commonChecks(vatRow, cfg);
-    const pct = parseFloat((vatRow.ITEM_TAX_CATEGORY || '').replace('%', '').trim());
-    checks.push(check('QUANTITY', num(vatRow.QUANTITY) === 1, '1', vatRow.QUANTITY,
-      'Tax rows always carry QUANTITY = 1 in the procedure SQL.'));
-    checks.push(check('ITEM_TAX_CATEGORY', !isNaN(pct), '<rate> %', vatRow.ITEM_TAX_CATEGORY,
-      "ITEM_TAX_CATEGORY should read like '16.0 %'."));
-    if (!isNaN(pct)) {
-      const vatTaxableMag = round7(totalMagnitude + expectedExciseMag);
-      const expectedVatMag = round7(vatTaxableMag * pct / 100);
-      const expectedVal = expectedSign * expectedVatMag;
-      ['UNIT_PRICE', 'SELLING_AMOUNT', 'TAXABLE_AMOUNT'].forEach(f => {
-        const actual = num(vatRow[f]);
-        const pass = approxEqual(round7(actual), round7(expectedVal));
-        checks.push(check(f, pass, fmtNum(expectedVal), fmtNum(actual),
-          `VAT amount = (BASE + EXCISE) (${fmtNum(vatTaxableMag)}) \u00d7 ${pct}% = ${fmtNum(expectedVatMag)}, ` +
-          `signed to match the ${cfg.type} row (${expectedSign > 0 ? '+' : '-'}).`,
-          pass ? '' : `Set ${f} to ${fmtNum(expectedVal)}.`));
-      });
-    }
-    checks.push(check('LINE_TYPE', vatRow.LINE_TYPE === 'TAX', 'TAX', vatRow.LINE_TYPE));
-    checks.push(check('TAX_CODE', !isBlank(vatRow.TAX_CODE) && /VAT/i.test(vatRow.TAX_CODE), "contains 'VAT'", vatRow.TAX_CODE));
-    results.push({ rowRef: vatRow.__row, kind: 'VAT line', code: vatRow.ERP_ITEM_CODE, checks });
-  }
-
-  discountRows.forEach(dr => {
-    const checks = commonChecks(dr, cfg);
-    const q = num(dr.QUANTITY), u = num(dr.UNIT_PRICE), s = num(dr.SELLING_AMOUNT);
-    checks.push(checkQtyTimesPrice(dr));
-    checks.push(checkTaxableEqualsSelling(dr));
-    checks.push(check('|QUANTITY|', approxEqual(Math.abs(q), baseQty, 1e-6), fmtNum(baseQty), fmtNum(Math.abs(q)),
-      'A discount line should cover the same quantity as its base product line.'));
-    const baseSelling = num(baseRow.SELLING_AMOUNT);
-    checks.push(check('SELLING_AMOUNT sign', sign(s) !== 0 && sign(s) === -sign(baseSelling), 'opposite sign of base SELLING_AMOUNT', fmtNum(s),
-      'A discount line always reduces revenue, so its SELLING_AMOUNT sign is opposite the base row\u2019s.'));
-    checks.push(check('ERP_ITEM_CODE', dr.ERP_ITEM_CODE !== baseRow.ERP_ITEM_CODE, `different from base code (${baseRow.ERP_ITEM_CODE})`, dr.ERP_ITEM_CODE,
-      'The discount row uses DISCOUNT_ERP_CODE, a distinct code from the product\u2019s MATERIAL_CODE.', undefined, true));
-    checks.push(check('LINE_TYPE', dr.LINE_TYPE === 'INVOICE', 'INVOICE', dr.LINE_TYPE));
-    checks.push(check('TAX_CODE', isBlank(dr.TAX_CODE), '(blank)', dr.TAX_CODE || '(blank)'));
-    results.push({ rowRef: dr.__row, kind: 'DISCOUNT line', code: dr.ERP_ITEM_CODE, checks });
+  unmatchedDiscounts.forEach(b => {
+    b.invoiceRows.forEach(dr => {
+      let checks = commonChecks(dr, cfg);
+      checks.push(checkQtyTimesPrice(dr));
+      checks.push(checkTaxableEqualsSelling(dr));
+      checks.push(check('LINE_TYPE', dr.LINE_TYPE === 'INVOICE', 'INVOICE', dr.LINE_TYPE));
+      checks.push(check('TAX_CODE', isBlank(dr.TAX_CODE), '(blank)', dr.TAX_CODE || '(blank)'));
+      checks = applyMandatory(checks, dr, []);
+      results.push({ rowRef: dr.__row, kind: 'DISCOUNT line (unmatched to a product)', code: dr.ERP_ITEM_CODE, checks });
+    });
   });
 
   return { structural, results };
 }
 
 // ---------------------------------------------------------------------
-// POS / PRV — simple single-row-per-line validator (never any tax rows)
+// POS / PRV \u2014 simple single-row-per-line validator (never any tax rows)
 // ---------------------------------------------------------------------
 function validateSimpleGroup(rows, cfg) {
   const results = [];
   rows.forEach(row => {
-    const checks = commonChecks(row, cfg);
+    let checks = commonChecks(row, cfg);
     const q = num(row.QUANTITY), u = num(row.UNIT_PRICE);
     checks.push(check('QUANTITY sign', sign(q) === cfg.qtySign, cfg.qtySign > 0 ? 'positive' : 'negative', row.QUANTITY,
       `${cfg.type} rows should carry a ${cfg.qtySign > 0 ? 'positive' : 'negative'} QUANTITY.`));
     checks.push(check('UNIT_PRICE', u > 0, '> 0', row.UNIT_PRICE,
       'UNIT_PRICE holds the tax-excluded price directly from the order line and is never negated for this row type.'));
     checks.push(checkQtyTimesPrice(row));
-    checks.push(cfg.taxableBlank ? checkTaxableBlank(row) : checkTaxableEqualsSelling(row));
+    if (cfg.taxableBlank) {
+      checks.push(checkTaxableBlank(row));
+    } else if (!isBlank(row.TAXABLE_AMOUNT)) {
+      // when populated it should still tie out; when blank, the mandatory-field
+      // pass below already flags it (TAXABLE_AMOUNT is in MANDATORY_FIELDS)
+      checks.push(checkTaxableEqualsSelling(row));
+    }
     checks.push(check('LINE_TYPE', isBlank(row.LINE_TYPE), '(blank)', row.LINE_TYPE || '(blank)',
-      `${cfg.type} never sets LINE_TYPE \u2014 SELLOUT staging has no tax/discount rows at all.`));
-    checks.push(check('TAX_CODE', isBlank(row.TAX_CODE), '(blank)', row.TAX_CODE || '(blank)',
-      `${cfg.type} never produces a TAX line.`));
-    checks.push(check('ITEM_TAX_CATEGORY', isBlank(row.ITEM_TAX_CATEGORY), '(blank)', row.ITEM_TAX_CATEGORY || '(blank)'));
+      `${cfg.type} never sets LINE_TYPE \u2014 SELLOUT staging has no separate tax/discount rows at all.`));
+    checks.push(check('TAX_CODE', true,
+      "blank for untaxed items, or a compound code (e.g. 'KE CMPD EXCISE + VAT') for taxed items", row.TAX_CODE || '(blank)',
+      `${cfg.type} never produces a separate TAX line \u2014 a taxed product instead carries its combined tax code directly on this row.`,
+      undefined, true));
+    checks.push(check('ITEM_TAX_CATEGORY', true, 'usually blank on this row type', row.ITEM_TAX_CATEGORY || '(blank)',
+      'ITEM_TAX_CATEGORY is populated per-rate on PRI/SLR TAX rows; SELLOUT rows don\u2019t break tax out that way.', undefined, true));
+    const skip = cfg.taxableBlank ? ['LINE_TYPE', 'TAXABLE_AMOUNT'] : ['LINE_TYPE'];
+    checks = applyMandatory(checks, row, skip);
     results.push({ rowRef: row.__row, kind: 'BASE line', code: row.ERP_ITEM_CODE, checks });
   });
   return { structural: [], results };
@@ -605,33 +773,44 @@ function validateCSV(text, typeKey) {
     return { cfg, missingHeaders, extraHeaders, groups: [], error: 'No data rows found in the pasted/uploaded CSV.' };
   }
 
-  const byRef = {};
-  records.forEach(r => { (byRef[r.REFERENCE_NO || '(blank REFERENCE_NO)'] = byRef[r.REFERENCE_NO || '(blank REFERENCE_NO)'] || []).push(r); });
+  const byKey = {};
+  const basisByKey = {};
+  records.forEach(r => {
+    const g = groupKeyFor(r);
+    (byKey[g.key] = byKey[g.key] || []).push(r);
+    basisByKey[g.key] = g;
+  });
 
-  const groups = Object.keys(byRef).map(ref => {
-    const rows = byRef[ref];
+  const groups = Object.keys(byKey).map(k => {
+    const rows = byKey[k];
+    const g = basisByKey[k];
     const wrongType = rows.filter(r => r.TYPE && r.TYPE !== cfg.type);
     const out = cfg.hasTax ? validateTaxedGroup(rows, cfg) : validateSimpleGroup(rows, cfg);
     if (wrongType.length) {
       out.structural = out.structural || [];
-      out.structural.unshift(`${wrongType.length} row(s) in this REFERENCE_NO group have TYPE \u2260 '${cfg.type}' \u2014 they were still checked but likely belong on a different validation page.`);
+      out.structural.unshift(`${wrongType.length} row(s) in this group have TYPE \u2260 '${cfg.type}' \u2014 they were still checked but likely belong on a different validation page.`);
     }
     const allChecks = out.results.reduce((a, r) => a.concat(r.checks), []);
     const failCount = allChecks.filter(c => !c.pass && !c.info).length;
-    const infoCount = allChecks.filter(c => c.info).length;
     const pass = failCount === 0 && out.structural.length === 0;
-    return { ref, rows, results: out.results, structural: out.structural, pass, failCount, infoCount };
+    return { ref: g.value, groupBasis: g.basis, rows, results: out.results, structural: out.structural, pass, failCount };
   });
 
   return { cfg, missingHeaders, extraHeaders, groups };
 }
 
 // (browser build: no module.exports)
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { parseCSV, validateCSV, TYPE_CONFIG, EXPECTED_HEADERS, MANDATORY_FIELDS, round7, fmtNum };
+}
 
 </script>
 <script>
+const REFERENCE_SCENARIOS = [{"sheet":"PRI_NO_DIS","type":"PRI","title":"M-Commerce Paid Kit","desc":"Single product, VAT only (no excise, no discount).","rowCount":2,"displayRows":[{"REFERENCE_NO":"2453524054","ERP_ITEM_CODE":"102483788","DESCRIPTION":"M-Commerce Paid Kit","QUANTITY":"1","UNIT_PRICE":"689.65516","SELLING_AMOUNT":"689.65516","TAX_CODE":"VAT 16%","ITEM_TAX_CATEGORY":"0.16","LINE_TYPE":"TAX","TAXABLE_AMOUNT":"689.65516"},{"REFERENCE_NO":"2453524054","ERP_ITEM_CODE":"102483788","DESCRIPTION":"M-Commerce Paid Kit","QUANTITY":"250","UNIT_PRICE":"17.241379","SELLING_AMOUNT":"4310.34475","TAX_CODE":"","ITEM_TAX_CATEGORY":"","LINE_TYPE":"INVOICE","TAXABLE_AMOUNT":"4310.34475"}],"csv":"OPERATING_UNIT,CUSTOMER_NUMBER,CUSTOMER_LOCATION,TRANSACTION_NO,TRANSACTION_DATE,DESCRIPTION,CURRENCY,REFERENCE_NO,QUANTITY,UNIT_PRICE,SELLING_AMOUNT,ERP_ITEM_CODE,INVOICE_TYPE,TYPE,TRANSACTION_REF_NO,TRANSACTION_REF_DATE,PROCESS_FLAG,ERROR_MESSAGE,CREATION_DATE,CUSTOMER_ID,PROCESSING_DATE,ORG_ID,GL_DATE,ORGANIZATION_CODE,POSTED_TO_ERP,TAX_CODE,TAX_CODE_AMOUNT,ITEM_TAX_CATEGORY,ITEM_TAX_CATEGORY_AMOUNT,LINE_TYPE,TAXABLE_AMOUNT\r\n2815,90619,224915,2452002119722,2026-06-16 00:00:00,M-Commerce Paid Kit,KES,2453524054,1,689.65516,689.65516,102483788,INVOICE,PRI,,,I,,2026-06-16 19:15:39,,,,,39,,VAT 16%,,0.16,,TAX,689.65516\r\n2815,90619,224915,2452002119722,2026-06-16 00:00:00,M-Commerce Paid Kit,KES,2453524054,250,17.241379,4310.34475,102483788,INVOICE,PRI,,,I,,2026-06-16 19:15:39,,,,,39,,,,,,INVOICE,4310.34475\r\n"},{"sheet":"PRI_NO_DIS","type":"PRI","title":"Tozed Mifi + SIM bundle","desc":"Two different products in one order, VAT only on each.","rowCount":4,"displayRows":[{"REFERENCE_NO":"2453441101","ERP_ITEM_CODE":"104641528","DESCRIPTION":"Tozed M30S Pro Mifi","QUANTITY":"1","UNIT_PRICE":"2155.172414","SELLING_AMOUNT":"2155.172414","TAX_CODE":"","ITEM_TAX_CATEGORY":"","LINE_TYPE":"INVOICE","TAXABLE_AMOUNT":"2155.172414"},{"REFERENCE_NO":"2453441101","ERP_ITEM_CODE":"100093313","DESCRIPTION":"4G LTE 128K PrePaid Native S@t Half Multisim (2FF/3FF/4FF)- Promo","QUANTITY":"1","UNIT_PRICE":"0.862069","SELLING_AMOUNT":"0.862069","TAX_CODE":"","ITEM_TAX_CATEGORY":"","LINE_TYPE":"INVOICE","TAXABLE_AMOUNT":"0.862069"},{"REFERENCE_NO":"2453441101","ERP_ITEM_CODE":"104641528","DESCRIPTION":"Tozed M30S Pro Mifi","QUANTITY":"1","UNIT_PRICE":"344.82758624","SELLING_AMOUNT":"344.82758624","TAX_CODE":"VAT 16%","ITEM_TAX_CATEGORY":"0.16","LINE_TYPE":"TAX","TAXABLE_AMOUNT":"344.82758624"},{"REFERENCE_NO":"2453441101","ERP_ITEM_CODE":"100093313","DESCRIPTION":"4G LTE 128K PrePaid Native S@t Half Multisim (2FF/3FF/4FF)- Promo","QUANTITY":"1","UNIT_PRICE":"0.13793104","SELLING_AMOUNT":"0.13793104","TAX_CODE":"VAT 16%","ITEM_TAX_CATEGORY":"0.16","LINE_TYPE":"TAX","TAXABLE_AMOUNT":"0.13793104"}],"csv":"OPERATING_UNIT,CUSTOMER_NUMBER,CUSTOMER_LOCATION,TRANSACTION_NO,TRANSACTION_DATE,DESCRIPTION,CURRENCY,REFERENCE_NO,QUANTITY,UNIT_PRICE,SELLING_AMOUNT,ERP_ITEM_CODE,INVOICE_TYPE,TYPE,TRANSACTION_REF_NO,TRANSACTION_REF_DATE,PROCESS_FLAG,ERROR_MESSAGE,CREATION_DATE,CUSTOMER_ID,PROCESSING_DATE,ORG_ID,GL_DATE,ORGANIZATION_CODE,POSTED_TO_ERP,TAX_CODE,TAX_CODE_AMOUNT,ITEM_TAX_CATEGORY,ITEM_TAX_CATEGORY_AMOUNT,LINE_TYPE,TAXABLE_AMOUNT\r\n2815,155708,455530,2452002048852,2026-02-15 00:00:00,Tozed M30S Pro Mifi,KES,2453441101,1,2155.172414,2155.172414,104641528,INVOICE,PRI,,,I,,2026-02-15 13:25:02,,,,,21,,,,,,INVOICE,2155.172414\r\n2815,155708,455530,2452002048852,2026-02-15 00:00:00,4G LTE 128K PrePaid Native S@t Half Multisim (2FF/3FF/4FF)- Promo,KES,2453441101,1,0.862069,0.862069,100093313,INVOICE,PRI,,,I,,2026-02-15 13:25:02,,,,,21,,,,,,INVOICE,0.862069\r\n2815,155708,455530,2452002048852,2026-02-15 00:00:00,Tozed M30S Pro Mifi,KES,2453441101,1,344.82758624,344.82758624,104641528,INVOICE,PRI,,,I,,2026-02-15 13:25:02,,,,,21,,VAT 16%,,0.16,,TAX,344.82758624\r\n2815,155708,455530,2452002048852,2026-02-15 00:00:00,4G LTE 128K PrePaid Native S@t Half Multisim (2FF/3FF/4FF)- Promo,KES,2453441101,1,0.13793104,0.13793104,100093313,INVOICE,PRI,,,I,,2026-02-15 13:25:02,,,,,21,,VAT 16%,,0.16,,TAX,0.13793104\r\n"},{"sheet":"PRI_RET_NO_DIS","type":"SLR","title":"Tozed Mifi return","desc":"Single-product return, VAT only, no discount, no excise.","rowCount":2,"displayRows":[{"REFERENCE_NO":"2453475226","ERP_ITEM_CODE":"104641528","DESCRIPTION":"Tozed M30S Pro Mifi","QUANTITY":"-1","UNIT_PRICE":"2155.172414","SELLING_AMOUNT":"-2155.172414","TAX_CODE":"","ITEM_TAX_CATEGORY":"","LINE_TYPE":"INVOICE","TAXABLE_AMOUNT":"-2155.172414"},{"REFERENCE_NO":"2453475226","ERP_ITEM_CODE":"104641528","DESCRIPTION":"Tozed M30S Pro Mifi","QUANTITY":"1","UNIT_PRICE":"-344.82758624","SELLING_AMOUNT":"-344.82758624","TAX_CODE":"VAT 16%","ITEM_TAX_CATEGORY":"0.16","LINE_TYPE":"TAX","TAXABLE_AMOUNT":"-344.82758624"}],"csv":"OPERATING_UNIT,CUSTOMER_NUMBER,CUSTOMER_LOCATION,TRANSACTION_NO,TRANSACTION_DATE,DESCRIPTION,CURRENCY,REFERENCE_NO,QUANTITY,UNIT_PRICE,SELLING_AMOUNT,ERP_ITEM_CODE,INVOICE_TYPE,TYPE,TRANSACTION_REF_NO,TRANSACTION_REF_DATE,PROCESS_FLAG,ERROR_MESSAGE,CREATION_DATE,CUSTOMER_ID,PROCESSING_DATE,ORG_ID,GL_DATE,ORGANIZATION_CODE,POSTED_TO_ERP,TAX_CODE,TAX_CODE_AMOUNT,ITEM_TAX_CATEGORY,ITEM_TAX_CATEGORY_AMOUNT,LINE_TYPE,TAXABLE_AMOUNT\r\n2815,155708,455530,2452002078290,2026-04-09 00:00:00,Tozed M30S Pro Mifi,KES,2453475226,-1,2155.172414,-2155.172414,104641528,CREDIT MEMO,SLR,212452002048852,2026-02-15 11:09:50,I,,2026-04-09 13:26:51,,,,,16,,,,,,INVOICE,-2155.172414\r\n2815,155708,455530,2452002078290,2026-04-09 00:00:00,Tozed M30S Pro Mifi,KES,2453475226,1,-344.82758624,-344.82758624,104641528,CREDIT MEMO,SLR,212452002048852,2026-02-15 11:09:50,I,,2026-04-09 13:26:51,,,,,16,,VAT 16%,,0.16,,TAX,-344.82758624\r\n"},{"sheet":"PRI_DUTY","type":"PRI","title":"Scratch Cards bundle (4 products)","desc":"Four different scratch-card denominations in one order, each with its own EXCISE + VAT + upfront-discount lines — the multi-product case.","rowCount":16,"displayRows":[{"REFERENCE_NO":"2453014433","ERP_ITEM_CODE":"100007050","DESCRIPTION":"Scratch Cards, 10","QUANTITY":"1","UNIT_PRICE":"1124.4377805","SELLING_AMOUNT":"1124.4377805","TAX_CODE":"KE-EXCISE DUTY","ITEM_TAX_CATEGORY":"0.15","LINE_TYPE":"TAX","TAXABLE_AMOUNT":"1124.4377805"},{"REFERENCE_NO":"2453014433","ERP_ITEM_CODE":"100007054","DESCRIPTION":"Scratch Cards, 20","QUANTITY":"1","UNIT_PRICE":"2248.8755625","SELLING_AMOUNT":"2248.8755625","TAX_CODE":"KE-EXCISE DUTY","ITEM_TAX_CATEGORY":"0.15","LINE_TYPE":"TAX","TAXABLE_AMOUNT":"2248.8755625"},{"REFERENCE_NO":"2453014433","ERP_ITEM_CODE":"100007049","DESCRIPTION":"Scratch Card, 50","QUANTITY":"1","UNIT_PRICE":"4497.7511244","SELLING_AMOUNT":"4497.7511244","TAX_CODE":"KE-EXCISE DUTY","ITEM_TAX_CATEGORY":"0.15","LINE_TYPE":"TAX","TAXABLE_AMOUNT":"4497.7511244"},{"REFERENCE_NO":"2453014433","ERP_ITEM_CODE":"100007051","DESCRIPTION":"Scratch Cards, 100","QUANTITY":"1","UNIT_PRICE":"2248.8755622","SELLING_AMOUNT":"2248.8755622","TAX_CODE":"KE-EXCISE DUTY","ITEM_TAX_CATEGORY":"0.15","LINE_TYPE":"TAX","TAXABLE_AMOUNT":"2248.8755622"},{"REFERENCE_NO":"2453014433","ERP_ITEM_CODE":"100007050","DESCRIPTION":"Scratch Cards, 10","QUANTITY":"1000","UNIT_PRICE":"7.49625187","SELLING_AMOUNT":"7496.25187","TAX_CODE":"","ITEM_TAX_CATEGORY":"","LINE_TYPE":"INVOICE","TAXABLE_AMOUNT":"7496.25187"},{"REFERENCE_NO":"2453014433","ERP_ITEM_CODE":"100007054","DESCRIPTION":"Scratch Cards, 20","QUANTITY":"1000","UNIT_PRICE":"14.99250375","SELLING_AMOUNT":"14992.50375","TAX_CODE":"","ITEM_TAX_CATEGORY":"","LINE_TYPE":"INVOICE","TAXABLE_AMOUNT":"14992.50375"},{"REFERENCE_NO":"2453014433","ERP_ITEM_CODE":"100007049","DESCRIPTION":"Scratch Card, 50","QUANTITY":"800","UNIT_PRICE":"37.48125937","SELLING_AMOUNT":"29985.007496","TAX_CODE":"","ITEM_TAX_CATEGORY":"","LINE_TYPE":"INVOICE","TAXABLE_AMOUNT":"29985.007496"},{"REFERENCE_NO":"2453014433","ERP_ITEM_CODE":"100007051","DESCRIPTION":"Scratch Cards, 100","QUANTITY":"200","UNIT_PRICE":"74.96251874","SELLING_AMOUNT":"14992.503748","TAX_CODE":"","ITEM_TAX_CATEGORY":"","LINE_TYPE":"INVOICE","TAXABLE_AMOUNT":"14992.503748"},{"REFERENCE_NO":"2453014433","ERP_ITEM_CODE":"100007050","DESCRIPTION":"Scratch Cards, 10","QUANTITY":"1","UNIT_PRICE":"1379.31034408","SELLING_AMOUNT":"1379.31034408","TAX_CODE":"VAT 16%","ITEM_TAX_CATEGORY":"0.16","LINE_TYPE":"TAX","TAXABLE_AMOUNT":"1379.31034408"},{"REFERENCE_NO":"2453014433","ERP_ITEM_CODE":"100007054","DESCRIPTION":"Scratch Cards, 20","QUANTITY":"1","UNIT_PRICE":"2758.62069","SELLING_AMOUNT":"2758.62069","TAX_CODE":"VAT 16%","ITEM_TAX_CATEGORY":"0.16","LINE_TYPE":"TAX","TAXABLE_AMOUNT":"2758.62069"},{"REFERENCE_NO":"2453014433","ERP_ITEM_CODE":"100007049","DESCRIPTION":"Scratch Card, 50","QUANTITY":"1","UNIT_PRICE":"5517.241379264","SELLING_AMOUNT":"5517.241379264","TAX_CODE":"VAT 16%","ITEM_TAX_CATEGORY":"0.16","LINE_TYPE":"TAX","TAXABLE_AMOUNT":"5517.241379264"},{"REFERENCE_NO":"2453014433","ERP_ITEM_CODE":"100007051","DESCRIPTION":"Scratch Cards, 100","QUANTITY":"1","UNIT_PRICE":"2758.620689632","SELLING_AMOUNT":"2758.620689632","TAX_CODE":"VAT 16%","ITEM_TAX_CATEGORY":"0.16","LINE_TYPE":"TAX","TAXABLE_AMOUNT":"2758.620689632"},{"REFERENCE_NO":"2453014433","ERP_ITEM_CODE":"103293428","DESCRIPTION":"Upfront Discount-5% of Scratch Cards 10","QUANTITY":"1000","UNIT_PRICE":"-0.5","SELLING_AMOUNT":"-500","TAX_CODE":"","ITEM_TAX_CATEGORY":"","LINE_TYPE":"INVOICE","TAXABLE_AMOUNT":"-500"},{"REFERENCE_NO":"2453014433","ERP_ITEM_CODE":"100090723","DESCRIPTION":"Upfront Discount-6.5% of Scratch Cards 20","QUANTITY":"1000","UNIT_PRICE":"-1.3","SELLING_AMOUNT":"-1300","TAX_CODE":"","ITEM_TAX_CATEGORY":"","LINE_TYPE":"INVOICE","TAXABLE_AMOUNT":"-1300"},{"REFERENCE_NO":"2453014433","ERP_ITEM_CODE":"100090717","DESCRIPTION":"Upfront Discount-6.5% of Scratch Cards 50","QUANTITY":"800","UNIT_PRICE":"-3.25","SELLING_AMOUNT":"-2600","TAX_CODE":"","ITEM_TAX_CATEGORY":"","LINE_TYPE":"INVOICE","TAXABLE_AMOUNT":"-2600"},{"REFERENCE_NO":"2453014433","ERP_ITEM_CODE":"100090721","DESCRIPTION":"Upfront Discount-6.5% of Scratch Cards 100","QUANTITY":"200","UNIT_PRICE":"-6.5","SELLING_AMOUNT":"-1300","TAX_CODE":"","ITEM_TAX_CATEGORY":"","LINE_TYPE":"INVOICE","TAXABLE_AMOUNT":"-1300"}],"csv":"OPERATING_UNIT,CUSTOMER_NUMBER,CUSTOMER_LOCATION,TRANSACTION_NO,TRANSACTION_DATE,DESCRIPTION,CURRENCY,REFERENCE_NO,QUANTITY,UNIT_PRICE,SELLING_AMOUNT,ERP_ITEM_CODE,INVOICE_TYPE,TYPE,TRANSACTION_REF_NO,TRANSACTION_REF_DATE,PROCESS_FLAG,ERROR_MESSAGE,CREATION_DATE,CUSTOMER_ID,PROCESSING_DATE,ORG_ID,GL_DATE,ORGANIZATION_CODE,POSTED_TO_ERP,TAX_CODE,TAX_CODE_AMOUNT,ITEM_TAX_CATEGORY,ITEM_TAX_CATEGORY_AMOUNT,LINE_TYPE,TAXABLE_AMOUNT\r\n2815,155242,452450,2452001687569,2024-11-01 00:00:00,\"Scratch Cards, 10\",KES,2453014433,1,1124.4377805,1124.4377805,100007050,INVOICE,PRI,,,I,,2024-11-01 16:22:49,,,,,0A6,,KE-EXCISE DUTY,,0.15,,TAX,1124.4377805\r\n2815,155242,452450,2452001687569,2024-11-01 00:00:00,\"Scratch Cards, 20\",KES,2453014433,1,2248.8755625,2248.8755625,100007054,INVOICE,PRI,,,I,,2024-11-01 16:22:49,,,,,0A6,,KE-EXCISE DUTY,,0.15,,TAX,2248.8755625\r\n2815,155242,452450,2452001687569,2024-11-01 00:00:00,\"Scratch Card, 50\",KES,2453014433,1,4497.7511244,4497.7511244,100007049,INVOICE,PRI,,,I,,2024-11-01 16:22:49,,,,,0A6,,KE-EXCISE DUTY,,0.15,,TAX,4497.7511244\r\n2815,155242,452450,2452001687569,2024-11-01 00:00:00,\"Scratch Cards, 100\",KES,2453014433,1,2248.8755622,2248.8755622,100007051,INVOICE,PRI,,,I,,2024-11-01 16:22:49,,,,,0A6,,KE-EXCISE DUTY,,0.15,,TAX,2248.8755622\r\n2815,155242,452450,2452001687569,2024-11-01 00:00:00,\"Scratch Cards, 10\",KES,2453014433,1000,7.49625187,7496.25187,100007050,INVOICE,PRI,,,I,,2024-11-01 16:22:49,,,,,0A6,,,,,,INVOICE,7496.25187\r\n2815,155242,452450,2452001687569,2024-11-01 00:00:00,\"Scratch Cards, 20\",KES,2453014433,1000,14.99250375,14992.50375,100007054,INVOICE,PRI,,,I,,2024-11-01 16:22:49,,,,,0A6,,,,,,INVOICE,14992.50375\r\n2815,155242,452450,2452001687569,2024-11-01 00:00:00,\"Scratch Card, 50\",KES,2453014433,800,37.48125937,29985.007496,100007049,INVOICE,PRI,,,I,,2024-11-01 16:22:49,,,,,0A6,,,,,,INVOICE,29985.007496\r\n2815,155242,452450,2452001687569,2024-11-01 00:00:00,\"Scratch Cards, 100\",KES,2453014433,200,74.96251874,14992.503748,100007051,INVOICE,PRI,,,I,,2024-11-01 16:22:49,,,,,0A6,,,,,,INVOICE,14992.503748\r\n2815,155242,452450,2452001687569,2024-11-01 00:00:00,\"Scratch Cards, 10\",KES,2453014433,1,1379.31034408,1379.31034408,100007050,INVOICE,PRI,,,I,,2024-11-01 16:22:49,,,,,0A6,,VAT 16%,,0.16,,TAX,1379.31034408\r\n2815,155242,452450,2452001687569,2024-11-01 00:00:00,\"Scratch Cards, 20\",KES,2453014433,1,2758.62069,2758.62069,100007054,INVOICE,PRI,,,I,,2024-11-01 16:22:49,,,,,0A6,,VAT 16%,,0.16,,TAX,2758.62069\r\n2815,155242,452450,2452001687569,2024-11-01 00:00:00,\"Scratch Card, 50\",KES,2453014433,1,5517.241379264,5517.241379264,100007049,INVOICE,PRI,,,I,,2024-11-01 16:22:49,,,,,0A6,,VAT 16%,,0.16,,TAX,5517.241379264\r\n2815,155242,452450,2452001687569,2024-11-01 00:00:00,\"Scratch Cards, 100\",KES,2453014433,1,2758.620689632,2758.620689632,100007051,INVOICE,PRI,,,I,,2024-11-01 16:22:49,,,,,0A6,,VAT 16%,,0.16,,TAX,2758.620689632\r\n2815,155242,452450,2452001687569,2024-11-01 00:00:00,Upfront Discount-5% of Scratch Cards 10,KES,2453014433,1000,-0.5,-500,103293428,INVOICE,PRI,,,I,,2024-11-01 16:22:49,,,,,0A6,,,,,,INVOICE,-500\r\n2815,155242,452450,2452001687569,2024-11-01 00:00:00,Upfront Discount-6.5% of Scratch Cards 20,KES,2453014433,1000,-1.3,-1300,100090723,INVOICE,PRI,,,I,,2024-11-01 16:22:49,,,,,0A6,,,,,,INVOICE,-1300\r\n2815,155242,452450,2452001687569,2024-11-01 00:00:00,Upfront Discount-6.5% of Scratch Cards 50,KES,2453014433,800,-3.25,-2600,100090717,INVOICE,PRI,,,I,,2024-11-01 16:22:49,,,,,0A6,,,,,,INVOICE,-2600\r\n2815,155242,452450,2452001687569,2024-11-01 00:00:00,Upfront Discount-6.5% of Scratch Cards 100,KES,2453014433,200,-6.5,-1300,100090721,INVOICE,PRI,,,I,,2024-11-01 16:22:49,,,,,0A6,,,,,,INVOICE,-1300\r\n"},{"sheet":"PRI_DUTY_RETURN","type":"SLR","title":"Scratch Cards 10 — partial return","desc":"A return of just ONE product (Scratch Cards 10) out of the 4-product order above, with its discount, excise and VAT all reversed.","rowCount":4,"displayRows":[{"REFERENCE_NO":"2453117222","ERP_ITEM_CODE":"100007050","DESCRIPTION":"Scratch Cards, 10","QUANTITY":"-1000","UNIT_PRICE":"7.49625187","SELLING_AMOUNT":"-7496.25187","TAX_CODE":"","ITEM_TAX_CATEGORY":"","LINE_TYPE":"INVOICE","TAXABLE_AMOUNT":"-7496.25187"},{"REFERENCE_NO":"2453117222","ERP_ITEM_CODE":"100007050","DESCRIPTION":"Scratch Cards, 10","QUANTITY":"1","UNIT_PRICE":"-1379.31034408","SELLING_AMOUNT":"-1379.31034408","TAX_CODE":"VAT 16%","ITEM_TAX_CATEGORY":"0.16","LINE_TYPE":"TAX","TAXABLE_AMOUNT":"-1379.31034408"},{"REFERENCE_NO":"2453117222","ERP_ITEM_CODE":"103293428","DESCRIPTION":"Upfront Discount-5% of Scratch Cards 10","QUANTITY":"-1000","UNIT_PRICE":"-0.5","SELLING_AMOUNT":"500","TAX_CODE":"","ITEM_TAX_CATEGORY":"","LINE_TYPE":"INVOICE","TAXABLE_AMOUNT":"500"},{"REFERENCE_NO":"2453117222","ERP_ITEM_CODE":"100007050","DESCRIPTION":"Scratch Cards, 10","QUANTITY":"1","UNIT_PRICE":"-1124.4377805","SELLING_AMOUNT":"-1124.4377805","TAX_CODE":"KE-EXCISE DUTY","ITEM_TAX_CATEGORY":"0.15","LINE_TYPE":"TAX","TAXABLE_AMOUNT":"-1124.4377805"}],"csv":"OPERATING_UNIT,CUSTOMER_NUMBER,CUSTOMER_LOCATION,TRANSACTION_NO,TRANSACTION_DATE,DESCRIPTION,CURRENCY,REFERENCE_NO,QUANTITY,UNIT_PRICE,SELLING_AMOUNT,ERP_ITEM_CODE,INVOICE_TYPE,TYPE,TRANSACTION_REF_NO,TRANSACTION_REF_DATE,PROCESS_FLAG,ERROR_MESSAGE,CREATION_DATE,CUSTOMER_ID,PROCESSING_DATE,ORG_ID,GL_DATE,ORGANIZATION_CODE,POSTED_TO_ERP,TAX_CODE,TAX_CODE_AMOUNT,ITEM_TAX_CATEGORY,ITEM_TAX_CATEGORY_AMOUNT,LINE_TYPE,TAXABLE_AMOUNT\r\n2815,155242,452450,2452001774924,2025-02-11 00:00:00,\"Scratch Cards, 10\",KES,2453117222,-1000,7.49625187,-7496.25187,100007050,CREDIT MEMO,SLR,212452001687569,2024-11-01 14:21:36,I,,2025-02-11 19:24:03,,,,,16,,,,,,INVOICE,-7496.25187\r\n2815,155242,452450,2452001774924,2025-02-11 00:00:00,\"Scratch Cards, 10\",KES,2453117222,1,-1379.31034408,-1379.31034408,100007050,CREDIT MEMO,SLR,212452001687569,2024-11-01 14:21:36,I,,2025-02-11 19:24:03,,,,,16,,VAT 16%,,0.16,,TAX,-1379.31034408\r\n2815,155242,452450,2452001774924,2025-02-11 00:00:00,Upfront Discount-5% of Scratch Cards 10,KES,2453117222,-1000,-0.5,500,103293428,CREDIT MEMO,SLR,212452001687569,2024-11-01 14:21:36,I,,2025-02-11 19:24:03,,,,,16,,,,,,INVOICE,500\r\n2815,155242,452450,2452001774924,2025-02-11 00:00:00,\"Scratch Cards, 10\",KES,2453117222,1,-1124.4377805,-1124.4377805,100007050,CREDIT MEMO,SLR,212452001687569,2024-11-01 14:21:36,I,,2025-02-11 19:24:03,,,,,16,,KE-EXCISE DUTY,,0.15,,TAX,-1124.4377805\r\n"},{"sheet":"POS","type":"POS","title":"Scratch Cards 500 + 1000","desc":"Sell-out with two products in one transaction. REFERENCE_NO is blank in this real export — a live example of the mandatory-field check firing.","rowCount":2,"displayRows":[{"REFERENCE_NO":"","ERP_ITEM_CODE":"100007057","DESCRIPTION":"Scratch Cards, 500","QUANTITY":"1","UNIT_PRICE":"374.8125937","SELLING_AMOUNT":"374.8125937","TAX_CODE":"KE CMPD EXCISE + VAT","ITEM_TAX_CATEGORY":"","LINE_TYPE":"","TAXABLE_AMOUNT":""},{"REFERENCE_NO":"","ERP_ITEM_CODE":"100007052","DESCRIPTION":"Scratch Cards, 1000","QUANTITY":"3","UNIT_PRICE":"749.62518741","SELLING_AMOUNT":"2248.87556223","TAX_CODE":"KE CMPD EXCISE + VAT","ITEM_TAX_CATEGORY":"","LINE_TYPE":"","TAXABLE_AMOUNT":""}],"csv":"OPERATING_UNIT,CUSTOMER_NUMBER,CUSTOMER_LOCATION,TRANSACTION_NO,TRANSACTION_DATE,DESCRIPTION,CURRENCY,REFERENCE_NO,QUANTITY,UNIT_PRICE,SELLING_AMOUNT,ERP_ITEM_CODE,INVOICE_TYPE,TYPE,TRANSACTION_REF_NO,TRANSACTION_REF_DATE,PROCESS_FLAG,ERROR_MESSAGE,CREATION_DATE,CUSTOMER_ID,PROCESSING_DATE,ORG_ID,GL_DATE,ORGANIZATION_CODE,POSTED_TO_ERP,TAX_CODE,TAX_CODE_AMOUNT,ITEM_TAX_CATEGORY,ITEM_TAX_CATEGORY_AMOUNT,LINE_TYPE,TAXABLE_AMOUNT\r\n2815,180493,562679,2452002119801,2026-06-16 00:00:00,\"Scratch Cards, 500\",KES,,1,374.8125937,374.8125937,100007057,INVOICE,POS,,,I,,2026-06-16 22:25:10,,,,,16C,,KE CMPD EXCISE + VAT,33.4,,,,\r\n2815,180493,562679,2452002119801,2026-06-16 00:00:00,\"Scratch Cards, 1000\",KES,,3,749.62518741,2248.87556223,100007052,INVOICE,POS,,,I,,2026-06-16 22:25:10,,,,,16C,,KE CMPD EXCISE + VAT,33.4,,,,\r\n"},{"sheet":"POS","type":"POS","title":"Scratch Cards 1000 + 250","desc":"Another two-product sell-out example, compound EXCISE+VAT tax code shown in TAX_CODE_AMOUNT.","rowCount":2,"displayRows":[{"REFERENCE_NO":"","ERP_ITEM_CODE":"100007052","DESCRIPTION":"Scratch Cards, 1000","QUANTITY":"8","UNIT_PRICE":"749.62518741","SELLING_AMOUNT":"5997.00149928","TAX_CODE":"KE CMPD EXCISE + VAT","ITEM_TAX_CATEGORY":"","LINE_TYPE":"","TAXABLE_AMOUNT":""},{"REFERENCE_NO":"","ERP_ITEM_CODE":"100007055","DESCRIPTION":"Scratch Cards, 250","QUANTITY":"8","UNIT_PRICE":"187.4062969","SELLING_AMOUNT":"1499.2503752","TAX_CODE":"KE CMPD EXCISE + VAT","ITEM_TAX_CATEGORY":"","LINE_TYPE":"","TAXABLE_AMOUNT":""}],"csv":"OPERATING_UNIT,CUSTOMER_NUMBER,CUSTOMER_LOCATION,TRANSACTION_NO,TRANSACTION_DATE,DESCRIPTION,CURRENCY,REFERENCE_NO,QUANTITY,UNIT_PRICE,SELLING_AMOUNT,ERP_ITEM_CODE,INVOICE_TYPE,TYPE,TRANSACTION_REF_NO,TRANSACTION_REF_DATE,PROCESS_FLAG,ERROR_MESSAGE,CREATION_DATE,CUSTOMER_ID,PROCESSING_DATE,ORG_ID,GL_DATE,ORGANIZATION_CODE,POSTED_TO_ERP,TAX_CODE,TAX_CODE_AMOUNT,ITEM_TAX_CATEGORY,ITEM_TAX_CATEGORY_AMOUNT,LINE_TYPE,TAXABLE_AMOUNT\r\n2815,89513,223279,2452002112204,2026-06-02 00:00:00,\"Scratch Cards, 1000\",KES,,8,749.62518741,5997.00149928,100007052,INVOICE,POS,,,I,,2026-06-02 19:17:24,,,,,6,,KE CMPD EXCISE + VAT,33.4,,,,\r\n2815,89513,223279,2452002112204,2026-06-02 00:00:00,\"Scratch Cards, 250\",KES,,8,187.4062969,1499.2503752,100007055,INVOICE,POS,,,I,,2026-06-02 19:17:24,,,,,6,,KE CMPD EXCISE + VAT,33.4,,,,\r\n"},{"sheet":"POS_RETURN","type":"PRV","title":"Scratch Cards 250 + 1000 — return","desc":"Sell-out return with two products credited back in one transaction.","rowCount":2,"displayRows":[{"REFERENCE_NO":"","ERP_ITEM_CODE":"100007055","DESCRIPTION":"Scratch Cards, 250","QUANTITY":"-8","UNIT_PRICE":"187.4062969","SELLING_AMOUNT":"-1499.2503752","TAX_CODE":"KE CMPD EXCISE + VAT","ITEM_TAX_CATEGORY":"","LINE_TYPE":"","TAXABLE_AMOUNT":""},{"REFERENCE_NO":"","ERP_ITEM_CODE":"100007052","DESCRIPTION":"Scratch Cards, 1000","QUANTITY":"-8","UNIT_PRICE":"749.62518741","SELLING_AMOUNT":"-5997.00149928","TAX_CODE":"KE CMPD EXCISE + VAT","ITEM_TAX_CATEGORY":"","LINE_TYPE":"","TAXABLE_AMOUNT":""}],"csv":"OPERATING_UNIT,CUSTOMER_NUMBER,CUSTOMER_LOCATION,TRANSACTION_NO,TRANSACTION_DATE,DESCRIPTION,CURRENCY,REFERENCE_NO,QUANTITY,UNIT_PRICE,SELLING_AMOUNT,ERP_ITEM_CODE,INVOICE_TYPE,TYPE,TRANSACTION_REF_NO,TRANSACTION_REF_DATE,PROCESS_FLAG,ERROR_MESSAGE,CREATION_DATE,CUSTOMER_ID,PROCESSING_DATE,ORG_ID,GL_DATE,ORGANIZATION_CODE,POSTED_TO_ERP,TAX_CODE,TAX_CODE_AMOUNT,ITEM_TAX_CATEGORY,ITEM_TAX_CATEGORY_AMOUNT,LINE_TYPE,TAXABLE_AMOUNT\r\n2815,89513,223279,2452002112508,2026-06-03 00:00:00,\"Scratch Cards, 250\",KES,,-8,187.4062969,-1499.2503752,100007055,CREDIT MEMO,PRV,,,I,,2026-06-03 10:17:52,,,,,6,,KE CMPD EXCISE + VAT,33.4,,,,\r\n2815,89513,223279,2452002112508,2026-06-03 00:00:00,\"Scratch Cards, 1000\",KES,,-8,749.62518741,-5997.00149928,100007052,CREDIT MEMO,PRV,,,I,,2026-06-03 10:17:52,,,,,6,,KE CMPD EXCISE + VAT,33.4,,,,\r\n"},{"sheet":"PRI_E-VOUCHER","type":"PRI","title":"Electronic Vouchers","desc":"Single product at very high quantity (2,000,000), with excise, VAT and an upfront discount.","rowCount":4,"displayRows":[{"REFERENCE_NO":"2453523655","ERP_ITEM_CODE":"100007533","DESCRIPTION":"Electronic Vouchers","QUANTITY":"1","UNIT_PRICE":"238380.81","SELLING_AMOUNT":"238380.81","TAX_CODE":"KE-EXCISE DUTY","ITEM_TAX_CATEGORY":"0.15","LINE_TYPE":"TAX","TAXABLE_AMOUNT":"238380.81"},{"REFERENCE_NO":"2453523655","ERP_ITEM_CODE":"100007533","DESCRIPTION":"Electronic Vouchers","QUANTITY":"2000000","UNIT_PRICE":"0.7946027","SELLING_AMOUNT":"1589205.4","TAX_CODE":"","ITEM_TAX_CATEGORY":"","LINE_TYPE":"INVOICE","TAXABLE_AMOUNT":"1589205.4"},{"REFERENCE_NO":"2453523655","ERP_ITEM_CODE":"100091204","DESCRIPTION":"8% upfront discount on Easy   recharge","QUANTITY":"2000000","UNIT_PRICE":"-0.06","SELLING_AMOUNT":"-120000","TAX_CODE":"","ITEM_TAX_CATEGORY":"","LINE_TYPE":"INVOICE","TAXABLE_AMOUNT":"-120000"},{"REFERENCE_NO":"2453523655","ERP_ITEM_CODE":"100007533","DESCRIPTION":"Electronic Vouchers","QUANTITY":"1","UNIT_PRICE":"292413.7936","SELLING_AMOUNT":"292413.7936","TAX_CODE":"VAT 16%","ITEM_TAX_CATEGORY":"0.16","LINE_TYPE":"TAX","TAXABLE_AMOUNT":"292413.7936"}],"csv":"OPERATING_UNIT,CUSTOMER_NUMBER,CUSTOMER_LOCATION,TRANSACTION_NO,TRANSACTION_DATE,DESCRIPTION,CURRENCY,REFERENCE_NO,QUANTITY,UNIT_PRICE,SELLING_AMOUNT,ERP_ITEM_CODE,INVOICE_TYPE,TYPE,TRANSACTION_REF_NO,TRANSACTION_REF_DATE,PROCESS_FLAG,ERROR_MESSAGE,CREATION_DATE,CUSTOMER_ID,PROCESSING_DATE,ORG_ID,GL_DATE,ORGANIZATION_CODE,POSTED_TO_ERP,TAX_CODE,TAX_CODE_AMOUNT,ITEM_TAX_CATEGORY,ITEM_TAX_CATEGORY_AMOUNT,LINE_TYPE,TAXABLE_AMOUNT\r\n2815,139076,383956,2452002119381,2026-06-16 00:00:00,Electronic Vouchers,KES,2453523655,1,238380.81,238380.81,100007533,INVOICE,PRI,,,I,,2026-06-16 16:18:16,,,,,36,,KE-EXCISE DUTY,,0.15,,TAX,238380.81\r\n2815,139076,383956,2452002119381,2026-06-16 00:00:00,Electronic Vouchers,KES,2453523655,2000000,0.7946027,1589205.4,100007533,INVOICE,PRI,,,I,,2026-06-16 16:18:16,,,,,36,,,,,,INVOICE,1589205.4\r\n2815,139076,383956,2452002119381,2026-06-16 00:00:00,8% upfront discount on Easy   recharge,KES,2453523655,2000000,-0.06,-120000,100091204,INVOICE,PRI,,,I,,2026-06-16 16:18:16,,,,,36,,,,,,INVOICE,-120000\r\n2815,139076,383956,2452002119381,2026-06-16 00:00:00,Electronic Vouchers,KES,2453523655,1,292413.7936,292413.7936,100007533,INVOICE,PRI,,,I,,2026-06-16 16:18:16,,,,,36,,VAT 16%,,0.16,,TAX,292413.7936\r\n"}];
+</script>
+<script>
 // =====================================================================
-// UI wiring for the ERP staging validator
+// UI wiring for the ERP staging validator (v2)
 // =====================================================================
 (function () {
   const PAGES = [
@@ -642,7 +821,7 @@ function validateCSV(text, typeKey) {
       subtitle: 'PRC_INSERT_ERP_SELLIN_STAGING',
       sheet: 'ERP_SELLIN_STAGING',
       heading: 'Sell-In staging \u2014 PRI',
-      desc: 'Validates rows produced when a completed SELLIN order is staged: a base INVOICE line, an optional EXCISE line, an optional VAT line, and an optional DISCOUNT line \u2014 all sharing one REFERENCE_NO (the ORDER_ID).',
+      desc: 'Validates rows produced when a completed SELLIN order is staged: a base INVOICE line, an optional EXCISE line, an optional VAT line, and an optional DISCOUNT line per product \u2014 all sharing one REFERENCE_NO (the ORDER_ID). Orders with several products in one REFERENCE_NO are supported: each product is matched to its own tax and discount rows automatically.',
       sample: 'PRI_SAMPLE'
     },
     {
@@ -652,7 +831,7 @@ function validateCSV(text, typeKey) {
       subtitle: 'PRC_INSERT_ERP_SELLIN_RETURN_STAGING',
       sheet: 'ERP_SELLIN_RETURN_STAGING',
       heading: 'Sell-In Return staging \u2014 SLR',
-      desc: 'Validates CREDIT MEMO rows produced for a completed SELLIN_RETURN order \u2014 same row shapes as PRI (base / EXCISE / VAT / DISCOUNT) but sign-flipped, and always carrying TRANSACTION_REF_NO/DATE back to the original sell-in order.',
+      desc: 'Validates CREDIT MEMO rows produced for a completed SELLIN_RETURN order \u2014 same row shapes as PRI (base / EXCISE / VAT / DISCOUNT, one set per product) but sign-flipped, and always carrying TRANSACTION_REF_NO/DATE back to the original sell-in order.',
       sample: 'SLR_SAMPLE'
     },
     {
@@ -662,7 +841,7 @@ function validateCSV(text, typeKey) {
       subtitle: 'PRC_INSERT_ERP_SELLOUT_STAGING',
       sheet: 'ERP_SELLOUT_STAGING',
       heading: 'Sell-Out staging \u2014 POS',
-      desc: 'Validates rows produced for a completed SELLOUT order. SELLOUT staging never emits tax or discount rows \u2014 one INVOICE row per order line, LINE_TYPE always blank.',
+      desc: 'Validates rows produced for a completed SELLOUT order. SELLOUT staging never emits separate tax or discount rows \u2014 one INVOICE row per product, LINE_TYPE always blank. Multiple products in one transaction are validated independently.',
       sample: 'POS_SAMPLE'
     },
     {
@@ -679,23 +858,35 @@ function validateCSV(text, typeKey) {
 
   const SAMPLES = {
     PRI_SAMPLE: `OPERATING_UNIT,CUSTOMER_NUMBER,CUSTOMER_LOCATION,TRANSACTION_NO,TRANSACTION_DATE,DESCRIPTION,CURRENCY,REFERENCE_NO,QUANTITY,UNIT_PRICE,SELLING_AMOUNT,ERP_ITEM_CODE,INVOICE_TYPE,TYPE,TRANSACTION_REF_NO,TRANSACTION_REF_DATE,PROCESS_FLAG,ERROR_MESSAGE,CREATION_DATE,CUSTOMER_ID,PROCESSING_DATE,ORG_ID,GL_DATE,ORGANIZATION_CODE,POSTED_TO_ERP,TAX_CODE,TAX_CODE_AMOUNT,ITEM_TAX_CATEGORY,ITEM_TAX_CATEGORY_AMOUNT,LINE_TYPE,TAXABLE_AMOUNT
-2815,229493,610676,2542542000472480,2026-07-08 14:30:56.000,,KES,2549990072070,1,749.625187,749.625187,100007052,INVOICE,PRI,,,N,,2026-07-08 14:35:26.000,3000121053,2026-07-08 14:35:26.000,2815,,016,Y,,,,,INVOICE,763.3587779
-2815,229493,610676,2542542000472480,2026-07-08 14:30:56.000,,KES,2549990072070,1,-65,-65,100090722,INVOICE,PRI,,,N,,2026-07-08 14:35:26.000,3000121053,2026-07-08 14:35:26.000,2815,,016,Y,,,,,INVOICE,-65
-2815,229493,610676,2542542000472480,2026-07-08 14:30:56.000,,KES,2549990072070,1,137.9310343,137.9310343,100007052,INVOICE,PRI,,,N,,2026-07-08 14:35:26.000,3000121053,2026-07-08 14:35:26.000,2815,,016,Y,VAT 16%,,16.0 %,,TAX,137.9310343
-2815,229493,610676,2542542000472480,2026-07-08 14:30:56.000,,KES,2549990072070,1,112.443778,112.443778,100007052,INVOICE,PRI,,,N,,2026-07-08 14:35:26.000,3000121053,2026-07-08 14:35:26.000,2815,,016,Y,KE-EXCISE DUTY,,15.0 %,,TAX,114.5038167`,
+2815,229493,610676,2542542000472480,2026-07-08 14:30:56.000,,KES,2549990072070,1,749.625187,749.625187,100007052,INVOICE,PRI,,,N,,2026-07-08 14:35:26.000,3000121053,2026-07-08 14:35:26.000,2815,,016,N,,,,,INVOICE,763.3587779
+2815,229493,610676,2542542000472480,2026-07-08 14:30:56.000,,KES,2549990072070,1,-65,-65,100090722,INVOICE,PRI,,,N,,2026-07-08 14:35:26.000,3000121053,2026-07-08 14:35:26.000,2815,,016,N,,,,,INVOICE,-65
+2815,229493,610676,2542542000472480,2026-07-08 14:30:56.000,,KES,2549990072070,1,137.9310343,137.9310343,100007052,INVOICE,PRI,,,N,,2026-07-08 14:35:26.000,3000121053,2026-07-08 14:35:26.000,2815,,016,N,VAT 16%,,16.0 %,,TAX,137.9310343
+2815,229493,610676,2542542000472480,2026-07-08 14:30:56.000,,KES,2549990072070,1,112.443778,112.443778,100007052,INVOICE,PRI,,,N,,2026-07-08 14:35:26.000,3000121053,2026-07-08 14:35:26.000,2815,,016,N,KE-EXCISE DUTY,,15.0 %,,TAX,114.5038167`,
     SLR_SAMPLE: `OPERATING_UNIT,CUSTOMER_NUMBER,CUSTOMER_LOCATION,TRANSACTION_NO,TRANSACTION_DATE,DESCRIPTION,CURRENCY,REFERENCE_NO,QUANTITY,UNIT_PRICE,SELLING_AMOUNT,ERP_ITEM_CODE,INVOICE_TYPE,TYPE,TRANSACTION_REF_NO,TRANSACTION_REF_DATE,PROCESS_FLAG,ERROR_MESSAGE,CREATION_DATE,CUSTOMER_ID,PROCESSING_DATE,ORG_ID,GL_DATE,ORGANIZATION_CODE,POSTED_TO_ERP,TAX_CODE,TAX_CODE_AMOUNT,ITEM_TAX_CATEGORY,ITEM_TAX_CATEGORY_AMOUNT,LINE_TYPE,TAXABLE_AMOUNT
-2815,229493,610676,2542542000472490,2026-07-08 18:46:05.000,,KES,2549990072099,-1,749.625187,-749.625187,100007052,CREDIT MEMO,SLR,2549990072070,2026-07-08 14:29:34.000,N,,2026-07-08 18:57:55.000,3000121053,2026-07-08 18:57:55.000,2815,,016,Y,,,,,INVOICE,-749.625187
-2815,229493,610676,2542542000472490,2026-07-08 18:46:05.000,,KES,2549990072099,-1,-65,65,100090722,CREDIT MEMO,SLR,2549990072070,2026-07-08 14:29:34.000,N,,2026-07-08 18:57:55.000,3000121053,2026-07-08 18:57:55.000,2815,,016,Y,,,,,INVOICE,65
-2815,229493,610676,2542542000472490,2026-07-08 18:46:05.000,,KES,2549990072099,1,-137.9310343,-137.9310343,100007052,CREDIT MEMO,SLR,2549990072070,2026-07-08 14:29:34.000,N,,2026-07-08 18:57:55.000,3000121053,2026-07-08 18:57:55.000,2815,,016,Y,VAT 16%,,16.0 %,,TAX,-137.9310343
-2815,229493,610676,2542542000472490,2026-07-08 18:46:05.000,,KES,2549990072099,1,-112.443778,-112.443778,100007052,CREDIT MEMO,SLR,2549990072070,2026-07-08 14:29:34.000,N,,2026-07-08 18:57:55.000,3000121053,2026-07-08 18:57:55.000,2815,,016,Y,KE-EXCISE DUTY,,15.0 %,,TAX,-112.443778`,
+2815,229493,610676,2542542000472490,2026-07-08 18:46:05.000,,KES,2549990072099,-1,749.625187,-749.625187,100007052,CREDIT MEMO,SLR,2549990072070,2026-07-08 14:29:34.000,N,,2026-07-08 18:57:55.000,3000121053,2026-07-08 18:57:55.000,2815,,016,N,,,,,INVOICE,-749.625187
+2815,229493,610676,2542542000472490,2026-07-08 18:46:05.000,,KES,2549990072099,-1,-65,65,100090722,CREDIT MEMO,SLR,2549990072070,2026-07-08 14:29:34.000,N,,2026-07-08 18:57:55.000,3000121053,2026-07-08 18:57:55.000,2815,,016,N,,,,,INVOICE,65
+2815,229493,610676,2542542000472490,2026-07-08 18:46:05.000,,KES,2549990072099,1,-137.9310343,-137.9310343,100007052,CREDIT MEMO,SLR,2549990072070,2026-07-08 14:29:34.000,N,,2026-07-08 18:57:55.000,3000121053,2026-07-08 18:57:55.000,2815,,016,N,VAT 16%,,16.0 %,,TAX,-137.9310343
+2815,229493,610676,2542542000472490,2026-07-08 18:46:05.000,,KES,2549990072099,1,-112.443778,-112.443778,100007052,CREDIT MEMO,SLR,2549990072070,2026-07-08 14:29:34.000,N,,2026-07-08 18:57:55.000,3000121053,2026-07-08 18:57:55.000,2815,,016,N,KE-EXCISE DUTY,,15.0 %,,TAX,-112.443778`,
     POS_SAMPLE: `OPERATING_UNIT,CUSTOMER_NUMBER,CUSTOMER_LOCATION,TRANSACTION_NO,TRANSACTION_DATE,DESCRIPTION,CURRENCY,REFERENCE_NO,QUANTITY,UNIT_PRICE,SELLING_AMOUNT,ERP_ITEM_CODE,INVOICE_TYPE,TYPE,TRANSACTION_REF_NO,TRANSACTION_REF_DATE,PROCESS_FLAG,ERROR_MESSAGE,CREATION_DATE,CUSTOMER_ID,PROCESSING_DATE,ORG_ID,GL_DATE,ORGANIZATION_CODE,POSTED_TO_ERP,TAX_CODE,TAX_CODE_AMOUNT,ITEM_TAX_CATEGORY,ITEM_TAX_CATEGORY_AMOUNT,LINE_TYPE,TAXABLE_AMOUNT
-2815,299488,673777,2542542000472488,2026-07-08 18:38:01.000,,KES,2549990072097,1,17.241379,17.241379,102483788,INVOICE,POS,,,N,,2026-07-08 21:34:18.000,3000121318,2026-07-08 21:34:18.000,2815,,KS5,Y,,,,,,17.241379`,
+2815,299488,673777,2542542000472488,2026-07-08 18:38:01.000,,KES,2549990072097,1,17.241379,17.241379,102483788,INVOICE,POS,,,N,,2026-07-08 21:34:18.000,3000121318,2026-07-08 21:34:18.000,2815,,KS5,N,,,,,,17.241379`,
     PRV_SAMPLE: `OPERATING_UNIT,CUSTOMER_NUMBER,CUSTOMER_LOCATION,TRANSACTION_NO,TRANSACTION_DATE,DESCRIPTION,CURRENCY,REFERENCE_NO,QUANTITY,UNIT_PRICE,SELLING_AMOUNT,ERP_ITEM_CODE,INVOICE_TYPE,TYPE,TRANSACTION_REF_NO,TRANSACTION_REF_DATE,PROCESS_FLAG,ERROR_MESSAGE,CREATION_DATE,CUSTOMER_ID,PROCESSING_DATE,ORG_ID,GL_DATE,ORGANIZATION_CODE,POSTED_TO_ERP,TAX_CODE,TAX_CODE_AMOUNT,ITEM_TAX_CATEGORY,ITEM_TAX_CATEGORY_AMOUNT,LINE_TYPE,TAXABLE_AMOUNT
-2815,299488,673777,2542542000472489,2026-07-08 18:39:30.000,,KES,2549990072098,-1,17.241379,-17.241379,102483788,CREDIT MEMO,PRV,2549990072097,2026-07-08 18:38:01.000,N,,2026-07-08 21:38:52.000,3000121318,2026-07-08 21:38:52.000,2815,,KS5,Y,,,,,,`
+2815,299488,673777,2542542000472489,2026-07-08 18:39:30.000,,KES,2549990072098,-1,17.241379,-17.241379,102483788,CREDIT MEMO,PRV,2549990072097,2026-07-08 18:38:01.000,N,,2026-07-08 21:38:52.000,3000121318,2026-07-08 21:38:52.000,2815,,KS5,N,,,,,,`
   };
 
   const nav = document.getElementById('navList');
   const main = document.getElementById('mainArea');
+  const toast = document.getElementById('jumpToast');
+
+  const SQL_NOTE_HTML = `
+    <div class="note-card">
+      <h4>&#128269; How to pull the rows to paste here</h4>
+      <p>Query <code>ESBUSER.MKT_ERP_INV_INTF</code> directly, using whichever id you have on hand:</p>
+      <div class="note-sql"><span class="lbl">1. Look up by order id (REFERENCE_NO)</span>SELECT * FROM esbuser.mkt_erp_inv_intf meii
+WHERE reference_no = 'xxxxxx';</div>
+      <div class="note-sql"><span class="lbl">2. Look up by invoice number (TRANSACTION_NO)</span>SELECT * FROM esbuser.mkt_erp_inv_intf meii
+WHERE transaction_no = 'xxxxxx';</div>
+      <p style="margin-bottom:0;">Export the result with headers, then paste it (or the .csv) into the box below. Rows are grouped by REFERENCE_NO automatically \u2014 if that column is blank on some rows (it happens on real SELLOUT exports), the tool falls back to grouping by TRANSACTION_NO instead, and flags the missing REFERENCE_NO as an error.</p>
+    </div>`;
 
   PAGES.forEach((p, idx) => {
     const li = document.createElement('li');
@@ -717,9 +908,11 @@ function validateCSV(text, typeKey) {
         <span class="proc-ref">${p.subtitle}()</span>
       </div>
 
+      ${SQL_NOTE_HTML}
+
       <div class="card">
         <h3>1. Provide the staged rows</h3>
-        <p class="sub">Paste comma-separated values including the header row, or upload a .csv exported from ${p.sheet}.</p>
+        <p class="sub">Paste comma-separated values including the header row, or upload a .csv exported from ${p.sheet}. Every mandatory column (OPERATING_UNIT, CUSTOMER_NUMBER, CUSTOMER_LOCATION, TRANSACTION_NO, TRANSACTION_DATE, CURRENCY, REFERENCE_NO, QUANTITY, UNIT_PRICE, SELLING_AMOUNT, ERP_ITEM_CODE, INVOICE_TYPE, TYPE, PROCESS_FLAG, CUSTOMER_ID, ORG_ID, ORGANIZATION_CODE, POSTED_TO_ERP, LINE_TYPE, TAXABLE_AMOUNT) is checked on every row \u2014 a blank cell is reported as an error, not silently skipped.</p>
         <textarea class="paste-box" id="paste-${p.key}" placeholder="OPERATING_UNIT,CUSTOMER_NUMBER,...&#10;2815,229493,...,${p.key},..."></textarea>
         <div class="input-row">
           <label class="file-btn">
@@ -737,7 +930,7 @@ function validateCSV(text, typeKey) {
 
       <div class="card" style="padding-top:18px;">
         <h3>2. Results</h3>
-        <p class="sub">Grouped by REFERENCE_NO (one order = one group). Click a group to see row-by-row checks.</p>
+        <p class="sub">Grouped by order (REFERENCE_NO, or TRANSACTION_NO when REFERENCE_NO is blank). Orders with multiple products are split into one line-item block per product. Click a group to see row-by-row checks.</p>
         <div class="results" id="results-${p.key}">
           <div class="empty-hint">No rows validated yet. Paste or upload data above, then click <b>Validate rows</b>.</div>
         </div>
@@ -746,14 +939,111 @@ function validateCSV(text, typeKey) {
     main.appendChild(page);
   });
 
+  // -----------------------------------------------------------------
+  // Sample Reference page (5th nav item) \u2014 read-only, real-world
+  // examples pulled from KE_ErpSample_ASIPROD.xlsx, reshaped into the
+  // staging table's own column set so they can be loaded straight in.
+  // -----------------------------------------------------------------
+  (function buildReferencePage() {
+    const li = document.createElement('li');
+    li.className = 'nav-item';
+    li.innerHTML = `<button class="nav-btn" data-page="REF">
+        <span class="nav-badge">REF</span>
+        <span class="nav-text"><span class="t1">Sample Reference</span><span class="t2">Real multi-product examples</span></span>
+      </button>`;
+    nav.appendChild(li);
+
+    const page = document.createElement('section');
+    page.className = 'page';
+    page.id = 'page-REF';
+
+    const typeLabel = { PRI: 'Sell-In', SLR: 'Sell-In Return', POS: 'Sell-Out', PRV: 'Sell-Out Return' };
+
+    let scenarioHtml = '';
+    REFERENCE_SCENARIOS.forEach((s, i) => {
+      const cols = ['ERP_ITEM_CODE', 'DESCRIPTION', 'QUANTITY', 'UNIT_PRICE', 'SELLING_AMOUNT', 'TAX_CODE', 'ITEM_TAX_CATEGORY', 'LINE_TYPE', 'TAXABLE_AMOUNT'];
+      let rowsHtml = s.displayRows.map(r => {
+        const lt = r.LINE_TYPE || '';
+        return `<tr>` + cols.map(c => {
+          if (c === 'LINE_TYPE') {
+            return `<td>${lt ? `<span class="ref-line-tag ${esc(lt)}">${esc(lt)}</span>` : '<span style="color:var(--text-dim);">(blank)</span>'}</td>`;
+          }
+          if (c === 'DESCRIPTION') return `<td class="desc-cell">${esc(r[c] || '')}</td>`;
+          return `<td>${esc(r[c] === '' ? '\u2014' : r[c])}</td>`;
+        }).join('') + `</tr>`;
+      }).join('');
+
+      scenarioHtml += `
+        <div class="ref-scenario" id="ref-scenario-${i}">
+          <div class="ref-scenario-head">
+            <div class="ref-tags">
+              <span class="ref-tag">${esc(s.type)} \u2014 ${esc(typeLabel[s.type] || '')}</span>
+              <span class="ref-tag sheet">sheet: ${esc(s.sheet)}</span>
+            </div>
+            <h4>${esc(s.title)}</h4>
+            <p>${esc(s.desc)}</p>
+          </div>
+          <div class="ref-table-wrap">
+            <table class="ref-table">
+              <thead><tr>${cols.map(c => `<th>${c.replace(/_/g, ' ')}</th>`).join('')}</tr></thead>
+              <tbody>${rowsHtml}</tbody>
+            </table>
+          </div>
+          <div class="ref-scenario-foot">
+            <span class="rowcount">${s.rowCount} row${s.rowCount > 1 ? 's' : ''} &middot; REFERENCE_NO ${esc(s.displayRows[0].REFERENCE_NO)}</span>
+            <button class="load-btn" data-action="load-ref" data-index="${i}">Load into ${esc(s.type)} validator &rarr;</button>
+          </div>
+        </div>`;
+    });
+
+    page.innerHTML = `
+      <div class="page-head">
+        <span class="type-chip"><span class="dot"></span>Reference &middot; not validated</span>
+        <h2>Sample reference &mdash; real multi-product orders</h2>
+        <p>Nine real examples pulled from a production ERP export, reshaped into the staging table's column layout, showing the shapes you'll actually see: multi-product orders, EXCISE + VAT cascades, upfront discounts, partial returns, and a live example of a mandatory field arriving blank. Use "Load into validator" to drop any of these straight into the matching page and see it checked.</p>
+      </div>
+
+      ${SQL_NOTE_HTML}
+
+      <div class="ref-intro">
+        <div class="card">
+          <h3>What to look for</h3>
+          <p class="sub" style="margin-bottom:0;">
+            &#8226; <b>Multi-product orders</b> (Scratch Cards bundle, Tozed Mifi + SIM, POS two-line sales) share one REFERENCE_NO across several ERP_ITEM_CODEs \u2014 the validator splits these into one line-item block per product and pairs each product with its own discount row by matching quantity.<br>
+            &#8226; <b>EXCISE + VAT cascade</b> (Scratch Cards, Electronic Vouchers): EXCISE is calculated on the base price, then VAT is calculated on (base&nbsp;+&nbsp;EXCISE).<br>
+            &#8226; <b>Blank REFERENCE_NO</b> (both POS examples): a real gap seen in production SELLOUT exports \u2014 the validator falls back to TRANSACTION_NO for grouping, but still flags REFERENCE_NO as a missing mandatory field.
+          </p>
+        </div>
+      </div>
+
+      ${scenarioHtml}
+    `;
+    main.appendChild(page);
+  })();
+
+  function esc(s) {
+    return (s === undefined || s === null) ? '' : String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  function activatePage(key) {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-page') === key));
+    document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + key));
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }
+
   // ---- tab switching ----
   nav.addEventListener('click', function (e) {
     const btn = e.target.closest('.nav-btn');
     if (!btn) return;
-    const key = btn.getAttribute('data-page');
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b === btn));
-    document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + key));
-    window.scrollTo({ top: 0, behavior: 'auto' });
+    activatePage(btn.getAttribute('data-page'));
   });
 
   // ---- file upload ----
@@ -773,6 +1063,17 @@ function validateCSV(text, typeKey) {
 
   // ---- button actions ----
   main.addEventListener('click', function (e) {
+    const loadRefBtn = e.target.closest('button[data-action="load-ref"]');
+    if (loadRefBtn) {
+      const idx = parseInt(loadRefBtn.getAttribute('data-index'), 10);
+      const s = REFERENCE_SCENARIOS[idx];
+      document.getElementById('paste-' + s.type).value = s.csv;
+      document.getElementById('filename-' + s.type).textContent = '';
+      activatePage(s.type);
+      showToast(`Loaded "${s.title}" into the ${s.type} page \u2014 click Validate rows.`);
+      return;
+    }
+
     const btn = e.target.closest('button[data-action]');
     if (btn) {
       const action = btn.getAttribute('data-action');
@@ -803,11 +1104,6 @@ function validateCSV(text, typeKey) {
       dt.textContent = showing ? 'Hide informational checks' : 'Show informational checks';
     }
   });
-
-  function esc(s) {
-    return (s === undefined || s === null) ? '' : String(s)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
 
   function renderRowBlock(r) {
     const fails = r.checks.filter(c => !c.pass && !c.info);
@@ -851,12 +1147,13 @@ function validateCSV(text, typeKey) {
 
   function renderGroup(g) {
     const rowCount = g.rows.length;
+    const basisLabel = g.groupBasis === 'TRANSACTION_NO' ? 'TRANSACTION_NO (REFERENCE_NO was blank)' : g.groupBasis;
     let html = `<div class="group-card">
       <div class="group-head">
         <div class="left">
           <span class="status-dot ${g.pass ? 'pass' : 'fail'}"></span>
           <div>
-            <div class="group-ref">REFERENCE_NO ${esc(g.ref)}</div>
+            <div class="group-ref">${esc(basisLabel)} ${esc(g.ref)}</div>
             <div class="group-meta">${rowCount} row${rowCount > 1 ? 's' : ''} pasted</div>
           </div>
         </div>
@@ -868,7 +1165,7 @@ function validateCSV(text, typeKey) {
       <div class="group-body">`;
 
     (g.structural || []).forEach(msg => {
-      html += `<div class="structural-note"><b>Structural issue:</b> ${esc(msg)}</div>`;
+      html += `<div class="structural-note"><b>Structural note:</b> ${esc(msg)}</div>`;
     });
 
     g.results.forEach(r => { html += renderRowBlock(r); });
@@ -888,7 +1185,7 @@ function validateCSV(text, typeKey) {
 
     let html = '';
     if (res.missingHeaders && res.missingHeaders.length) {
-      html += `<div class="header-issue"><b>Missing column${res.missingHeaders.length > 1 ? 's' : ''}:</b> ${esc(res.missingHeaders.join(', '))}. These fields were treated as blank for every row \u2014 add them to validate fully.</div>`;
+      html += `<div class="header-issue"><b>Missing column${res.missingHeaders.length > 1 ? 's' : ''}:</b> ${esc(res.missingHeaders.join(', '))}. These fields were treated as blank/missing for every row \u2014 add them to validate fully.</div>`;
     }
     if (res.error) {
       html += `<div class="empty-hint">${esc(res.error)}</div>`;
@@ -909,7 +1206,6 @@ function validateCSV(text, typeKey) {
     res.groups.forEach(g => { html += renderGroup(g); });
 
     resultsEl.innerHTML = html;
-    // auto-open failing groups, and open the only group if there's just one
     resultsEl.querySelectorAll('.group-card').forEach((el, i) => {
       if (!res.groups[i].pass || res.groups.length === 1) el.classList.add('open');
     });

@@ -1422,7 +1422,7 @@
 
       // ---------- Number formatting (DISPLAY ONLY — never feeds back into calculations) ----------
       function fmt(n, decimals) {
-        if (decimals === undefined) decimals = 6;
+        if (decimals === undefined) decimals = 8;
         if (n === null || n === undefined || isNaN(n)) n = 0;
         return Number(n).toLocaleString('en-KE', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
       }

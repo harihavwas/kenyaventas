@@ -133,6 +133,43 @@
       font-weight: 600;
     }
 
+    .precision-control {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 2px;
+    }
+
+    .precision-control label {
+      color: #B9BCC8;
+      font-family: var(--mono);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .precision-control input[type="number"] {
+      width: 52px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 12px;
+      border-radius: 6px;
+      padding: 4px 6px;
+      text-align: center;
+    }
+
+    .precision-control input[type="number"]:focus {
+      outline: none;
+      border-color: var(--red);
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .precision-control input[type="number"]::-webkit-inner-spin-button,
+    .precision-control input[type="number"]::-webkit-outer-spin-button {
+      opacity: 1;
+    }
+
     .tabs {
       display: flex;
       gap: 6px;
@@ -1142,6 +1179,10 @@
         <div>Products: <b id="productCount">0</b></div>
         <div>Combinations: <b id="comboCount">0</b></div>
         <div>Sheet rows: <b id="sheetRowCount">0</b></div>
+        <div class="precision-control" title="Number of decimal places shown in calculated results (calculations always run at full precision)">
+          <label for="decimalsInput">Decimals</label>
+          <input type="number" id="decimalsInput" min="0" max="10" step="1" value="2">
+        </div>
       </div>
     </div>
   </div>
@@ -1392,7 +1433,7 @@
   <footer>
     Formulas replicated from PrimarySale!H:M and Total Summary (DUTY 15% on KE-EXCISE DUTY-tagged items, VAT 16% on
     VAT-tagged items, applied cumulatively where both apply). All calculations use full precision; only the on-screen
-    display is rounded to 2 decimals.
+    display is rounded to <span id="footerDecimals">2</span> decimal<span id="footerDecimalsPlural">s</span> &mdash; adjust this with the <b>Decimals</b> control at the top of the page.
   </footer>
 
   <script id="product-data" type="application/json">
@@ -1421,8 +1462,13 @@
       document.getElementById('comboCount').textContent = COMBOS.length;
 
       // ---------- Number formatting (DISPLAY ONLY — never feeds back into calculations) ----------
+      // DISPLAY_DECIMALS is the single source of truth for on-screen rounding.
+      // It's controlled by the "Decimals" input in the topbar and defaults to 2.
+      // Every calculation (computeLine, totals, summary) still runs on full,
+      // unrounded floating-point values — this only affects what's printed.
+      var DISPLAY_DECIMALS = 2;
       function fmt(n, decimals) {
-        if (decimals === undefined) decimals = 8;
+        if (decimals === undefined) decimals = DISPLAY_DECIMALS;
         if (n === null || n === undefined || isNaN(n)) n = 0;
         return Number(n).toLocaleString('en-KE', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
       }
@@ -1709,8 +1755,8 @@
             '<td>' + escapeHtml(r.code) + '</td>' +
             '<td class="name-cell" title="' + escapeHtml(r.name) + '">' + escapeHtml(r.name) + '</td>' +
             '<td>' + fmt(r.qty, 0) + '</td>' +
-            '<td>' + fmt(r.base, 4) + '</td>' +
-            '<td>' + fmt(r.unit, 4) + '</td>' +
+            '<td>' + fmt(r.base) + '</td>' +
+            '<td>' + fmt(r.unit) + '</td>' +
             '<td>' + fmt(r.total) + '</td>' +
             '<td class="col-duty">' + fmt(r.duty) + '</td>' +
             '<td>' + fmt(r.vatTaxable) + '</td>' +
@@ -2041,10 +2087,35 @@
         updatePreview();
       }
 
+      // ---------- Decimal precision control ----------
+      // Lets the user choose how many decimal places are shown everywhere
+      // in the calculator, results table, totals, summary cards, and the
+      // Product Sheet — without touching the underlying full-precision math.
+      var $decimalsInput = document.getElementById('decimalsInput');
+      var $footerDecimals = document.getElementById('footerDecimals');
+      var $footerDecimalsPlural = document.getElementById('footerDecimalsPlural');
+
+      function applyDecimalSetting() {
+        var v = parseInt($decimalsInput.value, 10);
+        if (isNaN(v) || v < 0) v = 0;
+        if (v > 10) v = 10;
+        DISPLAY_DECIMALS = v;
+        $decimalsInput.value = v;
+        $footerDecimals.textContent = v;
+        $footerDecimalsPlural.textContent = v === 1 ? '' : 's';
+        // Re-render every view that currently has numbers on screen.
+        updatePreview();
+        renderTable();
+        renderSheet();
+      }
+      $decimalsInput.addEventListener('input', applyDecimalSetting);
+      $decimalsInput.addEventListener('change', applyDecimalSetting);
+
       // init
       renderTable();
       renderSheet();
       buildDocs();
+      applyDecimalSetting();
     })();
 
   </script>

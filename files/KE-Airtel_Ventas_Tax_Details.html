@@ -788,6 +788,71 @@
       color: var(--red);
     }
 
+    table.sheet-table thead tr.filter-row th {
+      cursor: default;
+      padding: 7px 8px 11px;
+      background: #fff;
+      border-top: none;
+      vertical-align: top;
+    }
+
+    table.sheet-table thead tr.filter-row th:hover {
+      color: inherit;
+    }
+
+    .filter-input,
+    .filter-select {
+      width: 100%;
+      box-sizing: border-box;
+      font-family: var(--sans);
+      font-size: 11.5px;
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: normal;
+      padding: 5px 7px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fbfcfd;
+      color: var(--ink);
+    }
+
+    .filter-input:focus,
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--red);
+      background: #fff;
+    }
+
+    .filter-input::placeholder {
+      color: #B7BBC4;
+    }
+
+    .filter-range {
+      display: flex;
+      gap: 4px;
+    }
+
+    .filter-range .filter-input {
+      width: 50%;
+      min-width: 0;
+      padding-left: 5px;
+      padding-right: 3px;
+      text-align: left;
+    }
+
+    .filter-active-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--red-dark);
+      background: #FBE9EC;
+      border: 1px solid #F4C2CB;
+      padding: 3px 9px;
+      border-radius: 999px;
+    }
+
     table.sheet-table tbody tr {
       cursor: pointer;
     }
@@ -1340,8 +1405,8 @@
       <div class="card">
         <h2>Product &amp; Segment Sheet</h2>
         <p class="sub">Every row from the source workbook (<code>Sheet1</code> of the Product Vs Segment
-          spreadsheet) — searchable and sortable. Click any row, or its <b>Use →</b> button, to load that exact
-          product + segment straight into the Calculator with quantity 1.</p>
+          spreadsheet) — searchable, sortable, and filterable per column. Click any row, or its <b>Use →</b> button,
+          to load that exact product + segment straight into the Calculator with quantity 1.</p>
 
         <div class="field sheet-search-field">
           <label for="sheetSearch">Search product code, name, or segment</label>
@@ -1350,7 +1415,8 @@
 
         <div class="sheet-meta-row">
           <span id="sheetCountLabel">Showing 0 of 0 rows</span>
-          <button class="btn ghost sheet-clear-btn" id="sheetClearBtn" type="button">Clear search</button>
+          <span class="filter-active-badge" id="sheetFilterBadge" style="display:none;"></span>
+          <button class="btn ghost sheet-clear-btn" id="sheetClearBtn" type="button">Clear all filters</button>
         </div>
 
         <div class="table-scroll sheet-table-scroll">
@@ -1368,6 +1434,7 @@
                 <th data-sort="effectiveTill">Effective Till<span class="sort-arrow"></span></th>
                 <th></th>
               </tr>
+              <tr class="filter-row" id="sheetFilterRow"></tr>
             </thead>
             <tbody id="sheetBody"></tbody>
           </table>
@@ -1957,15 +2024,31 @@
       // PRODUCT SHEET VIEW — browses every raw row from the source workbook
       // and can hand a product+segment straight to the calculator.
       // =====================================================================
-      var sheetState = { query: '', sortKey: 'code', sortDir: 1 };
+      var sheetState = {
+        query: '', sortKey: 'code', sortDir: 1,
+        filters: {
+          code: '', name: '', segment: '',
+          priceMin: '', priceMax: '',
+          discountMin: '', discountMax: '',
+          taxDesc: '',
+          taxPctMin: '', taxPctMax: '',
+          createdOn: '', effectiveTill: ''
+        }
+      };
       var $sheetSearch = document.getElementById('sheetSearch');
       var $sheetBody = document.getElementById('sheetBody');
       var $sheetCountLabel = document.getElementById('sheetCountLabel');
       var $sheetEmptyState = document.getElementById('sheetEmptyState');
       var $sheetClearBtn = document.getElementById('sheetClearBtn');
+      var $sheetFilterBadge = document.getElementById('sheetFilterBadge');
+      var $sheetFilterRow = document.getElementById('sheetFilterRow');
       var $sheetTable = document.querySelector('table.sheet-table');
 
       document.getElementById('sheetRowCount').textContent = SHEET_ROWS.length;
+
+      function taxLabel(row) {
+        return row.taxDesc || row.taxCode || 'No tax';
+      }
 
       function taxPillHtml(row) {
         var code = (row.taxCode || '').toUpperCase();
@@ -1979,9 +2062,85 @@
         return '<span class="sheet-tax-pill none">' + escapeHtml(row.taxDesc || row.taxCode) + '</span>';
       }
 
+      // ---------- Build the per-column filter row ----------
+      // Text columns get a free-text "contains" box; numeric columns get a
+      // min/max range; Segment and Tax Class get a dropdown built from the
+      // actual values present in the sheet, since both are small closed sets.
+      var uniqueSegments = Array.from(
+        SHEET_ROWS.reduce(function (set, r) { if (r.segment) set.add(r.segment); return set; }, new Set())
+      ).sort();
+      var uniqueTaxLabels = Array.from(
+        SHEET_ROWS.reduce(function (set, r) { set.add(taxLabel(r)); return set; }, new Set())
+      ).sort();
+
+      function opt(value, label) {
+        return '<option value="' + escapeHtml(value) + '">' + escapeHtml(label) + '</option>';
+      }
+
+      $sheetFilterRow.innerHTML =
+        '<th><input type="text" class="filter-input" id="fCode" placeholder="Filter code…" autocomplete="off"></th>' +
+        '<th><input type="text" class="filter-input" id="fName" placeholder="Filter name…" autocomplete="off"></th>' +
+        '<th><select class="filter-select" id="fSegment">' + opt('', 'All segments') +
+          uniqueSegments.map(function (s) { return opt(s, s); }).join('') + '</select></th>' +
+        '<th><div class="filter-range">' +
+          '<input type="number" class="filter-input" id="fPriceMin" placeholder="Min" step="any">' +
+          '<input type="number" class="filter-input" id="fPriceMax" placeholder="Max" step="any">' +
+          '</div></th>' +
+        '<th><div class="filter-range">' +
+          '<input type="number" class="filter-input" id="fDiscMin" placeholder="Min" step="any">' +
+          '<input type="number" class="filter-input" id="fDiscMax" placeholder="Max" step="any">' +
+          '</div></th>' +
+        '<th><select class="filter-select" id="fTaxDesc">' + opt('', 'All tax classes') +
+          uniqueTaxLabels.map(function (t) { return opt(t, t); }).join('') + '</select></th>' +
+        '<th><div class="filter-range">' +
+          '<input type="number" class="filter-input" id="fTaxPctMin" placeholder="Min %" step="any">' +
+          '<input type="number" class="filter-input" id="fTaxPctMax" placeholder="Max %" step="any">' +
+          '</div></th>' +
+        '<th><input type="text" class="filter-input" id="fCreated" placeholder="e.g. DEC-13…" autocomplete="off"></th>' +
+        '<th><input type="text" class="filter-input" id="fEffTill" placeholder="e.g. JAN-24…" autocomplete="off"></th>' +
+        '<th></th>';
+
+      var FILTER_FIELD_MAP = [
+        ['fCode', 'code'], ['fName', 'name'], ['fSegment', 'segment'],
+        ['fPriceMin', 'priceMin'], ['fPriceMax', 'priceMax'],
+        ['fDiscMin', 'discountMin'], ['fDiscMax', 'discountMax'],
+        ['fTaxDesc', 'taxDesc'],
+        ['fTaxPctMin', 'taxPctMin'], ['fTaxPctMax', 'taxPctMax'],
+        ['fCreated', 'createdOn'], ['fEffTill', 'effectiveTill']
+      ];
+
+      FILTER_FIELD_MAP.forEach(function (pair) {
+        var el = document.getElementById(pair[0]);
+        var stateKey = pair[1];
+        var evtName = el.tagName === 'SELECT' ? 'change' : 'input';
+        el.addEventListener(evtName, function () {
+          sheetState.filters[stateKey] = el.value;
+          renderSheet();
+        });
+      });
+
+      function activeFilterCount() {
+        var n = 0;
+        Object.keys(sheetState.filters).forEach(function (k) {
+          if (sheetState.filters[k] !== '') n++;
+        });
+        if (sheetState.query.trim()) n++;
+        return n;
+      }
+
+      function inRange(actual, minStr, maxStr) {
+        var v = parseFloat(actual);
+        if (isNaN(v)) v = 0;
+        if (minStr !== '' && v < parseFloat(minStr)) return false;
+        if (maxStr !== '' && v > parseFloat(maxStr)) return false;
+        return true;
+      }
+
       function filteredSortedSheetRows() {
         var q = sheetState.query.trim().toLowerCase();
+        var f = sheetState.filters;
         var out = SHEET_ROWS;
+
         if (q) {
           out = out.filter(function (r) {
             return (r.code && r.code.toLowerCase().indexOf(q) !== -1) ||
@@ -1989,6 +2148,39 @@
               (r.segment && r.segment.toLowerCase().indexOf(q) !== -1);
           });
         }
+
+        if (f.code) {
+          var fc = f.code.toLowerCase();
+          out = out.filter(function (r) { return r.code && r.code.toLowerCase().indexOf(fc) !== -1; });
+        }
+        if (f.name) {
+          var fn = f.name.toLowerCase();
+          out = out.filter(function (r) { return r.name && r.name.toLowerCase().indexOf(fn) !== -1; });
+        }
+        if (f.segment) {
+          out = out.filter(function (r) { return r.segment === f.segment; });
+        }
+        if (f.priceMin !== '' || f.priceMax !== '') {
+          out = out.filter(function (r) { return inRange(r.price, f.priceMin, f.priceMax); });
+        }
+        if (f.discountMin !== '' || f.discountMax !== '') {
+          out = out.filter(function (r) { return inRange(r.discount, f.discountMin, f.discountMax); });
+        }
+        if (f.taxDesc) {
+          out = out.filter(function (r) { return taxLabel(r) === f.taxDesc; });
+        }
+        if (f.taxPctMin !== '' || f.taxPctMax !== '') {
+          out = out.filter(function (r) { return inRange(r.taxPct, f.taxPctMin, f.taxPctMax); });
+        }
+        if (f.createdOn) {
+          var fco = f.createdOn.toLowerCase();
+          out = out.filter(function (r) { return (r.createdOn || '').toLowerCase().indexOf(fco) !== -1; });
+        }
+        if (f.effectiveTill) {
+          var fet = f.effectiveTill.toLowerCase();
+          out = out.filter(function (r) { return (r.effectiveTill || '').toLowerCase().indexOf(fet) !== -1; });
+        }
+
         var key = sheetState.sortKey, dir = sheetState.sortDir;
         out = out.slice().sort(function (a, b) {
           var av = a[key], bv = b[key];
@@ -2009,6 +2201,15 @@
         var rowsToShow = filteredSortedSheetRows();
         $sheetCountLabel.textContent = 'Showing ' + rowsToShow.length.toLocaleString('en-KE') +
           ' of ' + SHEET_ROWS.length.toLocaleString('en-KE') + ' rows';
+
+        var activeCount = activeFilterCount();
+        if (activeCount > 0) {
+          $sheetFilterBadge.style.display = 'inline-flex';
+          $sheetFilterBadge.textContent = activeCount + ' filter' + (activeCount > 1 ? 's' : '') + ' active';
+        } else {
+          $sheetFilterBadge.style.display = 'none';
+        }
+
         if (!rowsToShow.length) {
           $sheetBody.innerHTML = '';
           $sheetEmptyState.style.display = 'block';
@@ -2040,11 +2241,16 @@
       $sheetClearBtn.addEventListener('click', function () {
         $sheetSearch.value = '';
         sheetState.query = '';
+        FILTER_FIELD_MAP.forEach(function (pair) {
+          var el = document.getElementById(pair[0]);
+          el.value = '';
+          sheetState.filters[pair[1]] = '';
+        });
         $sheetSearch.focus();
         renderSheet();
       });
 
-      $sheetTable.querySelectorAll('thead th[data-sort]').forEach(function (th) {
+      $sheetTable.querySelectorAll('thead tr:first-child th[data-sort]').forEach(function (th) {
         th.addEventListener('click', function () {
           var key = th.getAttribute('data-sort');
           if (sheetState.sortKey === key) {
@@ -2053,7 +2259,7 @@
             sheetState.sortKey = key;
             sheetState.sortDir = 1;
           }
-          $sheetTable.querySelectorAll('thead th').forEach(function (h) {
+          $sheetTable.querySelectorAll('thead tr:first-child th').forEach(function (h) {
             h.classList.remove('sort-active');
             var arrow = h.querySelector('.sort-arrow');
             if (arrow) arrow.textContent = '';

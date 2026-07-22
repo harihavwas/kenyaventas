@@ -1,0 +1,2694 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<title>Airtel Ventas · Congo-B · ERP Posting</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* fonts (theme-independent) */
+    --font-display:'Space Grotesk', sans-serif;
+    --font-mono:'IBM Plex Mono', monospace;
+    --font-body:'Inter', sans-serif;
+  }
+
+  /* ============ THEMES ============
+     Default (no attribute) = Blueprint. Each theme redefines the full token set. */
+  :root,
+  html[data-theme="blue"]{
+    --bp-bg:#0F2C46;
+    --bp-blue-deep:#0F2C46;      /* legacy alias */
+    --bp-onaccent:#0F2C46;
+    --bp-line:#6FB6DE;
+    --bp-line-dim:#3E6E8E;
+    --bp-white:#F2F7FB;
+    --bp-white-dim:#B9CEDD;
+    --bp-amber:#E8A33D;
+    --bp-red:#E0665F;
+    --bp-green:#6FC49A;
+    --bp-grid:rgba(111,182,222,0.06);
+    --bp-tint-1:rgba(111,182,222,0.05);
+    --bp-tint-2:rgba(111,182,222,0.08);
+    --bp-tint-3:rgba(111,182,222,0.14);
+    --bp-sink:rgba(0,0,0,0.20);
+    --bp-raise:rgba(255,255,255,0.02);
+    color-scheme:dark;
+  }
+
+  /* Midnight — near-black with cyan accent */
+  html[data-theme="dark"]{
+    --bp-bg:#0B0F14;
+    --bp-blue-deep:#0B0F14;
+    --bp-onaccent:#07171A;
+    --bp-line:#45C9D8;
+    --bp-line-dim:#2C4A52;
+    --bp-white:#E9EFF2;
+    --bp-white-dim:#8FA0AB;
+    --bp-amber:#F0B44A;
+    --bp-red:#EB7168;
+    --bp-green:#5FD3A0;
+    --bp-grid:rgba(120,190,205,0.05);
+    --bp-tint-1:rgba(90,200,215,0.05);
+    --bp-tint-2:rgba(90,200,215,0.09);
+    --bp-tint-3:rgba(90,200,215,0.16);
+    --bp-sink:rgba(0,0,0,0.35);
+    --bp-raise:rgba(255,255,255,0.03);
+    color-scheme:dark;
+  }
+
+  /* Daylight — light paper with ink text */
+  html[data-theme="light"]{
+    --bp-bg:#F3F6F9;
+    --bp-blue-deep:#16303F;
+    --bp-onaccent:#FFFFFF;
+    --bp-line:#2C6E9E;
+    --bp-line-dim:#B4C6D4;
+    --bp-white:#16303F;
+    --bp-white-dim:#587082;
+    --bp-amber:#B0761A;
+    --bp-red:#BE443C;
+    --bp-green:#2C825C;
+    --bp-grid:rgba(44,110,158,0.08);
+    --bp-tint-1:rgba(44,110,158,0.05);
+    --bp-tint-2:rgba(44,110,158,0.09);
+    --bp-tint-3:rgba(44,110,158,0.16);
+    --bp-sink:rgba(22,48,63,0.05);
+    --bp-raise:rgba(22,48,63,0.03);
+    color-scheme:light;
+  }
+
+  /* Graphite — warm neutral dark with sand accent */
+  html[data-theme="graphite"]{
+    --bp-bg:#191A1D;
+    --bp-blue-deep:#191A1D;
+    --bp-onaccent:#191A1D;
+    --bp-line:#CBA26C;
+    --bp-line-dim:#54514B;
+    --bp-white:#ECE7DE;
+    --bp-white-dim:#A29B8E;
+    --bp-amber:#E8A33D;
+    --bp-red:#DE6F63;
+    --bp-green:#8FBE86;
+    --bp-grid:rgba(203,162,108,0.05);
+    --bp-tint-1:rgba(203,162,108,0.05);
+    --bp-tint-2:rgba(203,162,108,0.09);
+    --bp-tint-3:rgba(203,162,108,0.15);
+    --bp-sink:rgba(0,0,0,0.30);
+    --bp-raise:rgba(255,255,255,0.025);
+    color-scheme:dark;
+  }
+
+  html{transition:none;}
+  body,.sidebar,.nav-btn,.tbl-tab,.card,.data-table td,.data-table th,.theme-opt{
+    transition:background-color .25s ease, color .25s ease, border-color .25s ease;
+  }
+
+  /* ---------- Theme switcher ---------- */
+  .theme-switch{
+    margin-top:auto;
+    padding-top:20px;
+    border-top:1px dashed var(--bp-line-dim);
+  }
+  .theme-switch-label{
+    font-family:var(--font-mono);
+    font-size:10px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--bp-amber);
+    margin-bottom:10px;
+  }
+  .theme-opts{display:flex; flex-direction:column; gap:6px;}
+  .theme-opt{
+    display:flex; align-items:center; gap:9px;
+    font-family:var(--font-mono); font-size:12px; text-align:left;
+    background:transparent; border:1px solid var(--bp-line-dim);
+    color:var(--bp-white-dim); padding:7px 10px; border-radius:3px; cursor:pointer;
+  }
+  .theme-opt:hover{color:var(--bp-white); border-color:var(--bp-line);}
+  .theme-opt.active{
+    border-color:var(--bp-line); color:var(--bp-white); background:var(--bp-tint-2);
+  }
+  .theme-opt .sw{
+    width:22px; height:14px; border-radius:2px; flex:none;
+    border:1px solid rgba(0,0,0,0.28);
+  }
+  .sw-blue{background:linear-gradient(120deg,#0F2C46 55%,#6FB6DE 55%);}
+  .sw-dark{background:linear-gradient(120deg,#0B0F14 55%,#45C9D8 55%);}
+  .sw-light{background:linear-gradient(120deg,#F3F6F9 55%,#2C6E9E 55%); border-color:rgba(0,0,0,0.15);}
+  .sw-graphite{background:linear-gradient(120deg,#191A1D 55%,#CBA26C 55%);}
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bp-bg);
+    color:var(--bp-white);
+    font-family:var(--font-body);
+    min-height:100vh;
+  }
+
+  /* ---------- Layout shell ---------- */
+  .app{
+    display:grid;
+    grid-template-columns:280px 1fr;
+    min-height:100vh;
+  }
+  @media (max-width:860px){
+    .app{grid-template-columns:1fr;}
+    .sidebar{position:static; height:auto;}
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    border-right:1px dashed var(--bp-line-dim);
+    padding:28px 20px 20px;
+    position:sticky;
+    top:0;
+    height:100vh;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+  }
+  .brand{
+    padding-bottom:18px;
+    margin-bottom:18px;
+    border-bottom:1px dashed var(--bp-line-dim);
+  }
+  .brand .stamp{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--bp-amber);
+    border:1px solid var(--bp-amber);
+    padding:3px 8px;
+    border-radius:2px;
+    margin-bottom:14px;
+  }
+  .brand .stamp:before{
+    content:"";
+    width:6px;height:6px;
+    border-radius:50%;
+    background:var(--bp-amber);
+    display:inline-block;
+  }
+  .brand h1{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:22px;
+    line-height:1.15;
+    margin:0 0 4px;
+    letter-spacing:-.01em;
+  }
+  .brand p{
+    margin:0;
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--bp-white-dim);
+    letter-spacing:.03em;
+  }
+
+  nav{flex:1;}
+  .nav-group-label{
+    font-family:var(--font-mono);
+    font-size:10px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--bp-line-dim);
+    margin:20px 0 8px;
+    padding-left:2px;
+  }
+  .nav-group-label:first-child{margin-top:0;}
+  .nav-btn{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    width:100%;
+    text-align:left;
+    background:transparent;
+    border:1px solid transparent;
+    color:var(--bp-white-dim);
+    font-family:var(--font-body);
+    font-size:13.5px;
+    font-weight:500;
+    padding:9px 10px;
+    border-radius:3px;
+    cursor:pointer;
+    margin-bottom:3px;
+    transition:background .15s, color .15s, border-color .15s;
+  }
+  .nav-btn .idx{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    color:var(--bp-line-dim);
+    width:18px;
+    flex-shrink:0;
+  }
+  .nav-btn:hover{
+    background:var(--bp-tint-2);
+    color:var(--bp-white);
+  }
+  .nav-btn.active{
+    background:var(--bp-tint-3);
+    border-color:var(--bp-line-dim);
+    color:var(--bp-white);
+  }
+  .nav-btn.active .idx{color:var(--bp-amber);}
+  .nav-sub{
+    padding-left:26px;
+    display:none;
+    margin-bottom:4px;
+  }
+  .nav-sub.open{display:block;}
+  .nav-sub button{
+    display:block;
+    width:100%;
+    text-align:left;
+    background:none;
+    border:none;
+    border-left:2px solid var(--bp-line-dim);
+    color:var(--bp-white-dim);
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    padding:6px 0 6px 10px;
+    cursor:pointer;
+  }
+  .nav-sub button:hover{color:var(--bp-white);}
+  .nav-sub button.active{color:var(--bp-amber); border-left-color:var(--bp-amber);}
+
+  .sidebar-foot{
+    font-family:var(--font-mono);
+    font-size:10px;
+    color:var(--bp-line-dim);
+    padding-top:16px;
+    margin-top:16px;
+    border-top:1px dashed var(--bp-line-dim);
+    line-height:1.6;
+  }
+
+  /* ---------- Main ---------- */
+  main{
+    padding:40px 48px 80px;
+    max-width:980px;
+  }
+  @media (max-width:640px){ main{padding:28px 20px 60px;} }
+
+  .panel{display:none;}
+  .panel.active{display:block; animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
+
+  .crosshair{
+    position:relative;
+    width:16px; height:16px;
+    margin-bottom:18px;
+  }
+  .crosshair:before,.crosshair:after{
+    content:"";
+    position:absolute;
+    background:var(--bp-line);
+  }
+  .crosshair:before{width:16px;height:1px;top:7px;left:0;}
+  .crosshair:after{width:1px;height:16px;left:7px;top:0;}
+
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--bp-amber);
+    margin:0 0 10px;
+  }
+  h2.section-title{
+    font-family:var(--font-display);
+    font-size:32px;
+    font-weight:700;
+    margin:0 0 8px;
+    letter-spacing:-.01em;
+  }
+  .section-sub{
+    color:var(--bp-white-dim);
+    font-size:14.5px;
+    margin:0 0 32px;
+    max-width:640px;
+    line-height:1.6;
+  }
+
+  .card{
+    border:1px dashed var(--bp-line-dim);
+    background:var(--bp-raise);
+    border-radius:4px;
+    padding:22px 24px;
+    margin-bottom:18px;
+    position:relative;
+  }
+  .card h3{
+    font-family:var(--font-display);
+    font-size:16px;
+    margin:0 0 12px;
+    color:var(--bp-line);
+  }
+  .corner{
+    position:absolute; width:8px; height:8px;
+    border:1px solid var(--bp-line-dim);
+  }
+  .corner.tl{top:-1px;left:-1px;border-right:none;border-bottom:none;}
+  .corner.br{bottom:-1px;right:-1px;border-left:none;border-top:none;}
+
+  ul.reqs{margin:0; padding-left:0; list-style:none;}
+  ul.reqs li{
+    position:relative;
+    padding:8px 0 8px 22px;
+    font-size:14px;
+    line-height:1.65;
+    color:var(--bp-white);
+    border-bottom:1px solid var(--bp-tint-2);
+  }
+  ul.reqs li:last-child{border-bottom:none;}
+  ul.reqs li:before{
+    content:"›";
+    position:absolute;
+    left:0; top:7px;
+    color:var(--bp-amber);
+    font-family:var(--font-mono);
+  }
+
+  /* stat row for overview */
+  .stat-row{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin-bottom:28px;
+  }
+  @media (max-width:700px){.stat-row{grid-template-columns:repeat(2,1fr);}}
+  .stat{
+    border:1px dashed var(--bp-line-dim);
+    border-radius:4px;
+    padding:16px 14px;
+  }
+  .stat .num{
+    font-family:var(--font-display);
+    font-size:26px;
+    font-weight:700;
+    color:var(--bp-line);
+  }
+  .stat .lbl{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--bp-white-dim);
+    margin-top:4px;
+  }
+
+  /* glossary chips (type meanings) */
+  .glossary{display:grid; gap:14px;}
+  .glos-item{
+    display:grid;
+    grid-template-columns:110px 1fr;
+    gap:18px;
+    border:1px dashed var(--bp-line-dim);
+    border-radius:4px;
+    padding:16px 18px;
+    align-items:start;
+  }
+  @media (max-width:640px){.glos-item{grid-template-columns:1fr;}}
+  .glos-tag{
+    font-family:var(--font-mono);
+    font-weight:600;
+    font-size:15px;
+    color:var(--bp-onaccent);
+    background:var(--bp-amber);
+    display:inline-block;
+    padding:5px 10px;
+    border-radius:3px;
+    height:fit-content;
+  }
+  .glos-item p{margin:0; font-size:13.5px; line-height:1.6; color:var(--bp-white-dim);}
+
+  /* DB integration cards */
+  .db-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:760px){.db-grid{grid-template-columns:1fr;}}
+  .db-card{
+    border:1px dashed var(--bp-line-dim);
+    border-radius:4px;
+    padding:20px;
+    background:var(--bp-raise);
+  }
+  .db-card h4{
+    font-family:var(--font-mono);
+    color:var(--bp-amber);
+    font-size:14px;
+    margin:0 0 14px;
+    letter-spacing:.02em;
+  }
+  .db-row{margin-bottom:12px;}
+  .db-row .k{
+    font-family:var(--font-mono);
+    font-size:10px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--bp-white-dim);
+    margin-bottom:4px;
+  }
+  .db-row .v{
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--bp-white);
+    word-break:break-all;
+    line-height:1.5;
+    background:var(--bp-sink);
+    padding:6px 8px;
+    border-radius:3px;
+    border:1px solid var(--bp-line-dim);
+  }
+
+  /* posting scenario flow */
+  .flow-group{
+    border:1px dashed var(--bp-line-dim);
+    border-radius:4px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .flow-head{
+    background:var(--bp-tint-2);
+    padding:10px 16px;
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:14.5px;
+    border-bottom:1px dashed var(--bp-line-dim);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    cursor:pointer;
+  }
+  .flow-head .count{
+    font-family:var(--font-mono);
+    font-size:10px;
+    color:var(--bp-white-dim);
+  }
+  .flow-body{padding:14px 16px;}
+  .flow-row{
+    display:grid;
+    grid-template-columns:150px 24px 1fr 24px 1fr;
+    align-items:center;
+    gap:6px;
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    padding:8px 0;
+    border-bottom:1px solid var(--bp-tint-2);
+  }
+  .flow-row:last-child{border-bottom:none;}
+  @media (max-width:700px){
+    .flow-row{grid-template-columns:1fr; gap:2px;}
+    .flow-row .arrow{display:none;}
+  }
+  .flow-row .posting-name{color:var(--bp-green); font-weight:600;}
+  .flow-row .tbl{
+    background:var(--bp-sink);
+    border:1px solid var(--bp-line-dim);
+    border-radius:3px;
+    padding:5px 8px;
+    color:var(--bp-white-dim);
+  }
+  .flow-row .arrow{color:var(--bp-amber); text-align:center;}
+
+  /* procedures */
+  .proc-tabs{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+  }
+  .proc-tab{
+    font-family:var(--font-mono);
+    font-size:12px;
+    background:transparent;
+    border:1px solid var(--bp-line-dim);
+    color:var(--bp-white-dim);
+    padding:8px 14px;
+    border-radius:3px;
+    cursor:pointer;
+  }
+  .proc-tab:hover{color:var(--bp-white); border-color:var(--bp-line);}
+  .proc-tab.active{
+    background:var(--bp-line);
+    color:var(--bp-onaccent);
+    border-color:var(--bp-line);
+    font-weight:600;
+  }
+  .proc-panel{display:none;}
+  .proc-panel.active{display:block; animation:fade .2s ease;}
+
+  .proc-sig{
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--bp-white);
+    background:var(--bp-sink);
+    border:1px dashed var(--bp-line-dim);
+    border-radius:4px;
+    padding:14px 16px;
+    margin-bottom:16px;
+    line-height:1.7;
+    overflow-x:auto;
+    white-space:pre;
+  }
+  .proc-sig .kw{color:var(--bp-amber);}
+  .proc-sig .pn{color:var(--bp-green);}
+
+  .formula-box{
+    border:1px dashed var(--bp-line-dim);
+    border-radius:4px;
+    padding:16px 18px;
+    margin-bottom:18px;
+    background:var(--bp-tint-1);
+  }
+  .formula-box .flabel{
+    font-family:var(--font-mono);
+    font-size:10px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--bp-amber);
+    margin-bottom:10px;
+  }
+  .formula-box .fline{
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    color:var(--bp-white);
+    line-height:2;
+  }
+  .formula-box .fline .fname{color:var(--bp-line); display:inline-block; min-width:96px;}
+
+  table.rowtype-table{width:100%; border-collapse:collapse; font-size:12px; margin-bottom:20px;}
+  table.rowtype-table thead th{
+    text-align:left;
+    font-family:var(--font-mono);
+    font-size:10px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--bp-amber);
+    background:var(--bp-tint-2);
+    padding:9px 10px;
+    border-bottom:1px dashed var(--bp-line-dim);
+  }
+  table.rowtype-table td{
+    padding:9px 10px;
+    border-bottom:1px solid var(--bp-tint-2);
+    vertical-align:top;
+    line-height:1.55;
+    color:var(--bp-white-dim);
+  }
+  table.rowtype-table td.rt-num{
+    font-family:var(--font-mono);
+    color:var(--bp-white);
+    font-weight:600;
+    white-space:nowrap;
+  }
+  table.rowtype-table td.rt-sign{font-family:var(--font-mono); white-space:nowrap;}
+  table.rowtype-table td.rt-sign.neg{color:var(--bp-red);}
+  table.rowtype-table td.rt-sign.pos{color:var(--bp-green);}
+  table.rowtype-table td.rt-type{font-family:var(--font-mono); color:var(--bp-line); white-space:nowrap;}
+
+  .code-toggle{
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    color:var(--bp-onaccent);
+    background:var(--bp-line);
+    border:none;
+    padding:8px 14px;
+    border-radius:3px;
+    cursor:pointer;
+    font-weight:600;
+    margin-bottom:12px;
+  }
+  .code-toggle:hover{background:var(--bp-white);}
+  .code-view{
+    display:none;
+    border:1px dashed var(--bp-line-dim);
+    border-radius:4px;
+    background:var(--bp-sink);
+    max-height:520px;
+    overflow:auto;
+    margin-bottom:24px;
+  }
+  .code-view.open{display:block;}
+  .code-view pre{
+    margin:0;
+    padding:16px 18px;
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    line-height:1.65;
+    color:var(--bp-white-dim);
+    white-space:pre;
+  }
+
+  .call-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:8px;}
+  @media (max-width:760px){.call-grid{grid-template-columns:1fr;}}
+  .call-card{
+    border:1px dashed var(--bp-line-dim);
+    border-radius:4px;
+    padding:16px 18px;
+    background:var(--bp-raise);
+  }
+  .call-card .clabel{
+    font-family:var(--font-mono);
+    font-size:10px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--bp-white-dim);
+    margin-bottom:10px;
+  }
+  .call-card pre{
+    margin:0;
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--bp-white);
+    line-height:1.7;
+    white-space:pre-wrap;
+  }
+  .call-card .k{color:var(--bp-amber);}
+  .call-card .s{color:var(--bp-green);}
+
+  /* table details */
+  .tbl-tabs{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+    border-bottom:1px dashed var(--bp-line-dim);
+    padding-bottom:16px;
+  }
+  .tbl-tab{
+    font-family:var(--font-mono);
+    font-size:12px;
+    background:transparent;
+    border:1px solid var(--bp-line-dim);
+    color:var(--bp-white-dim);
+    padding:7px 12px;
+    border-radius:3px;
+    cursor:pointer;
+  }
+  .tbl-tab:hover{color:var(--bp-white); border-color:var(--bp-line);}
+  .tbl-tab.active{
+    background:var(--bp-line);
+    color:var(--bp-onaccent);
+    border-color:var(--bp-line);
+    font-weight:600;
+  }
+
+  /* ---------- Sample records ---------- */
+  .smp-block{margin-bottom:36px;}
+  .smp-block:last-child{margin-bottom:0;}
+  .smp-block-head{
+    display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:12px;
+  }
+  .smp-tbl{
+    font-family:var(--font-mono); font-size:13px; font-weight:600;
+    color:var(--bp-line); letter-spacing:.02em;
+  }
+  .smp-note{
+    font-family:var(--font-mono); font-size:10.5px; letter-spacing:.04em;
+    color:var(--bp-white-dim); border:1px solid var(--bp-line-dim);
+    border-radius:3px; padding:2px 8px;
+  }
+  table.smp-table{font-size:11.5px; min-width:100%;}
+  table.smp-table thead th{white-space:nowrap;}
+  table.smp-table td.smp-cell{
+    font-family:var(--font-mono); color:var(--bp-white); white-space:nowrap;
+  }
+  table.smp-table td.smp-empty{color:var(--bp-line-dim);}
+
+  .tbl-meta{
+    font-size:13.5px;
+    color:var(--bp-white-dim);
+    line-height:1.7;
+    margin-bottom:16px;
+  }
+  .tbl-meta code{
+    font-family:var(--font-mono);
+    background:var(--bp-sink);
+    padding:1px 5px;
+    border-radius:3px;
+    color:var(--bp-line);
+  }
+
+  .search-wrap{margin-bottom:14px;}
+  .search-wrap input{
+    width:100%;
+    background:var(--bp-sink);
+    border:1px solid var(--bp-line-dim);
+    color:var(--bp-white);
+    font-family:var(--font-mono);
+    font-size:13px;
+    padding:9px 12px;
+    border-radius:3px;
+    outline:none;
+  }
+  .search-wrap input:focus{border-color:var(--bp-line);}
+  .search-wrap input::placeholder{color:var(--bp-line-dim);}
+
+  .data-table-wrap{
+    border:1px dashed var(--bp-line-dim);
+    border-radius:4px;
+    overflow:auto;
+  }
+  table.data-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12.5px;
+    min-width:720px;
+  }
+  table.data-table thead th{
+    text-align:left;
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--bp-amber);
+    background:var(--bp-tint-2);
+    padding:10px 12px;
+    position:sticky; top:0;
+    border-bottom:1px dashed var(--bp-line-dim);
+  }
+  table.data-table td{
+    padding:10px 12px;
+    border-bottom:1px solid var(--bp-tint-2);
+    vertical-align:top;
+    line-height:1.55;
+  }
+  table.data-table tr:last-child td{border-bottom:none;}
+  table.data-table tr:hover td{background:var(--bp-tint-1);}
+  table.data-table td.col-name{
+    font-family:var(--font-mono);
+    color:var(--bp-white);
+    font-weight:600;
+    white-space:nowrap;
+  }
+  table.data-table td.col-type{
+    font-family:var(--font-mono);
+    color:var(--bp-green);
+    white-space:nowrap;
+  }
+  table.data-table td.col-desc{color:var(--bp-white-dim); min-width:220px;}
+  table.data-table td.col-ref{color:var(--bp-line); font-family:var(--font-mono); font-size:11.5px;}
+  .no-results{
+    padding:24px;
+    text-align:center;
+    color:var(--bp-white-dim);
+    font-family:var(--font-mono);
+    font-size:12.5px;
+  }
+  .row-count{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    color:var(--bp-line-dim);
+    margin:8px 2px 0;
+    text-align:right;
+  }
+
+  .footer-note{
+    margin-top:36px;
+    padding-top:20px;
+    border-top:1px dashed var(--bp-line-dim);
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--bp-line-dim);
+    line-height:1.8;
+  }
+
+  ::-webkit-scrollbar{width:9px; height:9px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--bp-line-dim); border-radius:5px;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="stamp">Confidential Spec</div>
+      <h1>Airtel Ventas<br>Congo‑B</h1>
+      <p>ERP Posting Interface</p>
+    </div>
+
+    <nav id="nav">
+      <div class="nav-group-label">Reference</div>
+      <button class="nav-btn active" data-panel="overview"><span class="idx">00</span>Overview</button>
+      <button class="nav-btn" data-panel="requirements"><span class="idx">01</span>Requirements &amp; Assumptions</button>
+      <button class="nav-btn" data-panel="types"><span class="idx">02</span>Type Meanings</button>
+      <button class="nav-btn" data-panel="integration"><span class="idx">03</span>ERP Integration</button>
+      <button class="nav-btn" data-panel="scenarios"><span class="idx">04</span>Posting Scenarios</button>
+
+      <div class="nav-group-label">Staging Procedures</div>
+      <button class="nav-btn" data-panel="procedures"><span class="idx">05</span>Procedures &amp; Calling Methods</button>
+
+      <div class="nav-group-label">Interface Tables</div>
+      <button class="nav-btn" data-panel="tables"><span class="idx">06</span>Table Details</button>
+
+      <div class="nav-group-label">Reference Data</div>
+      <button class="nav-btn" data-panel="samples"><span class="idx">07</span>Sample Records</button>
+
+      <div class="nav-group-label">Appendix</div>
+      <button class="nav-btn" data-panel="notes"><span class="idx">08</span>Notes &amp; Source</button>
+    </nav>
+
+    <div class="theme-switch" role="group" aria-label="Colour theme">
+      <div class="theme-switch-label">Theme</div>
+      <div class="theme-opts" id="theme-opts">
+        <button class="theme-opt" data-theme="blue"><span class="sw sw-blue"></span>Blueprint</button>
+        <button class="theme-opt" data-theme="dark"><span class="sw sw-dark"></span>Midnight</button>
+        <button class="theme-opt active" data-theme="light"><span class="sw sw-light"></span>Daylight</button>
+        <button class="theme-opt" data-theme="graphite"><span class="sw sw-graphite"></span>Graphite</button>
+      </div>
+    </div>
+
+    <div class="sidebar-foot">
+      SIX DEE TELECOM SOLUTIONS PVT LTD<br>
+      © 6D Technologies · Confidential<br>
+      Bangalore, India
+    </div>
+  </aside>
+
+  <main>
+
+    <!-- 00 OVERVIEW -->
+    <section class="panel active" id="panel-overview">
+      <div class="crosshair"></div>
+      <p class="eyebrow">6D Technologies · ERP Integration Spec</p>
+      <h2 class="section-title">Airtel Ventas — ERP Posting</h2>
+      <p class="section-sub">Congo‑B market. Defines how Invoices, Credit/Debit Memos and Receipts created by the S&amp;D (Sales &amp; Distribution) system are staged and posted into the ERP, across four interface tables and two Oracle database links.</p>
+
+      <div class="stat-row">
+        <div class="stat"><div class="num">4</div><div class="lbl">Interface Tables</div></div>
+        <div class="stat"><div class="num">2</div><div class="lbl">DB Links</div></div>
+        <div class="stat"><div class="num">13</div><div class="lbl">Posting Scenarios</div></div>
+        <div class="stat"><div class="num">XAF</div><div class="lbl">Transaction Currency</div></div>
+      </div>
+
+      <div class="card">
+        <div class="corner tl"></div><div class="corner br"></div>
+        <h3>How the pieces connect</h3>
+        <p style="color:var(--bp-white-dim); font-size:13.5px; line-height:1.7; margin:0;">
+        S&amp;D sends Invoice and Receipt data into staging interface tables (<code style="font-family:var(--font-mono);color:var(--bp-line)">mkt_erp_*_intf</code>). A concurrent program picks up records with <code style="font-family:var(--font-mono);color:var(--bp-line)">PROCESS_FLAG = 'N'</code>, posts them across the <strong style="color:var(--bp-white)">CG_ASIPROD</strong> database link into ERP‑side staging tables (<code style="font-family:var(--font-mono);color:var(--bp-line)">asi_snd_*_stg</code>), then flips <code style="font-family:var(--font-mono);color:var(--bp-line)">POSTED_TO_ERP</code> to <code style="font-family:var(--font-mono);color:var(--bp-line)">'Y'</code>. Use the menu on the left to move through Requirements, Type codes, the DB links, the full Posting Scenario matrix, and each interface table's column spec.
+        </p>
+      </div>
+    </section>
+
+    <!-- 01 REQUIREMENTS -->
+    <section class="panel" id="panel-requirements">
+      <div class="crosshair"></div>
+      <p class="eyebrow">Section 01</p>
+      <h2 class="section-title">Requirements &amp; Assumptions</h2>
+      <p class="section-sub">Ground rules for how invoices, memos and receipts are interpreted and posted.</p>
+
+      <div class="card">
+        <div class="corner tl"></div><div class="corner br"></div>
+        <h3>Core requirements</h3>
+        <ul class="reqs" id="reqs-list"></ul>
+      </div>
+
+      <div class="card">
+        <div class="corner tl"></div><div class="corner br"></div>
+        <h3>Hard‑coded values — Receipt Reversal</h3>
+        <table class="data-table" style="min-width:0;">
+          <thead><tr><th>Field</th><th>Value</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name">Category</td><td class="col-desc">Reverse Payment</td></tr>
+            <tr><td class="col-name">Reason</td><td class="col-desc">Payment Reversal</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 02 TYPES -->
+    <section class="panel" id="panel-types">
+      <div class="crosshair"></div>
+      <p class="eyebrow">Section 02</p>
+      <h2 class="section-title">Type Meanings</h2>
+      <p class="section-sub">The <code style="font-family:var(--font-mono); color:var(--bp-line);">TYPE</code> code hard-coded per transaction, and what it means for how it's posted.</p>
+
+      <div class="glossary" id="glossary-list"></div>
+    </section>
+
+    <!-- 03 ERP INTEGRATION -->
+    <section class="panel" id="panel-integration">
+      <div class="crosshair"></div>
+      <p class="eyebrow">Section 03</p>
+      <h2 class="section-title">ERP Integration</h2>
+      <p class="section-sub">Database link details connecting the S&amp;D staging environment to the ERP database.</p>
+
+      <div class="db-grid" id="db-grid"></div>
+    </section>
+
+    <!-- 04 POSTING SCENARIOS -->
+    <section class="panel" id="panel-scenarios">
+      <div class="crosshair"></div>
+      <p class="eyebrow">Section 04</p>
+      <h2 class="section-title">ERP Posting Scenarios</h2>
+      <p class="section-sub">Every transaction type, grouped, showing each posting step and which ESB / ERP table it flows through. Click a group to expand.</p>
+
+      <div id="flow-list"></div>
+    </section>
+
+    <!-- 05 PROCEDURES -->
+    <section class="panel" id="panel-procedures">
+      <div class="crosshair"></div>
+      <p class="eyebrow">Section 05</p>
+      <h2 class="section-title">Procedures &amp; Calling Methods</h2>
+      <p class="section-sub">Primary Sale and Primary Sale Return are the only flows that need a manual trigger — everything else calls the ERP posting itself.</p>
+
+      <div class="card">
+        <div class="corner tl"></div><div class="corner br"></div>
+        <h3>How it works</h3>
+        <ul class="reqs">
+          <li>Once the Primary Sale is done and the invoice is generated, the Order is completed.</li>
+          <li>The procedure for a completed Primary Sale and Primary Sale Return must be called manually.</li>
+          <li>For POS Sale, POS Sale Return, Payment Receipt, Payment Receipt Reversal, Credit Memo and Debit Memo, the application itself calls the ERP posting — there is no procedure to call.</li>
+        </ul>
+      </div>
+
+      <div class="formula-box">
+        <div class="flabel">Shared tax formula — applied to every row above</div>
+        <div class="fline"><span class="fname">DIVISOR</span> = 1 + (VAT% / 100) + (VAT% / 100 × CA% / 100)</div>
+        <div class="fline"><span class="fname">BASE</span> = (QTY × UNIT_PRICE_TAX_INCLUDED) / DIVISOR</div>
+        <div class="fline"><span class="fname">VAT_AMOUNT</span> = BASE × VAT% / 100</div>
+        <div class="fline"><span class="fname">CA_AMOUNT</span> = VAT_AMOUNT × CA% / 100</div>
+      </div>
+
+      <div class="proc-tabs" id="proc-tabs"></div>
+      <div id="proc-panels"></div>
+
+      <div class="card">
+        <div class="corner tl"></div><div class="corner br"></div>
+        <h3>Calling methods</h3>
+        <p style="color:var(--bp-white-dim); font-size:13px; line-height:1.7; margin:0 0 16px;">Both procedures accept the same two call shapes — one specific order, or a date range sweep.</p>
+
+        <p style="font-family:var(--font-mono); font-size:11.5px; color:var(--bp-amber); letter-spacing:.05em; margin:0 0 8px;">PRC_INSERT_ERP_SELLIN_STAGING — Sales</p>
+        <div class="call-grid">
+          <div class="call-card">
+            <div class="clabel">By order ID</div>
+            <pre><span class="k">BEGIN</span>
+    PRC_INSERT_ERP_SELLIN_STAGING(
+        p_order_id => <span class="s">'2349004133'</span>
+    );
+<span class="k">END;</span></pre>
+          </div>
+          <div class="call-card">
+            <div class="clabel">By date range</div>
+            <pre><span class="k">BEGIN</span>
+    PRC_INSERT_ERP_SELLIN_STAGING(
+        p_from_date => TO_DATE(<span class="s">'2026-05-01'</span>, <span class="s">'YYYY-MM-DD'</span>),
+        p_to_date   => TO_DATE(<span class="s">'2026-05-30'</span>, <span class="s">'YYYY-MM-DD'</span>)
+    );
+<span class="k">END;</span></pre>
+          </div>
+        </div>
+
+        <p style="font-family:var(--font-mono); font-size:11.5px; color:var(--bp-amber); letter-spacing:.05em; margin:24px 0 8px;">PRC_INSERT_ERP_SELLIN_RETURN_STAGING — Sales Return</p>
+        <div class="call-grid">
+          <div class="call-card">
+            <div class="clabel">By order ID</div>
+            <pre><span class="k">BEGIN</span>
+    PRC_INSERT_ERP_SELLIN_RETURN_STAGING(
+        p_order_id => <span class="s">'2349004133'</span>
+    );
+<span class="k">END;</span></pre>
+          </div>
+          <div class="call-card">
+            <div class="clabel">By date range</div>
+            <pre><span class="k">BEGIN</span>
+    PRC_INSERT_ERP_SELLIN_RETURN_STAGING(
+        p_from_date => TO_DATE(<span class="s">'2026-05-01'</span>, <span class="s">'YYYY-MM-DD'</span>),
+        p_to_date   => TO_DATE(<span class="s">'2026-05-30'</span>, <span class="s">'YYYY-MM-DD'</span>)
+    );
+<span class="k">END;</span></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 SAMPLE RECORDS -->
+    <section class="panel" id="panel-samples">
+      <div class="crosshair"></div>
+      <p class="eyebrow">Section 07</p>
+      <h2 class="section-title">Sample Records</h2>
+      <p class="section-sub">Real staged rows from <code style="font-family:var(--font-mono); color:var(--bp-line);">ErpPosting_CG_FINUAT_V10.xlsx</code> — one tab per workbook sheet, grouped by target ERP table exactly as they were posted against CG_FINUAT.</p>
+
+      <div class="tbl-tabs" id="smp-tabs"></div>
+      <div id="smp-panels"></div>
+    </section>
+
+    <!-- 06 TABLE DETAILS -->
+    <section class="panel" id="panel-tables">
+      <div class="crosshair"></div>
+      <p class="eyebrow">Section 06</p>
+      <h2 class="section-title">Interface Table Details</h2>
+      <p class="section-sub">Column‑level specification for each staging interface table. Search filters by column name or description.</p>
+
+      <div class="tbl-tabs" id="tbl-tabs"></div>
+      <div class="tbl-meta" id="tbl-meta"></div>
+      <div class="search-wrap">
+        <input type="text" id="tbl-search" placeholder="Filter columns… e.g. process_flag, currency, amount">
+      </div>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th style="width:16%;">Column</th><th style="width:14%;">Data Type</th><th style="width:44%;">Description</th><th style="width:26%;">Reference</th></tr>
+          </thead>
+          <tbody id="tbl-body"></tbody>
+        </table>
+      </div>
+      <div class="row-count" id="row-count"></div>
+    </section>
+
+    <!-- 06 NOTES -->
+    <section class="panel" id="panel-notes">
+      <div class="crosshair"></div>
+      <p class="eyebrow">Section 08</p>
+      <h2 class="section-title">Notes &amp; Source</h2>
+      <p class="section-sub">Housekeeping details carried over from the source specification.</p>
+
+      <div class="card">
+        <div class="corner tl"></div><div class="corner br"></div>
+        <h3>Sample Records</h3>
+        <p style="color:var(--bp-white-dim); font-size:13.5px; line-height:1.7; margin:0;">
+        Real sample rows from <code style="font-family:var(--font-mono);color:var(--bp-line);">ErpPosting_CG_FINUAT_V10.xlsx</code> are in the <strong style="color:var(--bp-white);">Sample Records</strong> menu item — one tab per workbook sheet, covering every posting scenario with actual staged rows against the CG_FINUAT link.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="corner tl"></div><div class="corner br"></div>
+        <h3>Document control</h3>
+        <ul class="reqs">
+          <li>Prepared by Six Dee Telecom Solutions Private Limited</li>
+          <li>No 26, Bannerghatta Road, J.P. Nagar 3rd Phase, Bangalore – 560 076, India</li>
+          <li>T. +91 80404 85959 · www.6dtech.co.in</li>
+          <li>Marked confidential — © 6D Technologies</li>
+        </ul>
+      </div>
+
+      <div class="footer-note">
+        Rendered from Airtel‑Ventas‑CG_ERP‑Posting.docx — interactive reference build.
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+/* ---------------- DATA ---------------- */
+
+const REQUIREMENTS = [
+  "Airtel S&D Invoice interface — required for creation of Invoice / Credit Memo / Debit Memo in the ERP.",
+  "Airtel S&D Receipt interface — required for creation of Receipts in the ERP. If an Invoice number is provided by S&D, the receipt is applied against that invoice.",
+  "Transaction Type is hard-coded for creating invoices/credit/debit memos. Receivable Account derives from Transaction Type; Revenue derives from Item — Sales Account; Tax derives from Taxes defined. For Credit/Debit Memos with no item, S&D sends a description used as Memo Lines in ERP to derive the Revenue Account.",
+  "The Concurrent Program output file shows counts of Processed / Success / Error records, with error messages for failures.",
+  "The program can run on any frequency — it picks up records with Process Flag = 'N'.",
+  "Master data created in ERP and sent through the interface is shared by Business with the S&D team.",
+  "S&D provides original Receipt details already created in ERP for receipt reversal; the matching record is located via the interface table and reversed in ERP.",
+  "The invoice integration also feeds INVENTORY accounting staging tables. For every invoice, cost (based on product, quantity, and Cost Pricing Segment) is posted with specific Source and Destination details."
+];
+
+const TYPES = [
+  { code:"POS", desc:"Once Invoice per Shop per day sent by S&D, created as an Invoice in ERP." },
+  { code:"PRI", desc:"Dealer Individual Invoices sent by S&D, created as an Invoice in ERP." },
+  { code:"PRV", desc:"Credit Memo sent by S&D, created in ERP and NOT applied against the original invoice." },
+  { code:"SLR", desc:"Credit Memo sent by S&D, created in ERP and NOT applied against the original invoice." },
+  { code:"Manual", desc:"Debit or Credit Memo created depending on the Invoice Type." }
+];
+
+const DBLINKS = [
+  {
+    name:"CG_FINUAT",
+    user:"SND",
+    host:"(DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = 172.23.120.18)(PORT = 1524)) ) (CONNECT_DATA = (SERVICE_NAME= FINUAT) ) )"
+  },
+  {
+    name:"CG_ASIPROD",
+    user:"VENTAS24ERP",
+    host:"(DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = erpasi.db.airtel.africa)(PORT = 1531)) ) (CONNECT_DATA = (SERVICE_NAME= ASIPROD) ) )"
+  }
+];
+
+const SCENARIOS = [
+  { type:"Payment Receipt", rows:[
+    ["Receipt Posting","MKT_ERP_RECEIPT_INTF","ASI_SND_AR_RECEIPT_STG"]
+  ]},
+  { type:"Payment Receipt Reversal", rows:[
+    ["Receipt Reverse Posting","MKT_ERP_RECEIPT_REV_INTF","ASI_SND_AR_RECEIPT_REV_STG"]
+  ]},
+  { type:"Credit Memo", rows:[
+    ["Invoice Posting","MKT_ERP_INV_INTF","ASI_SND_AR_INVOICE_STG"]
+  ]},
+  { type:"Debit Memo", rows:[
+    ["Invoice Posting","MKT_ERP_INV_INTF","ASI_SND_AR_INVOICE_STG"]
+  ]},
+  { type:"Primary Sale", rows:[
+    ["Invoice Posting","MKT_ERP_INV_INTF","ASI_SND_AR_INVOICE_STG"],
+    ["Inventory Posting","MKT_ERP_INVT_UPD_INTF","ASI_SND_INV_TRANS"]
+  ]},
+  { type:"Primary Sale Return", rows:[
+    ["Invoice Posting","MKT_ERP_INV_INTF","ASI_SND_AR_INVOICE_STG"],
+    ["Inventory Posting","MKT_ERP_INVT_UPD_INTF","ASI_SND_INV_TRANS"]
+  ]},
+  { type:"POS Sale", rows:[
+    ["Invoice Posting","MKT_ERP_INV_INTF","ASI_SND_AR_INVOICE_STG"],
+    ["Inventory Posting","MKT_ERP_INVT_UPD_INTF","ASI_SND_INV_TRANS"],
+    ["Receipt Posting","MKT_ERP_RECEIPT_INTF","ASI_SND_AR_RECEIPT_STG"]
+  ]},
+  { type:"POS Sale Return", rows:[
+    ["Invoice Posting","MKT_ERP_INV_INTF","ASI_SND_AR_INVOICE_STG"],
+    ["Inventory Posting","MKT_ERP_INVT_UPD_INTF","ASI_SND_INV_TRANS"],
+    ["Receipt Reverse Posting","MKT_ERP_RECEIPT_REV_INTF","ASI_SND_AR_RECEIPT_REV_STG"]
+  ]},
+  { type:"Stock Transfer", rows:[
+    ["Inventory Posting","MKT_ERP_INVT_UPD_INTF","ASI_SND_INV_TRANS"]
+  ]},
+  { type:"Stock Transfer Return", rows:[
+    ["Inventory Posting","MKT_ERP_INVT_UPD_INTF","ASI_SND_INV_TRANS"]
+  ]},
+  { type:"HBB Capitalization", rows:[
+    ["Header & Line","MKT_ERP_HEADER / MKT_ERP_LINE","ASI_SND_HBB_MO_HDR_TBL / ASI_SND_HBB_MO_LINE_TBL"]
+  ]},
+  { type:"Product Update", rows:[
+    ["Inventory Posting","MKT_ERP_INVT_UPD_INTF","ASI_SND_INV_TRANS"]
+  ]}
+];
+
+const SAMPLES = [{"name": "PrimarySale", "blocks": [{"table": "ASI_SND_AR_INVOICE_STG", "note": "CG_FINUAT · Invoice Posting", "cols": ["OPERATING_UNIT", "CUSTOMER_NUMBER", "CUSTOMER_LOCATION", "TRANSACTION_NO", "TRANSACTION_DATE", "DESCRIPTION", "CURRENCY", "REFERENCE_NO", "QUANTITY", "UNIT_PRICE", "SELLING_AMOUNT", "ERP_ITEM_CODE", "INVOICE_TYPE", "TAX_CODE", "ITEM_TAX_CATEGORY", "TYPE", "PROCESS_FLAG", "CREATION_DATE", "LAST_UPDATION_DATE", "LAST_UPDATED_BY", "LAST_UPDATED_LOGIN", "REQUEST_ID", "REC_ACCOUNT_ID", "REV_ACCOUNT_ID", "INV_TRX_TYPE_ID", "CMDM_TRX_TYPE_ID", "CUST_ACCOUNT_ID", "CUST_ACCT_SITE_ID", "SET_OF_BOOKS_ID", "PAYMENT_TERM_ID", "ITEM_ID", "UOM_CODE", "ORGANIZATION_CODE", "ORGANIZATION_ID", "LINE_TYPE", "TAXABLE_AMOUNT"], "rows": [["5405", "305488", "679777", "2342000471985", "2026-05-26", "SIM prepaid 128K", "XAF", "2349002165", "10", "168.208579", "1682.08579", "106438128", "INVOICE", "", "", "PRI", "I", "2026-05-26", "2026-05-28 16:36:07", "1943225", "1943225", "195597247", "4691857", "4692499", "97695", "97696", "2161599", "401540", "16664", "5", "6467074", "EA", "57", "5451", "INVOICE", "1682.08579"], ["5405", "305488", "679777", "2342000471985", "2026-05-26", "SIM prepaid 128K", "XAF", "2349002165", "1", "302.77544", "302.77544", "106438128", "INVOICE", "CG VAT 18%", "0.18", "PRI", "I", "2026-05-26", "2026-05-28 16:36:07", "1943225", "1943225", "195597247", "4691857", "9077233", "97695", "97696", "2161599", "401540", "16664", "5", "6467074", "EA", "57", "5451", "TAX", "302.77544"], ["5405", "305488", "679777", "2342000471986", "2026-05-26", "Tozed M30S Mifi", "XAF", "2349002167", "2", "10513.036165", "21026.07233", "110146984", "INVOICE", "", "", "PRI", "I", "2026-05-26", "2026-05-28 16:36:07", "1943225", "1943225", "195597247", "4691857", "4692493", "97695", "97696", "2161599", "401540", "16664", "5", "4040766", "EA", "58", "5452", "INVOICE", "21026.07233"], ["5405", "305488", "679777", "2342000471986", "2026-05-26", "Tozed M30S Mifi", "XAF", "2349002167", "1", "3784.69302", "3784.69302", "110146984", "INVOICE", "CG VAT 18%", "0.18", "PRI", "I", "2026-05-26", "2026-05-28 16:36:07", "1943225", "1943225", "195597247", "4691857", "9077233", "97695", "97696", "2161599", "401540", "16664", "5", "4040766", "EA", "58", "5452", "TAX", "3784.69302"], ["5405", "305488", "679777", "2342000471970", "2026-05-26", "SIM Card 64 K Native LTE 2FF\\3FF\\4FF - Loose", "XAF", "2349002166", "952", "84.104289", "80067.283128", "110121346", "INVOICE", "", "", "PRI", "I", "2026-05-26", "2026-05-28 16:36:07", "1943225", "1943225", "195597247", "4691857", "4692499", "97695", "97696", "2161599", "401540", "16664", "5", "3182766", "UN", "58", "5452", "INVOICE", "80067.283128"], ["5405", "305488", "679777", "2342000471970", "2026-05-26", "SIM Card 64 K Native LTE 2FF\\3FF\\4FF - Loose", "XAF", "2349002166", "1", "14412.110944", "14412.110944", "110121346", "INVOICE", "CG VAT 18%", "0.18", "PRI", "I", "2026-05-26", "2026-05-28 16:36:07", "1943225", "1943225", "195597247", "4691857", "9077233", "97695", "97696", "2161599", "401540", "16664", "5", "3182766", "UN", "58", "5452", "TAX", "14412.110944"], ["5405", "305488", "679777", "2342000471971", "2026-05-26", "Tozed ZLT T30 4G CPE", "XAF", "2349002168", "10", "10513.036165", "105130.36165", "110152719", "INVOICE", "", "", "PRI", "I", "2026-05-26", "2026-05-28 16:36:07", "1943225", "1943225", "195597247", "4691857", "4692493", "97695", "97696", "2161599", "401540", "16664", "5", "5380929", "EA", "58", "5452", "INVOICE", "105130.36165"], ["5405", "305488", "679777", "2342000471971", "2026-05-26", "Tozed ZLT T30 4G CPE", "XAF", "2349002168", "1", "18923.4651", "18923.4651", "110152719", "INVOICE", "CG VAT 18%", "0.18", "PRI", "I", "2026-05-26", "2026-05-28 16:36:07", "1943225", "1943225", "195597247", "4691857", "9077233", "97695", "97696", "2161599", "401540", "16664", "5", "5380929", "EA", "58", "5452", "TAX", "18923.4651"], ["5405", "305488", "679777", "2342000471987", "2026-05-26", "SIM Card 128K Native LTE 2FF\\3FF\\4FF - Loose", "XAF", "2349002169", "250", "84.104289", "21026.07225", "110121348", "INVOICE", "", "", "PRI", "I", "2026-05-26", "2026-05-28 16:36:07", "1943225", "1943225", "195597247", "4691857", "4692499", "97695", "97696", "2161599", "401540", "16664", "5", "3182768", "UN", "59", "5453", "INVOICE", "21026.07225"], ["5405", "305488", "679777", "2342000471987", "2026-05-26", "SIM Card 128K Native LTE 2FF\\3FF\\4FF - Loose", "XAF", "2349002169", "1", "3784.693", "3784.693", "110121348", "INVOICE", "CG VAT 18%", "0.18", "PRI", "I", "2026-05-26", "2026-05-28 16:36:07", "1943225", "1943225", "195597247", "4691857", "9077233", "97695", "97696", "2161599", "401540", "16664", "5", "3182768", "UN", "59", "5453", "TAX", "3784.693"], ["5405", "305488", "679777", "2342000471988", "2026-05-26", "RCV - Mini 42.5 x 17.4, UV with Security - 1000 FCFA", "XAF", "2349002171", "10", "841.042893", "8410.42893", "110117456", "INVOICE", "", "", "PRI", "I", "2026-05-26", "2026-05-28 16:36:07", "1943225", "1943225", "195597247", "4691857", "4692483", "97695", "97696", "2161599", "401540", "16664", "5", "3168471", "EA", "53", "5447", "INVOICE", "8410.42893"], ["5405", "305488", "679777", "2342000471988", "2026-05-26", "RCV - Mini 42.5 x 17.4, UV with Security - 1000 FCFA", "XAF", "2349002171", "1", "1513.87721", "1513.87721", "110117456", "INVOICE", "CG VAT 18%", "0.18", "PRI", "I", "2026-05-26", "2026-05-28 16:36:07", "1943225", "1943225", "195597247", "4691857", "9077233", "97695", "97696", "2161599", "401540", "16664", "5", "3168471", "EA", "53", "5447", "TAX", "1513.87721"], ["5405", "305488", "679777", "2342000471988", "2026-05-26", "RCV - Mini 42.5 x 17.4, UV with Security - 1000 FCFA - Discount", "XAF", "2349002171", "10", "-60", "-600", "110121363", "INVOICE", "", "0.06", "PRI", "I", "2026-05-26", "2026-05-28 16:36:07", "1943225", "1943225", "195597247", "4691857", "4692495", "97695", "97696", "2161599", "401540", "16664", "5", "3184818", "EA", "53", "5447", "INVOICE", "-600"], ["5405", "305488", "679777", "2342000471972", "2026-05-26", "Postpaid Blanche-SIM Card 64 K Native S@T 2FF\\3FF\\4FF - Loose", "XAF", "2349002177", "500", "1669.470143", "834735.0715", "110120800", "INVOICE", "", "", "PRI", "I", "2026-05-26", "2026-05-28 16:36:07", "1943225", "1943225", "195597247", "4691857", "4692507", "97695", "97696", "2161599", "401540", "16664", "5", "3174273", "EA", "59", "5453", "INVOICE", "834735.0715"], ["5405", "305488", "679777", "2342000471972", "2026-05-26", "Postpaid Blanche-SIM Card 64 K Native S@T 2FF\\3FF\\4FF - Loose", "XAF", "2349002177", "1", "150252.313", "150252.313", "110120800", "INVOICE", "CG VAT 18%", "0.18", "PRI", "I", "2026-05-26", "2026-05-28 16:36:07", "1943225", "1943225", "195597247", "4691857", "9077233", "97695", "97696", "2161599", "401540", "16664", "5", "3174273", "EA", "59", "5453", "TAX", "150252.313"]]}, {"table": "ASI_SND_INV_TRANS", "note": "CG_FINUAT · Inventory Posting", "cols": ["OPERATING_UNIT", "SRN_NO", "BATCH_NAME", "ORG_CODE", "ITEM_CODE", "QUANTITY", "SUBINVENTORY", "TRANSACTION_DATE", "TRANSACTION_TYPE", "TRANSACTION_REF", "PROCESS_FLAG", "CREATION_DATE", "LAST_UPDATE_DATE", "LAST_UPDATED_BY", "LAST_UPDATE_LOGIN", "REQUEST_ID", "REV_ACCOUNT_ID", "ITEM_ID", "UOM_CODE", "FROM_ORGANIZATION_ID", "TRANSACTION_TYPE_ID", "QUANTITY_SIGN", "TRANSACTION_INTERFACE_ID"], "rows": [["5405", "10000002", "ORD_ID", "57", "106438128", "10", "Sales", "2026-05-26", "S&D Sales Issue", "2349002165", "I", "2026-05-26", "2026-05-29 16:07:06", "1943225", "1943225", "195598571", "4692164", "6467074", "EA", "5451", "580", "-1", "333234437"], ["5405", "10000003", "ORD_ID", "58", "110146984", "2", "Sales", "2026-05-26", "S&D Sales Issue", "2349002167", "I", "2026-05-26", "2026-05-29 16:07:06", "1943225", "1943225", "195598571", "4692536", "4040766", "EA", "5452", "580", "-1", "333234438"], ["5405", "10000004", "ORD_ID", "58", "110121346", "952", "Sales", "2026-05-26", "S&D Sales Issue", "2349002166", "I", "2026-05-26", "2026-05-29 16:07:06", "1943225", "1943225", "195598571", "4691872", "3182766", "UN", "5452", "580", "-1", "333234439"], ["5405", "10000005", "ORD_ID", "58", "110152719", "10", "Sales", "2026-05-26", "S&D Sales Issue", "2349002168", "I", "2026-05-26", "2026-05-29 16:07:06", "1943225", "1943225", "195598571", "4692536", "5380929", "EA", "5452", "580", "-1", "333234440"], ["5405", "10000007", "ORD_ID", "53", "110117456", "10", "Sales", "2026-05-26", "S&D Sales Issue", "2349002171", "I", "2026-05-26", "2026-05-29 16:07:06", "1943225", "1943225", "195598571", "4691872", "3168471", "EA", "5447", "580", "-1", "333234441"], ["5405", "10000008", "ORD_ID", "59", "110120800", "500", "Sales", "2026-05-26", "S&D Sales Issue", "2349002177", "I", "2026-05-26", "2026-05-29 16:07:06", "1943225", "1943225", "195598571", "4691872", "3174273", "EA", "5453", "580", "-1", "333234442"], ["5405", "10000006", "ORD_ID", "59", "110121348", "250", "Sales", "2026-05-26", "S&D Sales Issue", "2349002169", "I", "2026-05-26", "2026-05-29 16:07:06", "1943225", "1943225", "195598571", "4691872", "3182768", "UN", "5453", "580", "-1", "333234443"]]}]}, {"name": "PrimarySaleReturn", "blocks": [{"table": "ASI_SND_AR_INVOICE_STG", "note": "CG_FINUAT · Invoice Posting", "cols": ["OPERATING_UNIT", "CUSTOMER_NUMBER", "CUSTOMER_LOCATION", "TRANSACTION_NO", "TRANSACTION_DATE", "DESCRIPTION", "CURRENCY", "REFERENCE_NO", "QUANTITY", "UNIT_PRICE", "SELLING_AMOUNT", "ERP_ITEM_CODE", "INVOICE_TYPE", "TAX_CODE", "ITEM_TAX_CATEGORY", "TYPE", "TRANSACTION_REF_NO", "TRANSACTION_REF_DATE", "PROCESS_FLAG", "CREATION_DATE", "LAST_UPDATION_DATE", "LAST_UPDATED_BY", "LAST_UPDATED_LOGIN", "REQUEST_ID", "REC_ACCOUNT_ID", "REV_ACCOUNT_ID", "INV_TRX_TYPE_ID", "CMDM_TRX_TYPE_ID", "CUST_ACCOUNT_ID", "CUST_ACCT_SITE_ID", "SET_OF_BOOKS_ID", "ITEM_ID", "UOM_CODE", "ORGANIZATION_CODE", "ORGANIZATION_ID", "LINE_TYPE", "TAXABLE_AMOUNT"], "rows": [["5405", "305488", "679777", "2342000472163", "2026-05-29", "Tozed M30S Mifi", "XAF", "2349002288", "-2", "10513.036165", "-21026.07233", "110146984", "CREDIT MEMO", "", "", "SLR", "2342000471986", "2026-05-26", "I", "2026-05-29", "2026-05-29 10:26:28", "1943225", "1943225", "195598316", "4691857", "4692493", "97695", "97696", "2161599", "401540", "16664", "4040766", "EA", "58", "5452", "INVOICE", "-21026.07233"], ["5405", "305488", "679777", "2342000472163", "2026-05-29", "Tozed M30S Mifi", "XAF", "2349002288", "1", "-1892.34651", "-3784.69302", "110146984", "CREDIT MEMO", "CG VAT 18%", "0.18", "SLR", "2342000471986", "2026-05-26", "I", "2026-05-29", "2026-05-29 10:26:28", "1943225", "1943225", "195598316", "4691857", "9077233", "97695", "97696", "2161599", "401540", "16664", "4040766", "EA", "58", "5452", "TAX", "-3784.69302"]]}, {"table": "ASI_SND_INV_TRANS", "note": "CG_FINUAT · Inventory Posting", "cols": ["OPERATING_UNIT", "SRN_NO", "BATCH_NAME", "ORG_CODE", "ITEM_CODE", "QUANTITY", "DESTINATION_ORG_CODE", "SUBINVENTORY", "TRANSACTION_DATE", "TRANSACTION_TYPE", "TRANSACTION_REF", "PROCESS_FLAG", "CREATION_DATE", "LAST_UPDATE_DATE", "LAST_UPDATED_BY", "LAST_UPDATE_LOGIN", "REQUEST_ID", "REV_ACCOUNT_ID", "ITEM_ID", "UOM_CODE", "FROM_ORGANIZATION_ID", "TRANSACTION_TYPE_ID", "QUANTITY_SIGN", "TRANSACTION_INTERFACE_ID"], "rows": [["5405", "0", "Congo B 0 29May26", "63", "110146984", "2", "63", "Sales", "2026-05-29", "S&D Sales Return", "2349002290-2349002199", "I", "2026-05-29", "2026-05-29 13:05:28", "1943225", "1943225", "195598373", "4692536", "4040766", "EA", "5455", "581", "1", "333232830"]]}]}, {"name": "PosSale", "blocks": [{"table": "ASI_SND_AR_INVOICE_STG", "note": "CG_FINUAT · Invoice Posting", "cols": ["OPERATING_UNIT", "CUSTOMER_NUMBER", "CUSTOMER_LOCATION", "TRANSACTION_NO", "TRANSACTION_DATE", "DESCRIPTION", "CURRENCY", "REFERENCE_NO", "QUANTITY", "UNIT_PRICE", "SELLING_AMOUNT", "ERP_ITEM_CODE", "INVOICE_TYPE", "TYPE", "PROCESS_FLAG", "CREATION_DATE", "LAST_UPDATION_DATE", "LAST_UPDATED_BY", "LAST_UPDATED_LOGIN", "REQUEST_ID", "REC_ACCOUNT_ID", "REV_ACCOUNT_ID", "INV_TRX_TYPE_ID", "CMDM_TRX_TYPE_ID", "CUST_ACCOUNT_ID", "CUST_ACCT_SITE_ID", "SET_OF_BOOKS_ID", "PAYMENT_TERM_ID", "ITEM_ID", "UOM_CODE", "ORGANIZATION_CODE", "ORGANIZATION_ID"], "rows": [["5405", "305488", "679777", "2342000471975", "2026-05-26", "RCV - Mini 42.5 x 17.4, UV with Security - 1000 FCFA", "XAF", "2349002195", "2", "1000", "2000", "110117456", "INVOICE", "POS", "I", "2026-05-26", "2026-05-28 16:20:11", "1943225", "1943225", "195597219", "4691857", "4692483", "97695", "97696", "2161599", "401540", "16664", "5", "3168471", "EA", "63", "5455"], ["5405", "305488", "679777", "2342000471976", "2026-05-26", "SIM prepaid 128K", "XAF", "2349002196", "2", "100", "200", "106438128", "INVOICE", "POS", "I", "2026-05-26", "2026-05-28 16:20:11", "1943225", "1943225", "195597219", "4691857", "4692499", "97695", "97696", "2161599", "401540", "16664", "5", "6467074", "EA", "63", "5455"], ["5405", "305488", "679777", "2342000471977", "2026-05-26", "SIM prepaid 64K", "XAF", "2349002197", "2", "100", "200", "100042703", "INVOICE", "POS", "I", "2026-05-26", "2026-05-28 16:20:11", "1943225", "1943225", "195597219", "4691857", "4692499", "97695", "97696", "2161599", "401540", "16664", "5", "2047082", "EA", "63", "5455"], ["5405", "305488", "679777", "2342000471991", "2026-05-26", "Tozed M30S Mifi", "XAF", "2349002199", "2", "1000", "2000", "110146984", "INVOICE", "POS", "I", "2026-05-26", "2026-05-28 16:20:11", "1943225", "1943225", "195597219", "4691857", "4692493", "97695", "97696", "2161599", "401540", "16664", "5", "4040766", "EA", "63", "5455"], ["5405", "305488", "679777", "2342000471998", "2026-05-26", "Tozed ZLT T30 4G CPE", "XAF", "2349002200", "2", "1000", "2000", "110152719", "INVOICE", "POS", "I", "2026-05-26", "2026-05-28 16:20:11", "1943225", "1943225", "195597219", "4691857", "4692493", "97695", "97696", "2161599", "401540", "16664", "5", "5380929", "EA", "63", "5455"], ["5405", "305488", "679777", "2342000471992", "2026-05-26", "SIM Card 64 K Native LTE 2FF\\3FF\\4FF - Loose", "XAF", "2349002201", "2", "100", "200", "110121346", "INVOICE", "POS", "I", "2026-05-26", "2026-05-28 16:20:11", "1943225", "1943225", "195597219", "4691857", "4692499", "97695", "97696", "2161599", "401540", "16664", "5", "3182766", "UN", "63", "5455"]]}, {"table": "ASI_SND_INV_TRANS", "note": "CG_FINUAT · Inventory Posting", "cols": ["OPERATING_UNIT", "SRN_NO", "BATCH_NAME", "ORG_CODE", "ITEM_CODE", "QUANTITY", "SUBINVENTORY", "TRANSACTION_DATE", "TRANSACTION_TYPE", "TRANSACTION_REF", "PROCESS_FLAG", "CREATION_DATE", "LAST_UPDATE_DATE", "LAST_UPDATED_BY", "LAST_UPDATE_LOGIN", "REQUEST_ID", "REV_ACCOUNT_ID", "ITEM_ID", "UOM_CODE", "FROM_ORGANIZATION_ID", "TRANSACTION_TYPE_ID", "QUANTITY_SIGN", "TRANSACTION_INTERFACE_ID"], "rows": [["5405", "22", "Congo B 22 26May26", "63", "110117456", "2", "Sales", "2026-05-26", "S&D Sales Issue", "2349002195", "I", "2026-05-26", "2026-05-28 15:59:59", "1943225", "1943225", "195597210", "4691872", "3168471", "EA", "5455", "580", "-1", "333232806"], ["5405", "22", "Congo B 22 26May26", "63", "110146984", "2", "Sales", "2026-05-26", "S&D Sales Issue", "2349002199", "I", "2026-05-26", "2026-05-28 15:59:59", "1943225", "1943225", "195597210", "4692536", "4040766", "EA", "5455", "580", "-1", "333232807"], ["5405", "22", "Congo B 22 26May26", "63", "100042703", "2", "Sales", "2026-05-26", "S&D Sales Issue", "2349002197", "I", "2026-05-26", "2026-05-28 15:59:59", "1943225", "1943225", "195597210", "4692164", "2047082", "EA", "5455", "580", "-1", "333232809"], ["5405", "22", "Congo B 22 26May26", "63", "106438128", "2", "Sales", "2026-05-26", "S&D Sales Issue", "2349002196", "I", "2026-05-26", "2026-05-28 15:59:59", "1943225", "1943225", "195597210", "4692164", "6467074", "EA", "5455", "580", "-1", "333232810"], ["5405", "22", "Congo B 22 26May26", "63", "110152719", "2", "Sales", "2026-05-26", "S&D Sales Issue", "2349002200", "I", "2026-05-26", "2026-05-28 15:59:59", "1943225", "1943225", "195597210", "4692536", "5380929", "EA", "5455", "580", "-1", "333232811"], ["5405", "22", "Congo B 22 26May26", "63", "110121346", "2", "Sales", "2026-05-26", "S&D Sales Issue", "2349002201", "I", "2026-05-26", "2026-05-28 15:59:59", "1943225", "1943225", "195597210", "4691872", "3182766", "UN", "5455", "580", "-1", "333232812"]]}, {"table": "ASI_SND_AR_RECEIPT_STG", "note": "CG_FINUAT · Receipt Posting", "cols": ["OPERATING_UNIT", "CUSTOMER_NUMBER", "CUSTOMER_LOCATION", "RECEIPT_METHOD", "RECEIPT_NUMBER", "RECEIPT_DATE", "GL_DATE", "CURRENCY", "RECEIPT_AMOUNT", "INVOICE_NUMBER", "AMOUNT_APPLIED", "APPLY_DATE", "COMMENTS", "PROCESS_FLAG", "CREATION_DATE", "CREATED_BY", "LAST_UPDATE_DATE", "LAST_UPDATED_BY", "LAST_UPDATED_LOGIN", "REQUEST_ID"], "rows": [["5405", "305488", "679777", "CAISSE WALKIN OYO", "170076_null", "2026-05-26", "2026-05-26", "XAF", "2000", "2342000471975", "2000", "2026-05-26", "POS Order receipt", "Y", "2026-05-26", "-99", "2026-05-28 19:04:54", "1943225", "1943225", "-1"], ["5405", "305488", "679777", "CAISSE WALKIN OYO", "850086_null", "2026-05-26", "2026-05-26", "XAF", "200", "2342000471976", "200", "2026-05-26", "POS Order receipt", "Y", "2026-05-26", "-99", "2026-05-28 19:05:16", "1943225", "1943225", "-1"], ["5405", "305488", "679777", "CAISSE WALKIN OYO", "150093_null", "2026-05-26", "2026-05-26", "XAF", "200", "2342000471977", "200", "2026-05-26", "POS Order receipt", "Y", "2026-05-26", "-99", "2026-05-28 19:05:39", "1943225", "1943225", "-1"], ["5405", "305488", "679777", "CAISSE WALKIN OYO", "270111_null", "2026-05-26", "2026-05-26", "XAF", "2000", "2342000471991", "2000", "2026-05-26", "POS Order receipt", "Y", "2026-05-26", "-99", "2026-05-28 19:06:02", "1943225", "1943225", "-1"], ["5405", "305488", "679777", "CAISSE WALKIN OYO", "160132_null", "2026-05-26", "2026-05-26", "XAF", "200", "2342000471992", "200", "2026-05-26", "POS Order receipt", "Y", "2026-05-26", "-99", "2026-05-28 19:06:28", "1943225", "1943225", "-1"], ["5405", "305488", "679777", "CAISSE WALKIN OYO", "940118_null", "2026-05-26", "2026-05-26", "XAF", "2000", "2342000471998", "2000", "2026-05-26", "POS Order receipt", "Y", "2026-05-26", "-99", "2026-05-28 19:06:50", "1943225", "1943225", "-1"]]}]}, {"name": "PosSaleReturn", "blocks": [{"table": "ASI_SND_AR_INVOICE_STG", "note": "CG_FINUAT · Invoice Posting", "cols": ["OPERATING_UNIT", "CUSTOMER_NUMBER", "CUSTOMER_LOCATION", "TRANSACTION_NO", "TRANSACTION_DATE", "DESCRIPTION", "CURRENCY", "REFERENCE_NO", "QUANTITY", "UNIT_PRICE", "SELLING_AMOUNT", "ERP_ITEM_CODE", "INVOICE_TYPE", "TYPE", "TRANSACTION_REF_NO", "PROCESS_FLAG", "CREATION_DATE", "LAST_UPDATION_DATE", "LAST_UPDATED_BY", "LAST_UPDATED_LOGIN", "REQUEST_ID", "REC_ACCOUNT_ID", "REV_ACCOUNT_ID", "INV_TRX_TYPE_ID", "CMDM_TRX_TYPE_ID", "CUST_ACCOUNT_ID", "CUST_ACCT_SITE_ID", "SET_OF_BOOKS_ID", "ITEM_ID", "UOM_CODE", "ORGANIZATION_CODE", "ORGANIZATION_ID"], "rows": [["5405", "305488", "679777", "2342000472162", "2026-05-29", "Tozed M30S Mifi", "XAF", "2349002290", "-2", "1000", "-2000", "110146984", "CREDIT MEMO", "PRV", "2349002199", "I", "2026-05-29", "2026-05-29 13:23:49", "1943225", "1943225", "195598380", "4691857", "4692493", "97695", "97696", "2161599", "401540", "16664", "4040766", "EA", "63", "5455"]]}, {"table": "ASI_SND_INV_TRANS", "note": "CG_FINUAT · Inventory Posting", "cols": ["OPERATING_UNIT", "SRN_NO", "BATCH_NAME", "ORG_CODE", "ITEM_CODE", "QUANTITY", "DESTINATION_ORG_CODE", "SUBINVENTORY", "TRANSACTION_DATE", "TRANSACTION_TYPE", "TRANSACTION_REF", "PROCESS_FLAG", "CREATION_DATE", "LAST_UPDATE_DATE", "LAST_UPDATED_BY", "LAST_UPDATE_LOGIN", "REQUEST_ID", "REV_ACCOUNT_ID", "ITEM_ID", "UOM_CODE", "FROM_ORGANIZATION_ID", "TRANSACTION_TYPE_ID", "QUANTITY_SIGN", "TRANSACTION_INTERFACE_ID"], "rows": [["5405", "0", "Congo B 0 29May26", "63", "110146984", "2", "63", "Sales", "2026-05-29", "S&D Sales Return", "2349002290-2349002199", "I", "2026-05-29", "2026-05-29 13:05:28", "1943225", "1943225", "195598373", "4692536", "4040766", "EA", "5455", "581", "1", "333232830"]]}, {"table": "ASI_SND_AR_RECEIPT_REV_STG", "note": "CG_FINUAT · Receipt Reverse Posting", "cols": ["OPERATING_UNIT", "CUSTOMER_NUMBER", "CUSTOMER_LOCATION", "RECEIPT_METHOD", "RECEIPT_NUMBER", "RECEIPT_DATE", "CURRENCY", "REVERSE_DATE", "GL_DATE", "PROCESS_FLAG", "CREATION_DATE", "CREATED_BY", "LAST_UPDATE_DATE", "LAST_UPDATED_BY", "LAST_UPDATED_LOGIN", "REQUEST_ID"], "rows": [["5405", "305488", "679777", "CAISSE WALKIN OYO", "270111_null", "2026-05-29", "XAF", "2026-05-29", "2026-05-29", "Y", "2026-05-29", "-99", "2026-05-29 11:49:04", "1943225", "1943225", "-1"]]}]}, {"name": "StockTransfer", "blocks": [{"table": "ASI_SND_INV_TRANS", "note": "CG_FINUAT · Inventory Posting", "cols": ["OPERATING_UNIT", "SRN_NO", "BATCH_NAME", "ORG_CODE", "ITEM_CODE", "QUANTITY", "DESTINATION_ORG_CODE", "SUBINVENTORY", "TRANSACTION_DATE", "TRANSACTION_TYPE", "TRANSACTION_REF", "PROCESS_FLAG", "CREATION_DATE", "LAST_UPDATE_DATE", "LAST_UPDATED_BY", "LAST_UPDATE_LOGIN", "REQUEST_ID", "REV_ACCOUNT_ID", "ITEM_ID", "UOM_CODE", "FROM_ORGANIZATION_ID", "DEST_ORGANIZATION_ID", "TRANSACTION_TYPE_ID", "QUANTITY_SIGN", "TRANSACTION_INTERFACE_ID"], "rows": [["5405", "15", "Congo B 15 21May26", "63", "106438128", "1", "57", "Sales", "2026-05-21", "S&D Inter Org Transfer", "2349001417", "I", "2026-05-21", "2026-05-29 16:07:06", "1943225", "1943225", "195598571", "4692164", "6467074", "EA", "5455", "5451", "582", "1", "333234433"], ["5405", "15", "Congo B 15 21May26", "57", "106438128", "1", "63", "Sales", "2026-05-21", "S&D Inter Org Transfer", "2349001419", "I", "2026-05-21", "2026-05-29 16:07:06", "1943225", "1943225", "195598571", "4692164", "6467074", "EA", "5451", "5455", "582", "1", "333234434"]]}]}, {"name": "ProductUpdate", "blocks": [{"table": "ASI_SND_INV_TRANS", "note": "CG_FINUAT · Inventory Posting", "cols": ["OPERATING_UNIT", "SRN_NO", "BATCH_NAME", "ORG_CODE", "ITEM_CODE", "QUANTITY", "DESTINATION_ORG_CODE", "SUBINVENTORY", "TRANSACTION_DATE", "TRANSACTION_TYPE", "TRANSACTION_REF", "PROCESS_FLAG", "CREATION_DATE", "LAST_UPDATE_DATE", "LAST_UPDATED_BY", "LAST_UPDATE_LOGIN", "REQUEST_ID", "REV_ACCOUNT_ID", "ITEM_ID", "UOM_CODE", "FROM_ORGANIZATION_ID", "QUANTITY_SIGN", "TRANSACTION_INTERFACE_ID", "NEW_ITEM_CODE"], "rows": [["5405", "13", "Congo B 13 29May26", "63", "110146984", "1", "63", "Sales", "2026-05-29", "SnD Product Change", "2349002295", "I", "2026-05-29", "2026-05-29 09:59:45", "1943225", "1943225", "195598277", "4692536", "4040766", "EA", "5455", "1", "333232826", "110121348"]]}]}, {"name": "PaymentReceipt", "blocks": [{"table": "ASI_SND_AR_RECEIPT_STG", "note": "CG_FINUAT · Receipt Posting", "cols": ["OPERATING_UNIT", "CUSTOMER_NUMBER", "CUSTOMER_LOCATION", "RECEIPT_METHOD", "RECEIPT_NUMBER", "RECEIPT_DATE", "GL_DATE", "CURRENCY", "RECEIPT_AMOUNT", "PROCESS_FLAG", "CREATION_DATE", "CREATED_BY", "LAST_UPDATE_DATE", "LAST_UPDATED_BY", "LAST_UPDATED_LOGIN", "REQUEST_ID"], "rows": [["5405", "305488", "679777", "A M BO BZV", "UUJ206052601", "2026-05-26", "2026-05-26", "XAF", "100", "Y", "2026-05-26", "-99", "2026-05-28 22:04:33", "1943225", "1943225", "-1"]]}, {"table": "ASI_SND_AR_RECEIPT_REV_STG", "note": "CG_FINUAT · Receipt Reverse Posting", "cols": ["OPERATING_UNIT", "CUSTOMER_NUMBER", "CUSTOMER_LOCATION", "RECEIPT_METHOD", "RECEIPT_NUMBER", "RECEIPT_DATE", "CURRENCY", "REVERSE_DATE", "GL_DATE", "PROCESS_FLAG", "CREATION_DATE", "CREATED_BY", "LAST_UPDATE_DATE", "LAST_UPDATED_BY", "LAST_UPDATED_LOGIN", "REQUEST_ID"], "rows": [["5405", "305488", "679777", "A M BO BZV", "UUJ206052601", "2026-05-26", "XAF", "2026-05-26", "2026-05-26", "Y", "2026-05-26", "-99", "2026-05-28 23:49:04", "1943225", "1943225", "-1"]]}]}, {"name": "CreditNote", "blocks": [{"table": "ASI_SND_AR_INVOICE_STG", "note": "CG_FINUAT · Invoice Posting", "cols": ["OPERATING_UNIT", "CUSTOMER_NUMBER", "CUSTOMER_LOCATION", "TRANSACTION_NO", "TRANSACTION_DATE", "DESCRIPTION", "CURRENCY", "SELLING_AMOUNT", "INVOICE_TYPE", "TYPE", "PROCESS_FLAG", "CREATION_DATE", "LAST_UPDATION_DATE", "LAST_UPDATED_BY", "LAST_UPDATED_LOGIN", "REQUEST_ID", "REC_ACCOUNT_ID", "REV_ACCOUNT_ID", "INV_TRX_TYPE_ID", "CMDM_TRX_TYPE_ID", "CUST_ACCOUNT_ID", "CUST_ACCT_SITE_ID", "MEMO_LINE_ID", "SET_OF_BOOKS_ID", "PAYMENT_TERM_ID"], "rows": [["5405", "166495", "516890", "25513001337504", "2026-05-18", "Promotions-PR - GRATUITE", "XAF", "-180", "CREDIT MEMO", "MANUAL", "I", "2026-05-18", "2026-05-20 11:16:18", "1943225", "1943225", "195588231", "4691857", "4692169", "97695", "97696", "2017340", "245360", "267513", "16664", ""], ["5405", "166495", "516890", "25513001337505", "2026-05-18", "Promotions-PR - GRATUITE", "XAF", "180", "DEBIT MEMO", "MANUAL", "I", "2026-05-18", "2026-05-20 11:16:18", "1943225", "1943225", "195588231", "4691857", "4692169", "97695", "97696", "2017340", "245360", "267513", "16664", "5"]]}]}, {"name": "HBB", "blocks": [{"table": "asi_snd_hbb_mo_hdr_tbl", "note": "CG_FINUAT", "cols": ["USDM_MO_HDR_ID", "CIRCLE", "INVENTORY_ORG", "DATE_REQUIRED", "SOURCE_SUBINVENTORY", "DESTINATION_SUBINVENTORY", "HEADER_DESCRIPTION", "SHIPPING_LOCATION", "REQUESTER_NAME", "REQUESTOR_CONTACT", "RECEIVER_NAME", "RECEIVER_CONTACT", "DEPARTMENT", "REGEION", "FUTURE", "TRANSACTION_TYPE", "RFI_DATE", "CREATION_DATE", "IMEI_NUMBER"], "rows": [["37710", "CG Capex Inventory Org", "CG1", "2026-05-15", "STORES", "CWIP-CL", "HBBmove order15052026", "CG1.A100.00.MPILA", "2, Mr. Dummy", "1234567890", "2, Mr. Dummy", "987654321", "Sales & Distribution", "SALES", "Sales & Distribution", "Move Order Transfer", "2026-05-15", "2026-05-15", "515864178631419"]]}, {"table": "asi_snd_hbb_mo_line_tbl", "note": "CG_FINUAT", "cols": ["USDM_MO_LINE_ID", "USDM_MO_HDR_ID", "LINE_NUMBER", "ITEM_CODE", "QUANTITY", "SOURCE_SUBINVENTORY", "SOURCE_LOCATOR", "DESTINATION_SUBINVENTORY", "DESTINATION_LOCATOR", "DATE_REQUIRED", "ITEM_USAGE_FOR_SITE_ATTRIBUTE", "DPE_STATUS_ATTRIBUTE", "CREATION_DATE"], "rows": [["37710", "37710", "1", "106669138", "1", "STORES", "CG1-A100-00-MPILA", "CWIP-CL", "CG1-BRA0-AA517715-CWIP-CL", "2026-05-15", "NEW/UPGRADE", "BOX", "2026-05-15"]]}]}, {"name": "Summary", "blocks": [{"table": "", "note": "", "cols": ["Transaction Type", "Posting", "ERP Table", "Status of Posting"], "rows": [["Payment Receipt", "Receipt Posting", "ASI_SND_AR_RECEIPT_STG", "Success"], ["Payment Receipt Reversal", "Receipt Reverse Posting", "ASI_SND_AR_RECEIPT_REV_STG", "Success"], ["Credit Memo", "Invoice Posting", "ASI_SND_AR_INVOICE_STG", "Success"], ["Debit Memo", "Invoice Posting", "ASI_SND_AR_INVOICE_STG", "Success"], ["Primary Sale", "Invoice Posting", "ASI_SND_AR_INVOICE_STG", "Success"], ["", "Inventory Posting", "ASI_SND_INV_TRANS", "Success"], ["Primary Sale Return", "Invoice Posting", "ASI_SND_AR_INVOICE_STG", "Success"], ["", "Inventory Posting", "ASI_SND_INV_TRANS", "Success"], ["POS Sale", "Invoice Posting", "ASI_SND_AR_INVOICE_STG", "Success"], ["", "Inventory Posting", "ASI_SND_INV_TRANS", "Success"], ["", "Receipt Posting", "ASI_SND_AR_RECEIPT_STG", "Success"], ["POS Sale Return", "Invoice Posting", "ASI_SND_AR_INVOICE_STG", "Success"], ["", "Inventory Posting", "ASI_SND_INV_TRANS", "Success"], ["", "Receipt Reverse Posting", "ASI_SND_AR_RECEIPT_REV_STG", "Success"], ["Stock Transafer", "Inventory Posting", "ASI_SND_INV_TRANS", "Success"], ["Stock Transafer Return", "Inventory Posting", "ASI_SND_INV_TRANS", "Success"], ["HBB Capitalization", "Header & Line", "ASI_SND_HBB_MO_HDR_TBL\nASI_SND_HBB_MO_LINE_TBL", "Success"], ["Product Update", "Inventory Posting", "ASI_SND_INV_TRANS", "Success"]]}]}, {"name": "Orders", "blocks": [{"table": "", "note": "", "cols": ["Primary Sale Orders", "INVOICE_NUMBER", "ORDER_NUMBER", "ERP_TABLE_STATUS"], "rows": [["", "2342000471970", "2349002166", "Success"], ["", "2342000471985", "2349002165", "Success"], ["", "2342000471971", "2349002168", "Success"], ["", "2342000471987", "2349002169", "Success"], ["", "2342000471986", "2349002167", "Success"], ["", "2342000471972", "2349002177", "Success"], ["", "2342000471988", "2349002171", "Success"], ["POS Sale Orders", "2342000471977", "2349002197", "Success"], ["", "2342000471992", "2349002201", "Success"], ["", "2342000471976", "2349002196", "Success"], ["", "2342000471998", "2349002200", "Success"], ["", "2342000471991", "2349002199", "Success"], ["", "2342000471975", "2349002195", "Success"]]}]}];
+
+const TABLES = {
+  mkt_erp_inv_intf: {
+    label:"mkt_erp_inv_intf",
+    meta:"Populated by procedures <code>post_pos_invoice</code>, <code>post_pri_invoice</code>, <code>post_manual</code>. Records post to <code>asi_snd_ar_invoice_stg</code> in ERP; <code>POSTED_TO_ERP</code> is set to 'Y' by procedure <code>post_to_erp</code>.",
+    cols:[
+      ["OPERATING_UNIT","VARCHAR2(100)","Stores operating unit. 5405 for Congo-B","Organisation Id"],
+      ["CUSTOMER_NUMBER","VARCHAR2(100)","Stores erp_account_number for customer.","References sd_partner_company_master"],
+      ["CUSTOMER_LOCATION","VARCHAR2(100)","Stores ERP_SITE_NUM from sd_partner_company_master","References sd_partner_company_master"],
+      ["TRANSACTION_NO","NUMBER","Stores invoice number. For manual payments stores transaction id. For POS invoice stores group invoice number for one shop. Generated using sequence.","invoice_id from POS"],
+      ["TRANSACTION_DATE","DATE","Stores invoice creation date","Transaction Date from invoice_details"],
+      ["DESCRIPTION","VARCHAR2(100)","Stores null. Stores 'Congo-B GSM Data Conversion' for manual payments.","memo_line_name from mkt_memo_line"],
+      ["CURRENCY","VARCHAR2(100)","Stores Currency","currency_name from POS — Currency: XAF"],
+      ["REFERENCE_NO","VARCHAR2(100)","Null for POS (invoices are clubbed); stores order_id for primary order.","order_id from POS invoice_details"],
+      ["QUANTITY","NUMBER","Delivered quantity of invoice. Negative for credit memo. Null for Manual payments.","delivered_qty from POS invoice_details"],
+      ["UNIT_PRICE","NUMBER","Unit price of product.","per_unit_amount from POS invoice_details"],
+      ["SELLING_AMOUNT","NUMBER","qty × unit_price. Negative for credit memo. Includes (-1)×receipt_amount for CRN and receipt_amount for DRN manual payments.","total_amount from POS invoice_details"],
+      ["ERP_ITEM_CODE","VARCHAR2(50)","Product code from mkt_pc_product. Null for manual payments.","product_code from POS invoice_details"],
+      ["INVOICE_TYPE","VARCHAR2(50)","INVOICE for POS/primary sales order; CREDIT MEMO for POS reverse and sales return order.","INVOICE / CREDIT MEMO basis of Orders"],
+      ["TYPE","VARCHAR2(50)","POS or PRI for POS/primary order; PRV for POS reverse; SLR for sales return. 'Manual' for manual payments.","Order type from POS invoice_details"],
+      ["TRANSACTION_REF_NO","VARCHAR2(100)","Null","TRANSACTION_REF_NO from POS invoice_details"],
+      ["TRANSACTION_REF_DATE","DATE","Null","TRANSACTION_REF_DATE from POS invoice_details"],
+      ["PROCESS_FLAG","VARCHAR2(50)","'N' — not processed","N / Y"],
+      ["ERROR_MESSAGE","VARCHAR2(1000)","Populates null","Based on success & fail"],
+      ["CREATION_DATE","DATE","Creation date of invoice","CREATION_DATE"],
+      ["CUSTOMER_ID","NUMBER","Customer_id of recipient warehouse","CUSTOMER_ID"],
+      ["PROCESSING_DATE","DATE","Date of processing","Date of processing"],
+      ["ORG_ID","NUMBER","Stores organization id","Org_id"],
+      ["GL_DATE","DATE","Null","NA"],
+      ["ORGANIZATION_CODE","VARCHAR2(50)","Organization code","ORGANIZATION_CODE"],
+      ["POSTED_TO_ERP","VARCHAR2(1)","Y — Posted to ERP · N — Not posted to ERP","Y / N"],
+      ["TAX_CODE","VARCHAR2(50)","Populates tax_class_code where tax flag = CLASS","tax_class_code"],
+      ["TAX_CODE_AMOUNT","NUMBER","Populates tax_percentage from mkt_pc_tax_class_detail where tax flag = CLASS","TAX_CODE_AMOUNT"],
+      ["ITEM_TAX_CATEGORY","VARCHAR2(50)","Populates tax_class_code where tax flag = CATEGORY","ITEM_TAX_CATEGORY"],
+      ["ITEM_TAX_CATEGORY_AMOUNT","NUMBER","Populates tax_percentage from mkt_pc_tax_class_detail where tax flag = CATEGORY","ITEM_TAX_CATEGORY_AMOUNT"]
+    ]
+  },
+  mkt_erp_receipt_intf: {
+    label:"mkt_erp_receipt_intf",
+    meta:"Populated by procedure <code>post_pos_payments</code>. Data copies to <code>asi_snd_ar_receipt_stg</code> in ERP; <code>POSTED_TO_ERP</code> set to 'Y' by procedure <code>post_to_erp</code>.",
+    cols:[
+      ["OPERATING_UNIT","VARCHAR2(100)","Stores operating unit.","org_id"],
+      ["CUSTOMER_NUMBER","VARCHAR2(100)","Stores erp_account_number for customer.","References CPM sd_partner_company_master"],
+      ["CUSTOMER_LOCATION","VARCHAR2(100)","Stores ERP_SITE_NUM where USAGE_BILLTO = 'Y'","erp_site_num from CPM sd_partner_company_master"],
+      ["RECEIPT_METHOD","VARCHAR2(200)","Select receipt_method_name from payment_receipt_method","References payment_receipt_method"],
+      ["RECEIPT_NUMBER","VARCHAR2(300)","Stores receipt number.","Transaction_number for POS Sale"],
+      ["RECEIPT_DATE","DATE","Stores creation date of receipt.","receipt date"],
+      ["GL_DATE","DATE","Stores creation date of receipt.","created_on date"],
+      ["CURRENCY","VARCHAR2(100)","Stores Currency","currency_name from POS — XAF"],
+      ["RECEIPT_AMOUNT","NUMBER","Stores receipt amount","amount from POS"],
+      ["INVOICE_NUMBER","NUMBER","Stores group invoice number where one invoice is created per shop (POS order).","INVOICE_NUMBER — group invoice number for POS order"],
+      ["AMOUNT_APPLIED","NUMBER","Stores payment amount.","payment_amount"],
+      ["APPLY_DATE","DATE","Stores payment creation date.","created_on date"],
+      ["COMMENTS","VARCHAR2(500)","'POS Order receipt.' for POS receipts","'POS Order receipt.' for POS receipts"],
+      ["PROCESS_FLAG","VARCHAR2(50)","N — New","N for New"],
+      ["ERROR_MESSAGE","VARCHAR2(1000)","Null","NA"],
+      ["CUSTOMER_ID","NUMBER","Populates customer_id from mkt_crm_customer","Customer ID"],
+      ["ORG_ID","NUMBER","Stores organization id","ORG_ID"],
+      ["ACTIVE_STATUS","VARCHAR2(1)","'A' — Active","'A' — Active"],
+      ["CREATED_ON","DATE","Creation date","Processing date"],
+      ["CREATED_BY","NUMBER","-99 for IT","-99 for IT"],
+      ["LAST_UPDATED_ON","DATE","Last updated date.","Processing updated date"],
+      ["UPDATED_BY","NUMBER","-99 for IT","-99 for IT"],
+      ["PROCESSING_DATE","DATE","Sysdate","sysdate"],
+      ["CREATION_DATE","DATE","Sysdate","sysdate"],
+      ["POSTED_TO_ERP","VARCHAR2(1)","N — Not posted to ERP · Y — Posted to ERP","N / Y"]
+    ]
+  },
+  mkt_erp_receipt_rev_intf: {
+    label:"mkt_erp_receipt_rev_intf",
+    meta:"Populated by procedures <code>post_pos_payments</code> and <code>post_payments</code>. Data copies to <code>asi_snd_ar_receipt_rev_stg</code>; <code>posted_to_erp_flag</code> set to 'Y' by procedure <code>post_to_erp</code>.",
+    cols:[
+      ["OPERATING_UNIT","NUMBER","Stores operating unit.","org_id"],
+      ["CUSTOMER_NUMBER","VARCHAR2(100)","Stores erp_account_number for customer.","erp_account_num from CPM sd_partner_company_master"],
+      ["CUSTOMER_LOCATION","NUMBER","Stores ERP_SITE_NUM where USAGE_BILLTO = 'Y'","erp_site_num from CPM sd_partner_company_master"],
+      ["RECEIPT_METHOD","VARCHAR2(30)","Populates receipt_method_name from payment_receipt_method","References mkt_payment_receipt_method"],
+      ["RECEIPT_NUMBER","VARCHAR2(30)","Stores receipt number of original receipt being reversed. For POS, captures receipt_number of POS reverse order.","References reverse_ref_tran_id from mkt_order_payments"],
+      ["RECEIPT_DATE","DATE","Stores receipt creation date from the original receipt being reversed.","Receipt_date"],
+      ["CURRENCY","VARCHAR2(15)","Stores currency — XAF for Congo-B.","currency_name from POS — XAF"],
+      ["REVERSE_DATE","DATE","Stores receipt creation date of the reverse receipt","receipt_date"],
+      ["GL_DATE","DATE","Stores reverse receipt creation date","created_on date"],
+      ["PROCESS_FLAG","VARCHAR2(1)","Stores N — Not processed","PROCESS_FLAG inserted as N"],
+      ["ERROR_MESSAGE","VARCHAR2(1000)","Null","Updated with error if processing fails"],
+      ["CUSTOMER_ID","NUMBER","Stores customer id of recipient warehouse","recpt_wh_customer_id from mkt_sdm_order_header"],
+      ["ORG_ID","NUMBER","Stores organization id","ORG_ID"],
+      ["ACTIVE_STATUS","VARCHAR2(1)","Stores A — Active","Updated as A for active"],
+      ["CREATED_ON","DATE","Stores record creation date","CREATED_ON date"],
+      ["CREATED_BY","NUMBER","Stores -99 for IT","-99 for IT"],
+      ["LAST_UPDATED_ON","DATE","Stores record updation date.","Updation date"],
+      ["UPDATED_BY","NUMBER","Stores -99 for IT","-99 for IT"],
+      ["PROCESSING_DATE","DATE","Stores date of processing","Date of processing"],
+      ["CREATION_DATE","DATE","Stores sysdate","Processing date"],
+      ["POSTED_TO_ERP","VARCHAR2(1)","Stores N — Not posted to ERP · Y — Posted to ERP","N / Y"]
+    ]
+  },
+  mkt_erp_invt_upd_intf: {
+    label:"mkt_erp_invt_upd_intf",
+    meta:"Populated by procedure <code>post_invt_update</code> of <code>mkt_snd_to_erp_intg</code>. Data copies to <code>asi_snd_inv_trans</code>; <code>POSTED_TO_ERP</code> set to 'Y' by procedure <code>post_to_erp</code>.",
+    cols:[
+      ["OPERATING_UNIT","NUMBER","Stores operating unit.","Global sequence number"],
+      ["SRN_NO","NUMBER","Stores serial number of inventory update.","org_country_name + sequence + updated date"],
+      ["BATCH_NAME","VARCHAR2(200)","Stores batch number, e.g. 'Kenya 7156 07DEC13'","—"],
+      ["ORG_CODE","VARCHAR2(3)","Populates ORGANIZATION_CODE","—"],
+      ["ITEM_CODE","VARCHAR2(40)","Populates product_code from ARM.","—"],
+      ["QUANTITY","NUMBER","Stores delivered quantity.","—"],
+      ["DESTINATION_ORG_CODE","VARCHAR2(50)","Stores organization code of destination organization.","—"],
+      ["UNIT_PRICE","NUMBER","Stores null","—"],
+      ["SUBINVENTORY","VARCHAR2(50)","Populates 'Sales' for primary/POS orders, POS reverse and sales return order.","—"],
+      ["ACCOUNT_CODE","VARCHAR2(100)","Stores null","—"],
+      ["TRANSACTION_DATE","DATE","Stores transaction date.","—"],
+      ["TRANSACTION_TYPE","VARCHAR2(200)","'S&D Sales Issue' for POS/primary order · 'S&D Sales Return' for POS reverse/sales return · 'S&D Inter Org Transfer' for movement/stock return · 'Bundle Receive' for bundle orders · 'Bundle Issue' for bundle child orders.","—"],
+      ["TRANSACTION_REF","VARCHAR2(120)","Stores order number for sales/bundle orders; reference order number for return orders.","—"],
+      ["BATCH_NUMBER","VARCHAR2(100)","Stores null","—"],
+      ["PROCESS_FLAG","VARCHAR2(1)","Stores N — new","—"],
+      ["ERROR_MESSAGE","VARCHAR2(1000)","Stores null","—"],
+      ["CREATION_DATE","DATE","Stores transaction date.","—"],
+      ["POSTED_TO_ERP","VARCHAR2(1)","Stores N — Not posted to ERP · Y — Posted to ERP","—"]
+    ]
+  }
+};
+
+
+const PROC1_SQL = `CREATE OR REPLACE PROCEDURE PRC_INSERT_ERP_SELLIN_STAGING (
+    p_order_id   IN  POS_ORDERS.ORDER_ID%TYPE  DEFAULT NULL,
+    p_from_date  IN  DATE                      DEFAULT NULL,
+    p_to_date    IN  DATE                      DEFAULT NULL
+)
+AS
+    --------------------------------------------------------------------
+    -- VALIDATION
+    -- Either p_order_id must be supplied,
+    -- or both p_from_date and p_to_date must be supplied.
+    --------------------------------------------------------------------
+BEGIN
+
+    IF p_order_id IS NULL AND (p_from_date IS NULL OR p_to_date IS NULL) THEN
+        RAISE_APPLICATION_ERROR(
+            -20001,
+            'PRC_INSERT_ERP_SELLIN_STAGING: Provide either p_order_id OR both p_from_date and p_to_date.'
+        );
+    END IF;
+
+    --------------------------------------------------------------------
+    -- CLEAN UP any existing rows for the same scope before re-inserting
+    -- so the procedure is safely re-runnable
+    --------------------------------------------------------------------
+    -- DELETE FROM ERP_ORDER_INVOICE_STAGING t
+    -- WHERE (
+    --     p_order_id IS NOT NULL
+    --     AND t.REFERENCE_NO = p_order_id
+    -- )
+    -- OR (
+    --     p_order_id IS NULL
+    --     AND TRUNC(t.TRANSACTION_DATE) BETWEEN TRUNC(p_from_date) AND TRUNC(p_to_date)
+    -- );
+
+    --------------------------------------------------------------------
+    -- INSERT ALL 6 ROW TYPES
+    --
+    --   DIVISOR    = 1 + (VAT%/100) + (VAT%/100 × CA%/100)
+    --   BASE       = (QTY × UNIT_PRICE_TAX_INCLUDED) / DIVISOR
+    --   VAT_AMOUNT = BASE × VAT%/100
+    --   CA_AMOUNT  = VAT_AMOUNT × CA%/100
+    --
+    --   Same logic applied negatively for discount rows
+    --------------------------------------------------------------------
+    INSERT INTO ERP_ORDER_INVOICE_STAGING (
+        OPERATING_UNIT,
+        CUSTOMER_NUMBER,
+        CUSTOMER_LOCATION,
+        TRANSACTION_NO,
+        TRANSACTION_DATE,
+        DESCRIPTION,
+        CURRENCY,
+        REFERENCE_NO,
+        QUANTITY,
+        UNIT_PRICE,
+        SELLING_AMOUNT,
+        ERP_ITEM_CODE,
+        INVOICE_TYPE,
+        TYPE,
+        TRANSACTION_REF_NO,
+        TRANSACTION_REF_DATE,
+        PROCESS_FLAG,
+        ERROR_MESSAGE,
+        CREATION_DATE,
+        CUSTOMER_ID,
+        PROCESSING_DATE,
+        ORG_ID,
+        GL_DATE,
+        ORGANIZATION_CODE,
+        POSTED_TO_ERP,
+        TAX_CODE,
+        TAX_CODE_AMOUNT,
+        ITEM_TAX_CATEGORY,
+        ITEM_TAX_CATEGORY_AMOUNT,
+        LINE_TYPE,
+        TAXABLE_AMOUNT
+    )
+    SELECT * FROM (
+
+        ----------------------------------------------------------------
+        -- ROW TYPE 1 : BASE INVOICE LINE
+        ----------------------------------------------------------------
+        SELECT
+            5405                                                        AS OPERATING_UNIT,
+            pcd.ERP_ACCOUNT_NUMBER                                      AS CUSTOMER_NUMBER,
+            pcd.ERP_LOCATION                                            AS CUSTOMER_LOCATION,
+            po.INVOICE_ID                                               AS TRANSACTION_NO,
+            pi.INVOICE_GENERATED_DATE                                   AS TRANSACTION_DATE,
+            ''                                                          AS DESCRIPTION,
+            'XAF'                                                       AS CURRENCY,
+            po.ORDER_ID                                                 AS REFERENCE_NO,
+            poli.QUANTITY                                               AS QUANTITY,
+            poli.UNIT_PRICE_TAX_INCLUDED                                AS UNIT_PRICE,
+            (poli.QUANTITY * poli.UNIT_PRICE_TAX_INCLUDED)              AS SELLING_AMOUNT,
+            poli.MATERIAL_CODE                                          AS ERP_ITEM_CODE,
+            'INVOICE'                                                   AS INVOICE_TYPE,
+            'PRI'                                                       AS TYPE,
+            ''                                                          AS TRANSACTION_REF_NO,
+            ''                                                          AS TRANSACTION_REF_DATE,
+            'N'                                                         AS PROCESS_FLAG,
+            ''                                                          AS ERROR_MESSAGE,
+            SYSDATE                                                     AS CREATION_DATE,
+            pcd.PARTNER_ID                                              AS CUSTOMER_ID,
+            SYSDATE                                                     AS PROCESSING_DATE,
+            5405                                                        AS ORG_ID,
+            ''                                                          AS GL_DATE,
+            poa.ERP_ORG_ID                                              AS ORGANIZATION_CODE,
+            'N'                                                         AS POSTED_TO_ERP,
+            ''                                                          AS TAX_CODE,
+            ''                                                          AS TAX_CODE_AMOUNT,
+            NULL                                                        AS ITEM_TAX_CATEGORY,
+            ''                                                          AS ITEM_TAX_CATEGORY_AMOUNT,
+            'INVOICE'                                                   AS LINE_TYPE,
+            -- BASE = SELLING / DIVISOR
+            (poli.QUANTITY * poli.UNIT_PRICE_TAX_INCLUDED)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+                                                                        AS TAXABLE_AMOUNT
+        FROM POS_ORDERS              po
+        JOIN POS_CUSTOMER_DETAILS    pcd    ON po.BUYER_CUSTOMER_ID    = pcd.CUSTOMER_ID
+        JOIN POS_ORDER_LINE_ITEMS    poli   ON po.ORDER_ID             = poli.ORDER_ID
+        JOIN POS_ORDER_ADDRESS       poa    ON po.ORDER_ID             = poa.ORDER_ID
+                                          AND poa.ADDRESS_TYPE         = 'SOURCE'
+        JOIN POS_INVOICE             pi     ON po.INVOICE_ID           = pi.INVOICE_ID
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_vat
+                                             ON poli.ORDER_ID          = td_vat.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_vat.PRODUCT_ID
+                                            AND td_vat.TAX_TYPE        = 'VAT'
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_ca
+                                             ON poli.ORDER_ID          = td_ca.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_ca.PRODUCT_ID
+                                            AND td_ca.TAX_TYPE         = 'CA'
+        WHERE po.STATUS     = 'COMPLETED'
+          AND po.ORDER_TYPE = 'SELLIN'
+          AND (p_order_id  IS NOT NULL AND po.ORDER_ID = p_order_id
+               ORx\`
+               p_order_id  IS NULL
+               AND TRUNC(po.ORDER_DATE) BETWEEN TRUNC(p_from_date) AND TRUNC(p_to_date))
+               AND NOT EXISTS (
+    			SELECT 1
+   				FROM POS_ERP_INV_POSTED_ORDERS eip
+   			 	WHERE eip.ORDER_ID = po.ORDER_ID
+				)
+        UNION ALL
+
+        ----------------------------------------------------------------
+        -- ROW TYPE 2 : VAT LINE  (TAX_TYPE = 'VAT', typically 18%)
+        --   VAT_AMOUNT = BASE × VAT%/100
+        ----------------------------------------------------------------
+        SELECT
+            5405                                                        AS OPERATING_UNIT,
+            pcd.ERP_ACCOUNT_NUMBER                                      AS CUSTOMER_NUMBER,
+            pcd.ERP_LOCATION                                            AS CUSTOMER_LOCATION,
+            po.INVOICE_ID                                               AS TRANSACTION_NO,
+            pi.INVOICE_GENERATED_DATE                                   AS TRANSACTION_DATE,
+            ''                                                          AS DESCRIPTION,
+            'XAF'                                                       AS CURRENCY,
+            po.ORDER_ID                                                 AS REFERENCE_NO,
+            1                                                           AS QUANTITY,
+            (poli.QUANTITY * poli.UNIT_PRICE_TAX_INCLUDED)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)                             AS UNIT_PRICE,
+            (poli.QUANTITY * poli.UNIT_PRICE_TAX_INCLUDED)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)                             AS SELLING_AMOUNT,
+            poli.MATERIAL_CODE                                          AS ERP_ITEM_CODE,
+            'INVOICE'                                                   AS INVOICE_TYPE,
+            'PRI'                                                       AS TYPE,
+            ''                                                          AS TRANSACTION_REF_NO,
+            ''                                                          AS TRANSACTION_REF_DATE,
+            'N'                                                         AS PROCESS_FLAG,
+            ''                                                          AS ERROR_MESSAGE,
+            SYSDATE                                                     AS CREATION_DATE,
+            pcd.PARTNER_ID                                              AS CUSTOMER_ID,
+            SYSDATE                                                     AS PROCESSING_DATE,
+            5405                                                        AS ORG_ID,
+            ''                                                          AS GL_DATE,
+            poa.ERP_ORG_ID                                              AS ORGANIZATION_CODE,
+            'N'                                                         AS POSTED_TO_ERP,
+            td_vat.TAX_CODE                                             AS TAX_CODE,
+            ''                                                          AS TAX_CODE_AMOUNT,
+            td_vat.TAX_PERCENTAGE || ' %'                               AS ITEM_TAX_CATEGORY,
+            ''                                                          AS ITEM_TAX_CATEGORY_AMOUNT,
+            'TAX'                                                       AS LINE_TYPE,
+            (poli.QUANTITY * poli.UNIT_PRICE_TAX_INCLUDED)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)                             AS TAXABLE_AMOUNT
+        FROM POS_ORDERS              po
+        JOIN POS_CUSTOMER_DETAILS    pcd    ON po.BUYER_CUSTOMER_ID    = pcd.CUSTOMER_ID
+        JOIN POS_ORDER_LINE_ITEMS    poli   ON po.ORDER_ID             = poli.ORDER_ID
+        JOIN POS_ORDER_ADDRESS       poa    ON po.ORDER_ID             = poa.ORDER_ID
+                                          AND poa.ADDRESS_TYPE         = 'SOURCE'
+        JOIN POS_INVOICE             pi     ON po.INVOICE_ID           = pi.INVOICE_ID
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_vat
+                                             ON poli.ORDER_ID          = td_vat.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_vat.PRODUCT_ID
+                                            AND td_vat.TAX_TYPE        = 'VAT'
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_ca
+                                             ON poli.ORDER_ID          = td_ca.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_ca.PRODUCT_ID
+                                            AND td_ca.TAX_TYPE         = 'CA'
+        WHERE po.STATUS     = 'COMPLETED'
+          AND po.ORDER_TYPE = 'SELLIN'
+          AND (p_order_id  IS NOT NULL AND po.ORDER_ID = p_order_id
+               OR
+               p_order_id  IS NULL
+               AND TRUNC(po.ORDER_DATE) BETWEEN TRUNC(p_from_date) AND TRUNC(p_to_date))
+               AND NOT EXISTS (
+    			SELECT 1
+   				FROM POS_ERP_INV_POSTED_ORDERS eip
+   			 	WHERE eip.ORDER_ID = po.ORDER_ID
+				)
+        UNION ALL
+
+        ----------------------------------------------------------------
+        -- ROW TYPE 3 : CA LINE  (TAX_TYPE = 'CA', typically 5%)
+        --   CA_AMOUNT = BASE × VAT%/100 × CA%/100
+        ----------------------------------------------------------------
+        SELECT
+            5405                                                        AS OPERATING_UNIT,
+            pcd.ERP_ACCOUNT_NUMBER                                      AS CUSTOMER_NUMBER,
+            pcd.ERP_LOCATION                                            AS CUSTOMER_LOCATION,
+            po.INVOICE_ID                                               AS TRANSACTION_NO,
+            pi.INVOICE_GENERATED_DATE                                   AS TRANSACTION_DATE,
+            ''                                                          AS DESCRIPTION,
+            'XAF'                                                       AS CURRENCY,
+            po.ORDER_ID                                                 AS REFERENCE_NO,
+            1                                                           AS QUANTITY,
+            (poli.QUANTITY * poli.UNIT_PRICE_TAX_INCLUDED)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)
+            * (td_ca.TAX_PERCENTAGE  / 100)                             AS UNIT_PRICE,
+            (poli.QUANTITY * poli.UNIT_PRICE_TAX_INCLUDED)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)
+            * (td_ca.TAX_PERCENTAGE  / 100)                             AS SELLING_AMOUNT,
+            poli.MATERIAL_CODE                                          AS ERP_ITEM_CODE,
+            'INVOICE'                                                   AS INVOICE_TYPE,
+            'PRI'                                                       AS TYPE,
+            ''                                                          AS TRANSACTION_REF_NO,
+            ''                                                          AS TRANSACTION_REF_DATE,
+            'N'                                                         AS PROCESS_FLAG,
+            ''                                                          AS ERROR_MESSAGE,
+            SYSDATE                                                     AS CREATION_DATE,
+            pcd.PARTNER_ID                                              AS CUSTOMER_ID,
+            SYSDATE                                                     AS PROCESSING_DATE,
+            5405                                                        AS ORG_ID,
+            ''                                                          AS GL_DATE,
+            poa.ERP_ORG_ID                                              AS ORGANIZATION_CODE,
+            'N'                                                         AS POSTED_TO_ERP,
+            td_ca.TAX_CODE                                              AS TAX_CODE,
+            ''                                                          AS TAX_CODE_AMOUNT,
+            td_ca.TAX_PERCENTAGE || ' %'                                AS ITEM_TAX_CATEGORY,
+            ''                                                          AS ITEM_TAX_CATEGORY_AMOUNT,
+            'TAX'                                                       AS LINE_TYPE,
+            (poli.QUANTITY * poli.UNIT_PRICE_TAX_INCLUDED)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)
+            * (td_ca.TAX_PERCENTAGE  / 100)                             AS TAXABLE_AMOUNT
+        FROM POS_ORDERS              po
+        JOIN POS_CUSTOMER_DETAILS    pcd    ON po.BUYER_CUSTOMER_ID    = pcd.CUSTOMER_ID
+        JOIN POS_ORDER_LINE_ITEMS    poli   ON po.ORDER_ID             = poli.ORDER_ID
+        JOIN POS_ORDER_ADDRESS       poa    ON po.ORDER_ID             = poa.ORDER_ID
+                                          AND poa.ADDRESS_TYPE         = 'SOURCE'
+        JOIN POS_INVOICE             pi     ON po.INVOICE_ID           = pi.INVOICE_ID
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_vat
+                                             ON poli.ORDER_ID          = td_vat.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_vat.PRODUCT_ID
+                                            AND td_vat.TAX_TYPE        = 'VAT'
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_ca
+                                             ON poli.ORDER_ID          = td_ca.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_ca.PRODUCT_ID
+                                            AND td_ca.TAX_TYPE         = 'CA'
+        WHERE po.STATUS     = 'COMPLETED'
+          AND po.ORDER_TYPE = 'SELLIN'
+          AND (p_order_id  IS NOT NULL AND po.ORDER_ID = p_order_id
+               OR
+               p_order_id  IS NULL
+               AND TRUNC(po.ORDER_DATE) BETWEEN TRUNC(p_from_date) AND TRUNC(p_to_date))
+               AND NOT EXISTS (
+    			SELECT 1
+   				FROM POS_ERP_INV_POSTED_ORDERS eip
+   			 	WHERE eip.ORDER_ID = po.ORDER_ID
+				)
+        UNION ALL
+
+        ----------------------------------------------------------------
+        -- ROW TYPE 4 : DISCOUNT INVOICE LINE  (negative)
+        --   DISC_BASE = (-1 × QTY × UNIT_DISCOUNT) / DIVISOR
+        ----------------------------------------------------------------
+        SELECT
+            5405                                                        AS OPERATING_UNIT,
+            pcd.ERP_ACCOUNT_NUMBER                                      AS CUSTOMER_NUMBER,
+            pcd.ERP_LOCATION                                            AS CUSTOMER_LOCATION,
+            po.INVOICE_ID                                               AS TRANSACTION_NO,
+            pi.INVOICE_GENERATED_DATE                                   AS TRANSACTION_DATE,
+            ''                                                          AS DESCRIPTION,
+            'XAF'                                                       AS CURRENCY,
+            po.ORDER_ID                                                 AS REFERENCE_NO,
+            poli.QUANTITY                                               AS QUANTITY,
+            (-1 * poli.UNIT_DISCOUNT_AMOUNT)                            AS UNIT_PRICE,
+            (-1 * poli.QUANTITY * poli.UNIT_DISCOUNT_AMOUNT)            AS SELLING_AMOUNT,
+            poli.DISCOUNT_ERP_CODE                                      AS ERP_ITEM_CODE,
+            'INVOICE'                                                   AS INVOICE_TYPE,
+            'PRI'                                                       AS TYPE,
+            ''                                                          AS TRANSACTION_REF_NO,
+            ''                                                          AS TRANSACTION_REF_DATE,
+            'N'                                                         AS PROCESS_FLAG,
+            ''                                                          AS ERROR_MESSAGE,
+            SYSDATE                                                     AS CREATION_DATE,
+            pcd.PARTNER_ID                                              AS CUSTOMER_ID,
+            SYSDATE                                                     AS PROCESSING_DATE,
+            5405                                                        AS ORG_ID,
+            ''                                                          AS GL_DATE,
+            poa.ERP_ORG_ID                                              AS ORGANIZATION_CODE,
+            'N'                                                         AS POSTED_TO_ERP,
+            ''                                                          AS TAX_CODE,
+            ''                                                          AS TAX_CODE_AMOUNT,
+            NULL                                                        AS ITEM_TAX_CATEGORY,
+            ''                                                          AS ITEM_TAX_CATEGORY_AMOUNT,
+            'INVOICE'                                                   AS LINE_TYPE,
+            (-1 * poli.QUANTITY * poli.UNIT_DISCOUNT_AMOUNT)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+                                                                        AS TAXABLE_AMOUNT
+        FROM POS_ORDERS              po
+        JOIN POS_CUSTOMER_DETAILS    pcd    ON po.BUYER_CUSTOMER_ID    = pcd.CUSTOMER_ID
+        JOIN POS_ORDER_LINE_ITEMS    poli   ON po.ORDER_ID             = poli.ORDER_ID
+        JOIN POS_ORDER_ADDRESS       poa    ON po.ORDER_ID             = poa.ORDER_ID
+                                          AND poa.ADDRESS_TYPE         = 'SOURCE'
+        JOIN POS_INVOICE             pi     ON po.INVOICE_ID           = pi.INVOICE_ID
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_vat
+                                             ON poli.ORDER_ID          = td_vat.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_vat.PRODUCT_ID
+                                            AND td_vat.TAX_TYPE        = 'VAT'
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_ca
+                                             ON poli.ORDER_ID          = td_ca.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_ca.PRODUCT_ID
+                                            AND td_ca.TAX_TYPE         = 'CA'
+        WHERE po.STATUS     = 'COMPLETED'
+          AND po.ORDER_TYPE = 'SELLIN'
+          AND poli.UNIT_DISCOUNT_AMOUNT <> 0
+          AND (p_order_id  IS NOT NULL AND po.ORDER_ID = p_order_id
+               OR
+               p_order_id  IS NULL
+               AND TRUNC(po.ORDER_DATE) BETWEEN TRUNC(p_from_date) AND TRUNC(p_to_date))
+               AND NOT EXISTS (
+    			SELECT 1
+   				FROM POS_ERP_INV_POSTED_ORDERS eip
+   			 	WHERE eip.ORDER_ID = po.ORDER_ID
+				)
+        UNION ALL
+
+        ----------------------------------------------------------------
+        -- ROW TYPE 5 : VAT ON DISCOUNT  (negative)
+        --   DISC_VAT = (-1 × QTY × UNIT_DISCOUNT) / DIVISOR × VAT%/100
+        ----------------------------------------------------------------
+        SELECT
+            5405                                                        AS OPERATING_UNIT,
+            pcd.ERP_ACCOUNT_NUMBER                                      AS CUSTOMER_NUMBER,
+            pcd.ERP_LOCATION                                            AS CUSTOMER_LOCATION,
+            po.INVOICE_ID                                               AS TRANSACTION_NO,
+            pi.INVOICE_GENERATED_DATE                                   AS TRANSACTION_DATE,
+            ''                                                          AS DESCRIPTION,
+            'XAF'                                                       AS CURRENCY,
+            po.ORDER_ID                                                 AS REFERENCE_NO,
+            1                                                           AS QUANTITY,
+            (-1 * poli.QUANTITY * poli.UNIT_DISCOUNT_AMOUNT)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)                             AS UNIT_PRICE,
+            (-1 * poli.QUANTITY * poli.UNIT_DISCOUNT_AMOUNT)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)                             AS SELLING_AMOUNT,
+            poli.DISCOUNT_ERP_CODE                                          AS ERP_ITEM_CODE,
+            'INVOICE'                                                   AS INVOICE_TYPE,
+            'PRI'                                                       AS TYPE,
+            ''                                                          AS TRANSACTION_REF_NO,
+            ''                                                          AS TRANSACTION_REF_DATE,
+            'N'                                                         AS PROCESS_FLAG,
+            ''                                                          AS ERROR_MESSAGE,
+            SYSDATE                                                     AS CREATION_DATE,
+            pcd.PARTNER_ID                                              AS CUSTOMER_ID,
+            SYSDATE                                                     AS PROCESSING_DATE,
+            5405                                                        AS ORG_ID,
+            ''                                                          AS GL_DATE,
+            poa.ERP_ORG_ID                                              AS ORGANIZATION_CODE,
+            'N'                                                         AS POSTED_TO_ERP,
+            td_vat.TAX_CODE                                             AS TAX_CODE,
+            ''                                                          AS TAX_CODE_AMOUNT,
+            td_vat.TAX_PERCENTAGE || ' %'                               AS ITEM_TAX_CATEGORY,
+            ''                                                          AS ITEM_TAX_CATEGORY_AMOUNT,
+            'TAX'                                                       AS LINE_TYPE,
+            (-1 * poli.QUANTITY * poli.UNIT_DISCOUNT_AMOUNT)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)                             AS TAXABLE_AMOUNT
+        FROM POS_ORDERS              po
+        JOIN POS_CUSTOMER_DETAILS    pcd    ON po.BUYER_CUSTOMER_ID    = pcd.CUSTOMER_ID
+        JOIN POS_ORDER_LINE_ITEMS    poli   ON po.ORDER_ID             = poli.ORDER_ID
+        JOIN POS_ORDER_ADDRESS       poa    ON po.ORDER_ID             = poa.ORDER_ID
+                                          AND poa.ADDRESS_TYPE         = 'SOURCE'
+        JOIN POS_INVOICE             pi     ON po.INVOICE_ID           = pi.INVOICE_ID
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_vat
+                                             ON poli.ORDER_ID          = td_vat.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_vat.PRODUCT_ID
+                                            AND td_vat.TAX_TYPE        = 'VAT'
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_ca
+                                             ON poli.ORDER_ID          = td_ca.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_ca.PRODUCT_ID
+                                            AND td_ca.TAX_TYPE         = 'CA'
+        WHERE po.STATUS     = 'COMPLETED'
+          AND po.ORDER_TYPE = 'SELLIN'
+          AND poli.UNIT_DISCOUNT_AMOUNT <> 0
+          AND (p_order_id  IS NOT NULL AND po.ORDER_ID = p_order_id
+               OR
+               p_order_id  IS NULL
+               AND TRUNC(po.ORDER_DATE) BETWEEN TRUNC(p_from_date) AND TRUNC(p_to_date))
+               AND NOT EXISTS (
+    			SELECT 1
+   				FROM POS_ERP_INV_POSTED_ORDERS eip
+   			 	WHERE eip.ORDER_ID = po.ORDER_ID
+				)
+
+        UNION ALL
+
+        ----------------------------------------------------------------
+        -- ROW TYPE 6 : CA ON DISCOUNT  (negative)
+        --   DISC_CA = (-1 × QTY × UNIT_DISCOUNT) / DIVISOR × VAT%/100 × CA%/100
+        ----------------------------------------------------------------
+        SELECT
+            5405                                                        AS OPERATING_UNIT,
+            pcd.ERP_ACCOUNT_NUMBER                                      AS CUSTOMER_NUMBER,
+            pcd.ERP_LOCATION                                            AS CUSTOMER_LOCATION,
+            po.INVOICE_ID                                               AS TRANSACTION_NO,
+            pi.INVOICE_GENERATED_DATE                                   AS TRANSACTION_DATE,
+            ''                                                          AS DESCRIPTION,
+            'XAF'                                                       AS CURRENCY,
+            po.ORDER_ID                                                 AS REFERENCE_NO,
+            1                                                           AS QUANTITY,
+            (-1 * poli.QUANTITY * poli.UNIT_DISCOUNT_AMOUNT)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)
+            * (td_ca.TAX_PERCENTAGE  / 100)                             AS UNIT_PRICE,
+            (-1 * poli.QUANTITY * poli.UNIT_DISCOUNT_AMOUNT)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)
+            * (td_ca.TAX_PERCENTAGE  / 100)                             AS SELLING_AMOUNT,
+            poli.DISCOUNT_ERP_CODE                                      AS ERP_ITEM_CODE,
+            'INVOICE'                                                   AS INVOICE_TYPE,
+            'PRI'                                                       AS TYPE,
+            ''                                                          AS TRANSACTION_REF_NO,
+            ''                                                          AS TRANSACTION_REF_DATE,
+            'N'                                                         AS PROCESS_FLAG,
+            ''                                                          AS ERROR_MESSAGE,
+            SYSDATE                                                     AS CREATION_DATE,
+            pcd.PARTNER_ID                                              AS CUSTOMER_ID,
+            SYSDATE                                                     AS PROCESSING_DATE,
+            5405                                                        AS ORG_ID,
+            ''                                                          AS GL_DATE,
+            poa.ERP_ORG_ID                                              AS ORGANIZATION_CODE,
+            'N'                                                         AS POSTED_TO_ERP,
+            td_ca.TAX_CODE                                              AS TAX_CODE,
+            ''                                                          AS TAX_CODE_AMOUNT,
+            td_ca.TAX_PERCENTAGE || ' %'                                AS ITEM_TAX_CATEGORY,
+            ''                                                          AS ITEM_TAX_CATEGORY_AMOUNT,
+            'TAX'                                                       AS LINE_TYPE,
+            (-1 * poli.QUANTITY * poli.UNIT_DISCOUNT_AMOUNT)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)
+            * (td_ca.TAX_PERCENTAGE  / 100)                             AS TAXABLE_AMOUNT
+        FROM POS_ORDERS              po
+        JOIN POS_CUSTOMER_DETAILS    pcd    ON po.BUYER_CUSTOMER_ID    = pcd.CUSTOMER_ID
+        JOIN POS_ORDER_LINE_ITEMS    poli   ON po.ORDER_ID             = poli.ORDER_ID
+        JOIN POS_ORDER_ADDRESS       poa    ON po.ORDER_ID             = poa.ORDER_ID
+                                          AND poa.ADDRESS_TYPE         = 'SOURCE'
+        JOIN POS_INVOICE             pi     ON po.INVOICE_ID           = pi.INVOICE_ID
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_vat
+                                             ON poli.ORDER_ID          = td_vat.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_vat.PRODUCT_ID
+                                            AND td_vat.TAX_TYPE        = 'VAT'
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_ca
+                                             ON poli.ORDER_ID          = td_ca.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_ca.PRODUCT_ID
+                                            AND td_ca.TAX_TYPE         = 'CA'
+        WHERE po.STATUS     = 'COMPLETED'
+          AND po.ORDER_TYPE = 'SELLIN'
+          AND poli.UNIT_DISCOUNT_AMOUNT <> 0
+          AND (p_order_id  IS NOT NULL AND po.ORDER_ID = p_order_id
+               OR
+               p_order_id  IS NULL
+               AND TRUNC(po.ORDER_DATE) BETWEEN TRUNC(p_from_date) AND TRUNC(p_to_date)) 
+               AND NOT EXISTS (
+    			SELECT 1
+   				FROM POS_ERP_INV_POSTED_ORDERS eip
+   			 	WHERE eip.ORDER_ID = po.ORDER_ID
+				)
+
+    ) erp
+    ORDER BY erp.REFERENCE_NO;
+
+    INSERT INTO POS_ERP_INV_POSTED_ORDERS (ORDER_ID, POSTED_DATE)
+    SELECT DISTINCT po.ORDER_ID, SYSDATE
+    FROM POS_ORDERS po
+    WHERE po.STATUS     = 'COMPLETED'
+      AND po.ORDER_TYPE = 'SELLIN'   
+      AND (p_order_id  IS NOT NULL AND po.ORDER_ID = p_order_id
+           OR
+           p_order_id  IS NULL
+           AND TRUNC(po.ORDER_DATE) BETWEEN TRUNC(p_from_date) AND TRUNC(p_to_date))
+      AND NOT EXISTS (
+          SELECT 1
+          FROM POS_ERP_INV_POSTED_ORDERS eip
+          WHERE eip.ORDER_ID = po.ORDER_ID
+      );
+    
+    COMMIT;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE;
+
+END PRC_INSERT_ERP_SELLIN_STAGING;
+`;
+
+const PROC2_SQL = `CREATE OR REPLACE PROCEDURE PRC_INSERT_ERP_SELLIN_RETURN_STAGING (
+    p_order_id   IN  POS_ORDERS.ORDER_ID%TYPE  DEFAULT NULL,
+    p_from_date  IN  DATE                      DEFAULT NULL,
+    p_to_date    IN  DATE                      DEFAULT NULL
+)
+AS
+    --------------------------------------------------------------------
+    -- VALIDATION
+    -- Either p_order_id must be supplied,
+    -- or both p_from_date and p_to_date must be supplied.
+    --------------------------------------------------------------------
+BEGIN
+
+    IF p_order_id IS NULL AND (p_from_date IS NULL OR p_to_date IS NULL) THEN
+        RAISE_APPLICATION_ERROR(
+            -20001,
+            'PRC_INSERT_ERP_SELLIN_RETURN_STAGING: Provide either p_order_id OR both p_from_date and p_to_date.'
+        );
+    END IF;
+
+    --------------------------------------------------------------------
+    -- CLEAN UP existing rows for the same scope before re-inserting
+    --------------------------------------------------------------------
+    -- DELETE FROM ERP_ORDER_INVOICE_STAGING t
+    -- WHERE (
+    --     p_order_id IS NOT NULL
+    --     AND t.REFERENCE_NO = p_order_id
+    -- )
+    -- OR (
+    --     p_order_id IS NULL
+    --     AND TRUNC(t.TRANSACTION_DATE) BETWEEN TRUNC(p_from_date) AND TRUNC(p_to_date)
+    -- );
+
+    --------------------------------------------------------------------
+    -- INSERT ALL 6 ROW TYPES  —  SELLIN_RETURN SIGN RULES:
+    --
+    --   INVOICE base   : QUANTITY -ve, UNIT_PRICE -ve, SELLING -ve, TAXABLE -ve
+    --   VAT 18%        : QUANTITY +ve, UNIT_PRICE -ve, SELLING -ve, TAXABLE -ve
+    --   CA  5%         : QUANTITY +ve, UNIT_PRICE -ve, SELLING -ve, TAXABLE -ve
+    --   INVOICE Disc   : QUANTITY +ve, UNIT_PRICE +ve, SELLING +ve, TAXABLE +ve
+    --   VAT on Disc    : QUANTITY +ve, UNIT_PRICE +ve, SELLING +ve, TAXABLE +ve
+    --   CA  on Disc    : QUANTITY +ve, UNIT_PRICE +ve, SELLING +ve, TAXABLE +ve
+    --
+    --   DIVISOR = 1 + (VAT%/100) + (VAT%/100 × CA%/100)
+    --   BASE    = SELLING / DIVISOR
+    --------------------------------------------------------------------
+    INSERT INTO ESBUSER.MKT_ERP_INV_INTF (
+        OPERATING_UNIT,
+        CUSTOMER_NUMBER,
+        CUSTOMER_LOCATION,
+        TRANSACTION_NO,
+        TRANSACTION_DATE,
+        DESCRIPTION,
+        CURRENCY,
+        REFERENCE_NO,
+        QUANTITY,
+        UNIT_PRICE,
+        SELLING_AMOUNT,
+        ERP_ITEM_CODE,
+        INVOICE_TYPE,
+        TYPE,
+        TRANSACTION_REF_NO,
+        TRANSACTION_REF_DATE,
+        PROCESS_FLAG,
+        ERROR_MESSAGE,
+        CREATION_DATE,
+        CUSTOMER_ID,
+        PROCESSING_DATE,
+        ORG_ID,
+        GL_DATE,
+        ORGANIZATION_CODE,
+        POSTED_TO_ERP,
+        TAX_CODE,
+        TAX_CODE_AMOUNT,
+        ITEM_TAX_CATEGORY,
+        ITEM_TAX_CATEGORY_AMOUNT,
+        LINE_TYPE,
+        TAXABLE_AMOUNT
+    )
+    SELECT * FROM (
+
+        ----------------------------------------------------------------
+        -- ROW TYPE 1 : BASE INVOICE LINE
+        --   QUANTITY      → negative
+        --   UNIT_PRICE    → negative
+        --   SELLING       → negative
+        --   TAXABLE       → negative
+        ----------------------------------------------------------------
+        SELECT
+            5405                                                        AS OPERATING_UNIT,
+            pcd.ERP_ACCOUNT_NUMBER                                      AS CUSTOMER_NUMBER,
+            pcd.ERP_LOCATION                                            AS CUSTOMER_LOCATION,
+            po.INVOICE_ID                                               AS TRANSACTION_NO,
+            pi.INVOICE_GENERATED_DATE                                   AS TRANSACTION_DATE,
+            ''                                                          AS DESCRIPTION,
+            'XAF'                                                       AS CURRENCY,
+            po.ORDER_ID                                                 AS REFERENCE_NO,
+            (-1 * poli.QUANTITY)                                        AS QUANTITY,
+            (-1 * poli.UNIT_PRICE_TAX_INCLUDED)                        AS UNIT_PRICE,
+            (-1 * poli.QUANTITY * poli.UNIT_PRICE_TAX_INCLUDED)        AS SELLING_AMOUNT,
+            poli.MATERIAL_CODE                                          AS ERP_ITEM_CODE,
+            'CREDIT MEMO'                                                   AS INVOICE_TYPE,
+            'SLR'                                                       AS TYPE,
+            ''                                                          AS TRANSACTION_REF_NO,
+            ''                                                          AS TRANSACTION_REF_DATE,
+            'N'                                                         AS PROCESS_FLAG,
+            ''                                                          AS ERROR_MESSAGE,
+            SYSDATE                                                     AS CREATION_DATE,
+            pcd.PARTNER_ID                                              AS CUSTOMER_ID,
+            SYSDATE                                                     AS PROCESSING_DATE,
+            5405                                                        AS ORG_ID,
+            ''                                                          AS GL_DATE,
+            poa.ERP_ORG_ID                                              AS ORGANIZATION_CODE,
+            'N'                                                         AS POSTED_TO_ERP,
+            ''                                                          AS TAX_CODE,
+            ''                                                          AS TAX_CODE_AMOUNT,
+            NULL                                                        AS ITEM_TAX_CATEGORY,
+            ''                                                          AS ITEM_TAX_CATEGORY_AMOUNT,
+            'INVOICE'                                                   AS LINE_TYPE,
+            -- TAXABLE negative: -1 * (QTY × PRICE) / DIVISOR
+            (-1 * poli.QUANTITY * poli.UNIT_PRICE_TAX_INCLUDED)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+                                                                        AS TAXABLE_AMOUNT
+        FROM POS_ORDERS              po
+        JOIN POS_CUSTOMER_DETAILS    pcd    ON po.BUYER_CUSTOMER_ID    = pcd.CUSTOMER_ID
+        JOIN POS_ORDER_LINE_ITEMS    poli   ON po.ORDER_ID             = poli.ORDER_ID
+        JOIN POS_ORDER_ADDRESS       poa    ON po.ORDER_ID             = poa.ORDER_ID
+                                          AND poa.ADDRESS_TYPE         = 'SOURCE'
+        JOIN POS_INVOICE             pi     ON po.INVOICE_ID           = pi.INVOICE_ID
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_vat
+                                             ON poli.ORDER_ID          = td_vat.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_vat.PRODUCT_ID
+                                            AND td_vat.TAX_TYPE        = 'VAT'
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_ca
+                                             ON poli.ORDER_ID          = td_ca.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_ca.PRODUCT_ID
+                                            AND td_ca.TAX_TYPE         = 'CA'
+        WHERE po.STATUS     = 'COMPLETED'
+          AND po.ORDER_TYPE = 'SELLIN_RETURN'
+          AND (p_order_id  IS NOT NULL AND po.ORDER_ID = p_order_id
+               OR
+               p_order_id  IS NULL
+               AND TRUNC(po.ORDER_DATE) BETWEEN TRUNC(p_from_date) AND TRUNC(p_to_date))
+               AND NOT EXISTS (
+    			SELECT 1
+   				FROM POS_ERP_INV_POSTED_ORDERS eip
+   			 	WHERE eip.ORDER_ID = po.ORDER_ID
+				)
+        UNION ALL
+
+        ----------------------------------------------------------------
+        -- ROW TYPE 2 : VAT LINE  (TAX_TYPE = 'VAT', typically 18%)
+        --   QUANTITY      → positive (1)
+        --   UNIT_PRICE    → negative
+        --   SELLING       → negative
+        --   TAXABLE       → negative
+        ----------------------------------------------------------------
+        SELECT
+            5405                                                        AS OPERATING_UNIT,
+            pcd.ERP_ACCOUNT_NUMBER                                      AS CUSTOMER_NUMBER,
+            pcd.ERP_LOCATION                                            AS CUSTOMER_LOCATION,
+            po.INVOICE_ID                                               AS TRANSACTION_NO,
+            pi.INVOICE_GENERATED_DATE                                   AS TRANSACTION_DATE,
+            ''                                                          AS DESCRIPTION,
+            'XAF'                                                       AS CURRENCY,
+            po.ORDER_ID                                                 AS REFERENCE_NO,
+            1                                                           AS QUANTITY,
+            -- negative: -1 * BASE * VAT%/100
+            (-1 * poli.QUANTITY * poli.UNIT_PRICE_TAX_INCLUDED)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)                             AS UNIT_PRICE,
+            (-1 * poli.QUANTITY * poli.UNIT_PRICE_TAX_INCLUDED)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)                             AS SELLING_AMOUNT,
+            poli.MATERIAL_CODE                                          AS ERP_ITEM_CODE,
+            'CREDIT MEMO'                                                   AS INVOICE_TYPE,
+            'SLR'                                                       AS TYPE,
+            ''                                                          AS TRANSACTION_REF_NO,
+            ''                                                          AS TRANSACTION_REF_DATE,
+            'N'                                                         AS PROCESS_FLAG,
+            ''                                                          AS ERROR_MESSAGE,
+            SYSDATE                                                     AS CREATION_DATE,
+            pcd.PARTNER_ID                                              AS CUSTOMER_ID,
+            SYSDATE                                                     AS PROCESSING_DATE,
+            5405                                                        AS ORG_ID,
+            ''                                                          AS GL_DATE,
+            poa.ERP_ORG_ID                                              AS ORGANIZATION_CODE,
+            'N'                                                         AS POSTED_TO_ERP,
+            td_vat.TAX_CODE                                             AS TAX_CODE,
+            ''                                                          AS TAX_CODE_AMOUNT,
+            td_vat.TAX_PERCENTAGE || ' %'                               AS ITEM_TAX_CATEGORY,
+            ''                                                          AS ITEM_TAX_CATEGORY_AMOUNT,
+            'TAX'                                                       AS LINE_TYPE,
+            (-1 * poli.QUANTITY * poli.UNIT_PRICE_TAX_INCLUDED)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)                             AS TAXABLE_AMOUNT
+        FROM POS_ORDERS              po
+        JOIN POS_CUSTOMER_DETAILS    pcd    ON po.BUYER_CUSTOMER_ID    = pcd.CUSTOMER_ID
+        JOIN POS_ORDER_LINE_ITEMS    poli   ON po.ORDER_ID             = poli.ORDER_ID
+        JOIN POS_ORDER_ADDRESS       poa    ON po.ORDER_ID             = poa.ORDER_ID
+                                          AND poa.ADDRESS_TYPE         = 'SOURCE'
+        JOIN POS_INVOICE             pi     ON po.INVOICE_ID           = pi.INVOICE_ID
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_vat
+                                             ON poli.ORDER_ID          = td_vat.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_vat.PRODUCT_ID
+                                            AND td_vat.TAX_TYPE        = 'VAT'
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_ca
+                                             ON poli.ORDER_ID          = td_ca.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_ca.PRODUCT_ID
+                                            AND td_ca.TAX_TYPE         = 'CA'
+        WHERE po.STATUS     = 'COMPLETED'
+          AND po.ORDER_TYPE = 'SELLIN_RETURN'
+          AND (p_order_id  IS NOT NULL AND po.ORDER_ID = p_order_id
+               OR
+               p_order_id  IS NULL
+               AND TRUNC(po.ORDER_DATE) BETWEEN TRUNC(p_from_date) AND TRUNC(p_to_date))
+               AND NOT EXISTS (
+    			SELECT 1
+   				FROM POS_ERP_INV_POSTED_ORDERS eip
+   			 	WHERE eip.ORDER_ID = po.ORDER_ID
+				)
+        UNION ALL
+
+        ----------------------------------------------------------------
+        -- ROW TYPE 3 : CA LINE  (TAX_TYPE = 'CA', typically 5%)
+        --   QUANTITY      → positive (1)
+        --   UNIT_PRICE    → negative
+        --   SELLING       → negative
+        --   TAXABLE       → negative
+        ----------------------------------------------------------------
+        SELECT
+            5405                                                        AS OPERATING_UNIT,
+            pcd.ERP_ACCOUNT_NUMBER                                      AS CUSTOMER_NUMBER,
+            pcd.ERP_LOCATION                                            AS CUSTOMER_LOCATION,
+            po.INVOICE_ID                                               AS TRANSACTION_NO,
+            pi.INVOICE_GENERATED_DATE                                   AS TRANSACTION_DATE,
+            ''                                                          AS DESCRIPTION,
+            'XAF'                                                       AS CURRENCY,
+            po.ORDER_ID                                                 AS REFERENCE_NO,
+            1                                                           AS QUANTITY,
+            -- negative: -1 * BASE * VAT%/100 * CA%/100
+            (-1 * poli.QUANTITY * poli.UNIT_PRICE_TAX_INCLUDED)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)
+            * (td_ca.TAX_PERCENTAGE  / 100)                             AS UNIT_PRICE,
+            (-1 * poli.QUANTITY * poli.UNIT_PRICE_TAX_INCLUDED)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)
+            * (td_ca.TAX_PERCENTAGE  / 100)                             AS SELLING_AMOUNT,
+            poli.MATERIAL_CODE                                          AS ERP_ITEM_CODE,
+            'CREDIT MEMO'                                                   AS INVOICE_TYPE,
+            'SLR'                                                       AS TYPE,
+            ''                                                          AS TRANSACTION_REF_NO,
+            ''                                                          AS TRANSACTION_REF_DATE,
+            'N'                                                         AS PROCESS_FLAG,
+            ''                                                          AS ERROR_MESSAGE,
+            SYSDATE                                                     AS CREATION_DATE,
+            pcd.PARTNER_ID                                              AS CUSTOMER_ID,
+            SYSDATE                                                     AS PROCESSING_DATE,
+            5405                                                        AS ORG_ID,
+            ''                                                          AS GL_DATE,
+            poa.ERP_ORG_ID                                              AS ORGANIZATION_CODE,
+            'N'                                                         AS POSTED_TO_ERP,
+            td_ca.TAX_CODE                                              AS TAX_CODE,
+            ''                                                          AS TAX_CODE_AMOUNT,
+            td_ca.TAX_PERCENTAGE || ' %'                                AS ITEM_TAX_CATEGORY,
+            ''                                                          AS ITEM_TAX_CATEGORY_AMOUNT,
+            'TAX'                                                       AS LINE_TYPE,
+            (-1 * poli.QUANTITY * poli.UNIT_PRICE_TAX_INCLUDED)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)
+            * (td_ca.TAX_PERCENTAGE  / 100)                             AS TAXABLE_AMOUNT
+        FROM POS_ORDERS              po
+        JOIN POS_CUSTOMER_DETAILS    pcd    ON po.BUYER_CUSTOMER_ID    = pcd.CUSTOMER_ID
+        JOIN POS_ORDER_LINE_ITEMS    poli   ON po.ORDER_ID             = poli.ORDER_ID
+        JOIN POS_ORDER_ADDRESS       poa    ON po.ORDER_ID             = poa.ORDER_ID
+                                          AND poa.ADDRESS_TYPE         = 'SOURCE'
+        JOIN POS_INVOICE             pi     ON po.INVOICE_ID           = pi.INVOICE_ID
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_vat
+                                             ON poli.ORDER_ID          = td_vat.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_vat.PRODUCT_ID
+                                            AND td_vat.TAX_TYPE        = 'VAT'
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_ca
+                                             ON poli.ORDER_ID          = td_ca.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_ca.PRODUCT_ID
+                                            AND td_ca.TAX_TYPE         = 'CA'
+        WHERE po.STATUS     = 'COMPLETED'
+          AND po.ORDER_TYPE = 'SELLIN_RETURN'
+          AND (p_order_id  IS NOT NULL AND po.ORDER_ID = p_order_id
+               OR
+               p_order_id  IS NULL
+               AND TRUNC(po.ORDER_DATE) BETWEEN TRUNC(p_from_date) AND TRUNC(p_to_date))
+               AND NOT EXISTS (
+    			SELECT 1
+   				FROM POS_ERP_INV_POSTED_ORDERS eip
+   			 	WHERE eip.ORDER_ID = po.ORDER_ID
+				)
+        UNION ALL
+
+        ----------------------------------------------------------------
+        -- ROW TYPE 4 : DISCOUNT INVOICE LINE  (positive for return)
+        --   QUANTITY      → positive
+        --   UNIT_PRICE    → positive
+        --   SELLING       → positive
+        --   TAXABLE       → positive
+        ----------------------------------------------------------------
+        SELECT
+            5405                                                        AS OPERATING_UNIT,
+            pcd.ERP_ACCOUNT_NUMBER                                      AS CUSTOMER_NUMBER,
+            pcd.ERP_LOCATION                                            AS CUSTOMER_LOCATION,
+            po.INVOICE_ID                                               AS TRANSACTION_NO,
+            pi.INVOICE_GENERATED_DATE                                   AS TRANSACTION_DATE,
+            ''                                                          AS DESCRIPTION,
+            'XAF'                                                       AS CURRENCY,
+            po.ORDER_ID                                                 AS REFERENCE_NO,
+            poli.QUANTITY                                               AS QUANTITY,
+            poli.UNIT_DISCOUNT_AMOUNT                                   AS UNIT_PRICE,
+            (poli.QUANTITY * poli.UNIT_DISCOUNT_AMOUNT)                 AS SELLING_AMOUNT,
+            poli.DISCOUNT_ERP_CODE                                      AS ERP_ITEM_CODE,
+            'CREDIT MEMO'                                                   AS INVOICE_TYPE,
+            'SLR'                                                       AS TYPE,
+            ''                                                          AS TRANSACTION_REF_NO,
+            ''                                                          AS TRANSACTION_REF_DATE,
+            'N'                                                         AS PROCESS_FLAG,
+            ''                                                          AS ERROR_MESSAGE,
+            SYSDATE                                                     AS CREATION_DATE,
+            pcd.PARTNER_ID                                              AS CUSTOMER_ID,
+            SYSDATE                                                     AS PROCESSING_DATE,
+            5405                                                        AS ORG_ID,
+            ''                                                          AS GL_DATE,
+            poa.ERP_ORG_ID                                              AS ORGANIZATION_CODE,
+            'N'                                                         AS POSTED_TO_ERP,
+            ''                                                          AS TAX_CODE,
+            ''                                                          AS TAX_CODE_AMOUNT,
+            NULL                                                        AS ITEM_TAX_CATEGORY,
+            ''                                                          AS ITEM_TAX_CATEGORY_AMOUNT,
+            'INVOICE'                                                   AS LINE_TYPE,
+            -- positive: (QTY × UNIT_DISCOUNT) / DIVISOR
+            (poli.QUANTITY * poli.UNIT_DISCOUNT_AMOUNT)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+                                                                        AS TAXABLE_AMOUNT
+        FROM POS_ORDERS              po
+        JOIN POS_CUSTOMER_DETAILS    pcd    ON po.BUYER_CUSTOMER_ID    = pcd.CUSTOMER_ID
+        JOIN POS_ORDER_LINE_ITEMS    poli   ON po.ORDER_ID             = poli.ORDER_ID
+        JOIN POS_ORDER_ADDRESS       poa    ON po.ORDER_ID             = poa.ORDER_ID
+                                          AND poa.ADDRESS_TYPE         = 'SOURCE'
+        JOIN POS_INVOICE             pi     ON po.INVOICE_ID           = pi.INVOICE_ID
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_vat
+                                             ON poli.ORDER_ID          = td_vat.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_vat.PRODUCT_ID
+                                            AND td_vat.TAX_TYPE        = 'VAT'
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_ca
+                                             ON poli.ORDER_ID          = td_ca.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_ca.PRODUCT_ID
+                                            AND td_ca.TAX_TYPE         = 'CA'
+        WHERE po.STATUS     = 'COMPLETED'
+          AND po.ORDER_TYPE = 'SELLIN_RETURN'
+          AND poli.UNIT_DISCOUNT_AMOUNT <> 0
+          AND (p_order_id  IS NOT NULL AND po.ORDER_ID = p_order_id
+               OR
+               p_order_id  IS NULL
+               AND TRUNC(po.ORDER_DATE) BETWEEN TRUNC(p_from_date) AND TRUNC(p_to_date))
+               AND NOT EXISTS (
+    			SELECT 1
+   				FROM POS_ERP_INV_POSTED_ORDERS eip
+   			 	WHERE eip.ORDER_ID = po.ORDER_ID
+				)
+        UNION ALL
+
+        ----------------------------------------------------------------
+        -- ROW TYPE 5 : VAT ON DISCOUNT  (positive for return)
+        --   QUANTITY      → positive (1)
+        --   UNIT_PRICE    → positive
+        --   SELLING       → positive
+        --   TAXABLE       → positive
+        ----------------------------------------------------------------
+        SELECT
+            5405                                                        AS OPERATING_UNIT,
+            pcd.ERP_ACCOUNT_NUMBER                                      AS CUSTOMER_NUMBER,
+            pcd.ERP_LOCATION                                            AS CUSTOMER_LOCATION,
+            po.INVOICE_ID                                               AS TRANSACTION_NO,
+            pi.INVOICE_GENERATED_DATE                                   AS TRANSACTION_DATE,
+            ''                                                          AS DESCRIPTION,
+            'XAF'                                                       AS CURRENCY,
+            po.ORDER_ID                                                 AS REFERENCE_NO,
+            1                                                           AS QUANTITY,
+            -- positive: (QTY × UNIT_DISCOUNT) / DIVISOR * VAT%/100
+            (poli.QUANTITY * poli.UNIT_DISCOUNT_AMOUNT)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)                             AS UNIT_PRICE,
+            (poli.QUANTITY * poli.UNIT_DISCOUNT_AMOUNT)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)                             AS SELLING_AMOUNT,
+            poli.DISCOUNT_ERP_CODE                                          AS ERP_ITEM_CODE,
+            'CREDIT MEMO'                                                   AS INVOICE_TYPE,
+            'SLR'                                                       AS TYPE,
+            ''                                                          AS TRANSACTION_REF_NO,
+            ''                                                          AS TRANSACTION_REF_DATE,
+            'N'                                                         AS PROCESS_FLAG,
+            ''                                                          AS ERROR_MESSAGE,
+            SYSDATE                                                     AS CREATION_DATE,
+            pcd.PARTNER_ID                                              AS CUSTOMER_ID,
+            SYSDATE                                                     AS PROCESSING_DATE,
+            5405                                                        AS ORG_ID,
+            ''                                                          AS GL_DATE,
+            poa.ERP_ORG_ID                                              AS ORGANIZATION_CODE,
+            'N'                                                         AS POSTED_TO_ERP,
+            td_vat.TAX_CODE                                             AS TAX_CODE,
+            ''                                                          AS TAX_CODE_AMOUNT,
+            td_vat.TAX_PERCENTAGE || ' %'                               AS ITEM_TAX_CATEGORY,
+            ''                                                          AS ITEM_TAX_CATEGORY_AMOUNT,
+            'TAX'                                                       AS LINE_TYPE,
+            (poli.QUANTITY * poli.UNIT_DISCOUNT_AMOUNT)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)                             AS TAXABLE_AMOUNT
+        FROM POS_ORDERS              po
+        JOIN POS_CUSTOMER_DETAILS    pcd    ON po.BUYER_CUSTOMER_ID    = pcd.CUSTOMER_ID
+        JOIN POS_ORDER_LINE_ITEMS    poli   ON po.ORDER_ID             = poli.ORDER_ID
+        JOIN POS_ORDER_ADDRESS       poa    ON po.ORDER_ID             = poa.ORDER_ID
+                                          AND poa.ADDRESS_TYPE         = 'SOURCE'
+        JOIN POS_INVOICE             pi     ON po.INVOICE_ID           = pi.INVOICE_ID
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_vat
+                                             ON poli.ORDER_ID          = td_vat.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_vat.PRODUCT_ID
+                                            AND td_vat.TAX_TYPE        = 'VAT'
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_ca
+                                             ON poli.ORDER_ID          = td_ca.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_ca.PRODUCT_ID
+                                            AND td_ca.TAX_TYPE         = 'CA'
+        WHERE po.STATUS     = 'COMPLETED'
+          AND po.ORDER_TYPE = 'SELLIN_RETURN'
+          AND poli.UNIT_DISCOUNT_AMOUNT <> 0
+          AND (p_order_id  IS NOT NULL AND po.ORDER_ID = p_order_id
+               OR
+               p_order_id  IS NULL
+               AND TRUNC(po.ORDER_DATE) BETWEEN TRUNC(p_from_date) AND TRUNC(p_to_date))
+               AND NOT EXISTS (
+    			SELECT 1
+   				FROM POS_ERP_INV_POSTED_ORDERS eip
+   			 	WHERE eip.ORDER_ID = po.ORDER_ID
+				)
+        UNION ALL
+
+        ----------------------------------------------------------------
+        -- ROW TYPE 6 : CA ON DISCOUNT  (positive for return)
+        --   QUANTITY      → positive (1)
+        --   UNIT_PRICE    → positive
+        --   SELLING       → positive
+        --   TAXABLE       → positive
+        ----------------------------------------------------------------
+        SELECT
+            5405                                                        AS OPERATING_UNIT,
+            pcd.ERP_ACCOUNT_NUMBER                                      AS CUSTOMER_NUMBER,
+            pcd.ERP_LOCATION                                            AS CUSTOMER_LOCATION,
+            po.INVOICE_ID                                               AS TRANSACTION_NO,
+            pi.INVOICE_GENERATED_DATE                                   AS TRANSACTION_DATE,
+            ''                                                          AS DESCRIPTION,
+            'XAF'                                                       AS CURRENCY,
+            po.ORDER_ID                                                 AS REFERENCE_NO,
+            1                                                           AS QUANTITY,
+            -- positive: (QTY × UNIT_DISCOUNT) / DIVISOR * VAT%/100 * CA%/100
+            (poli.QUANTITY * poli.UNIT_DISCOUNT_AMOUNT)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)
+            * (td_ca.TAX_PERCENTAGE  / 100)                             AS UNIT_PRICE,
+            (poli.QUANTITY * poli.UNIT_DISCOUNT_AMOUNT)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)
+            * (td_ca.TAX_PERCENTAGE  / 100)                             AS SELLING_AMOUNT,
+            poli.DISCOUNT_ERP_CODE                                      AS ERP_ITEM_CODE,
+            'CREDIT MEMO'                                                   AS INVOICE_TYPE,
+            'SLR'                                                       AS TYPE,
+            ''                                                          AS TRANSACTION_REF_NO,
+            ''                                                          AS TRANSACTION_REF_DATE,
+            'N'                                                         AS PROCESS_FLAG,
+            ''                                                          AS ERROR_MESSAGE,
+            SYSDATE                                                     AS CREATION_DATE,
+            pcd.PARTNER_ID                                              AS CUSTOMER_ID,
+            SYSDATE                                                     AS PROCESSING_DATE,
+            5405                                                        AS ORG_ID,
+            ''                                                          AS GL_DATE,
+            poa.ERP_ORG_ID                                              AS ORGANIZATION_CODE,
+            'N'                                                         AS POSTED_TO_ERP,
+            td_ca.TAX_CODE                                              AS TAX_CODE,
+            ''                                                          AS TAX_CODE_AMOUNT,
+            td_ca.TAX_PERCENTAGE || ' %'                                AS ITEM_TAX_CATEGORY,
+            ''                                                          AS ITEM_TAX_CATEGORY_AMOUNT,
+            'TAX'                                                       AS LINE_TYPE,
+            (poli.QUANTITY * poli.UNIT_DISCOUNT_AMOUNT)
+            / (1 + (td_vat.TAX_PERCENTAGE / 100)
+                 + (td_vat.TAX_PERCENTAGE / 100 * td_ca.TAX_PERCENTAGE / 100))
+            * (td_vat.TAX_PERCENTAGE / 100)
+            * (td_ca.TAX_PERCENTAGE  / 100)                             AS TAXABLE_AMOUNT
+        FROM POS_ORDERS              po
+        JOIN POS_CUSTOMER_DETAILS    pcd    ON po.BUYER_CUSTOMER_ID    = pcd.CUSTOMER_ID
+        JOIN POS_ORDER_LINE_ITEMS    poli   ON po.ORDER_ID             = poli.ORDER_ID
+        JOIN POS_ORDER_ADDRESS       poa    ON po.ORDER_ID             = poa.ORDER_ID
+                                          AND poa.ADDRESS_TYPE         = 'SOURCE'
+        JOIN POS_INVOICE             pi     ON po.INVOICE_ID           = pi.INVOICE_ID
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_vat
+                                             ON poli.ORDER_ID          = td_vat.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_vat.PRODUCT_ID
+                                            AND td_vat.TAX_TYPE        = 'VAT'
+        JOIN POS_ORDER_LINE_ITEM_TAX_DETAILS td_ca
+                                             ON poli.ORDER_ID          = td_ca.ORDER_ID
+                                            AND poli.PRODUCT_ID        = td_ca.PRODUCT_ID
+                                            AND td_ca.TAX_TYPE         = 'CA'
+        WHERE po.STATUS     = 'COMPLETED'
+          AND po.ORDER_TYPE = 'SELLIN_RETURN'
+          AND poli.UNIT_DISCOUNT_AMOUNT <> 0
+          AND (p_order_id  IS NOT NULL AND po.ORDER_ID = p_order_id
+               OR
+               p_order_id  IS NULL
+               AND TRUNC(po.ORDER_DATE) BETWEEN TRUNC(p_from_date) AND TRUNC(p_to_date))
+               AND NOT EXISTS (
+    			SELECT 1
+   				FROM POS_ERP_INV_POSTED_ORDERS eip
+   			 	WHERE eip.ORDER_ID = po.ORDER_ID
+				)
+    ) erp
+    ORDER BY erp.REFERENCE_NO;
+    
+    INSERT INTO POS_ERP_INV_POSTED_ORDERS (ORDER_ID, POSTED_DATE)
+    SELECT DISTINCT po.ORDER_ID, SYSDATE
+    FROM POS_ORDERS po
+    WHERE po.STATUS     = 'COMPLETED'
+      AND po.ORDER_TYPE = 'SELLIN_RETURN'   
+      AND (p_order_id  IS NOT NULL AND po.ORDER_ID = p_order_id
+           OR
+           p_order_id  IS NULL
+           AND TRUNC(po.ORDER_DATE) BETWEEN TRUNC(p_from_date) AND TRUNC(p_to_date))
+      AND NOT EXISTS (
+          SELECT 1
+          FROM POS_ERP_INV_POSTED_ORDERS eip
+          WHERE eip.ORDER_ID = po.ORDER_ID
+      );
+
+    COMMIT;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE;
+
+END PRC_INSERT_ERP_SELLIN_RETURN_STAGING;
+`;
+
+const PROCEDURES = [
+  {
+    key:'sellin',
+    label:'PRC_INSERT_ERP_SELLIN_STAGING',
+    subtitle:'Primary Sale → Invoice Staging (ERP_ORDER_INVOICE_STAGING)',
+    orderType:"po.ORDER_TYPE = 'SELLIN'",
+    guard:"Skips orders already present in POS_ERP_INV_POSTED_ORDERS (NOT EXISTS), then inserts a POSTED_DATE row per order so a re-run will not duplicate rows.",
+    rows:[
+      ['1','Base Invoice Line','INVOICE','INVOICE','PRI','pos','SELLING = QTY × UNIT_PRICE_TAX_INCLUDED · TAXABLE = BASE (selling ÷ DIVISOR)'],
+      ['2','VAT Line','TAX','INVOICE','PRI','pos','BASE × VAT% / 100'],
+      ['3','CA Line','TAX','INVOICE','PRI','pos','BASE × VAT%/100 × CA%/100'],
+      ['4','Discount Invoice Line','INVOICE','INVOICE','PRI','neg','−(QTY × UNIT_DISCOUNT_AMOUNT)'],
+      ['5','VAT on Discount','TAX','INVOICE','PRI','neg','−(discount BASE) × VAT%/100'],
+      ['6','CA on Discount','TAX','INVOICE','PRI','neg','−(discount BASE) × VAT%/100 × CA%/100']
+    ],
+    sqlVar:'PROC1_SQL'
+  },
+  {
+    key:'sellin_return',
+    label:'PRC_INSERT_ERP_SELLIN_RETURN_STAGING',
+    subtitle:'Primary Sale Return → Credit Memo Staging (ERP_ORDER_INVOICE_STAGING)',
+    orderType:"po.ORDER_TYPE = 'SELLIN_RETURN'",
+    guard:"Same POS_ERP_INV_POSTED_ORDERS guard as the sellin procedure — already-posted orders are skipped and re-runs stay idempotent.",
+    rows:[
+      ['1','Base Invoice Line','INVOICE','CREDIT MEMO','SLR','pos','SELLING = QTY × UNIT_PRICE_TAX_INCLUDED · TAXABLE = BASE (selling ÷ DIVISOR)'],
+      ['2','VAT Line','TAX','CREDIT MEMO','SLR','pos','BASE × VAT% / 100'],
+      ['3','CA Line','TAX','CREDIT MEMO','SLR','pos','BASE × VAT%/100 × CA%/100'],
+      ['4','Discount Invoice Line','INVOICE','CREDIT MEMO','SLR','pos','QTY × UNIT_DISCOUNT_AMOUNT — sign flips positive for a return'],
+      ['5','VAT on Discount','TAX','CREDIT MEMO','SLR','pos','discount BASE × VAT%/100 — positive for a return'],
+      ['6','CA on Discount','TAX','CREDIT MEMO','SLR','pos','discount BASE × VAT%/100 × CA%/100 — positive for a return']
+    ],
+    sqlVar:'PROC2_SQL'
+  }
+];
+
+let currentProc = 'sellin';
+const PROC_SQL_MAP = { sellin: PROC1_SQL, sellin_return: PROC2_SQL };
+
+function renderProcTabs(){
+  const wrap = document.getElementById('proc-tabs');
+  wrap.innerHTML = PROCEDURES.map(p => `
+    <button class="proc-tab ${p.key===currentProc?'active':''}" data-key="${p.key}">${p.label}</button>
+  `).join('');
+  wrap.querySelectorAll('.proc-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentProc = btn.dataset.key;
+      renderProcTabs();
+      renderProcPanels();
+    });
+  });
+}
+
+function renderProcPanels(){
+  const p = PROCEDURES.find(x => x.key === currentProc);
+  const wrap = document.getElementById('proc-panels');
+  wrap.innerHTML = `
+    <div class="card">
+      <div class="corner tl"></div><div class="corner br"></div>
+      <h3>${p.subtitle}</h3>
+      <div class="proc-sig"><span class="kw">CREATE OR REPLACE PROCEDURE</span> <span class="pn">${p.label}</span> (
+    p_order_id   IN  POS_ORDERS.ORDER_ID%TYPE  <span class="kw">DEFAULT NULL</span>,
+    p_from_date  IN  DATE                      <span class="kw">DEFAULT NULL</span>,
+    p_to_date    IN  DATE                      <span class="kw">DEFAULT NULL</span>
+)</div>
+      <p style="color:var(--bp-white-dim); font-size:13px; line-height:1.7; margin:0 0 6px;">
+        <strong style="color:var(--bp-white);">Validation:</strong> either <code style="font-family:var(--font-mono);color:var(--bp-line);">p_order_id</code> must be supplied, or both <code style="font-family:var(--font-mono);color:var(--bp-line);">p_from_date</code> and <code style="font-family:var(--font-mono);color:var(--bp-line);">p_to_date</code> — otherwise it raises <code style="font-family:var(--font-mono);color:var(--bp-line);">-20001</code>.
+      </p>
+      <p style="color:var(--bp-white-dim); font-size:13px; line-height:1.7; margin:0;">
+        <strong style="color:var(--bp-white);">Scope:</strong> <code style="font-family:var(--font-mono);color:var(--bp-line);">${p.orderType}</code> and <code style="font-family:var(--font-mono);color:var(--bp-line);">po.STATUS = 'COMPLETED'</code>. ${p.guard}
+      </p>
+    </div>
+
+    <table class="rowtype-table">
+      <thead>
+        <tr><th>#</th><th>Row type</th><th>Line type</th><th>Invoice type</th><th>Type code</th><th>Sign</th><th>Amount formula</th></tr>
+      </thead>
+      <tbody>
+        ${p.rows.map(r => `
+          <tr>
+            <td class="rt-num">${r[0]}</td>
+            <td>${r[1]}</td>
+            <td class="rt-type">${r[2]}</td>
+            <td class="rt-type">${r[3]}</td>
+            <td class="rt-type">${r[4]}</td>
+            <td class="rt-sign ${r[5]}">${r[5]==='pos' ? '+ positive' : '− negative'}</td>
+            <td>${r[6]}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+
+    <button class="code-toggle" id="code-toggle-btn">Show full PL/SQL — ${p.label}</button>
+    <div class="code-view" id="code-view"><pre></pre></div>
+  `;
+
+  const btn = document.getElementById('code-toggle-btn');
+  const view = document.getElementById('code-view');
+  let loaded = false;
+  btn.addEventListener('click', () => {
+    if(!loaded){
+      view.querySelector('pre').textContent = PROC_SQL_MAP[p.key];
+      loaded = true;
+    }
+    const open = view.classList.toggle('open');
+    btn.textContent = (open ? 'Hide' : 'Show') + ' full PL/SQL — ' + p.label;
+  });
+}
+
+
+/* ---------------- RENDER ---------------- */
+
+function renderRequirements(){
+  const ul = document.getElementById('reqs-list');
+  ul.innerHTML = REQUIREMENTS.map(r => `<li>${r}</li>`).join('');
+}
+
+function renderGlossary(){
+  const wrap = document.getElementById('glossary-list');
+  wrap.innerHTML = TYPES.map(t => `
+    <div class="glos-item">
+      <span class="glos-tag">${t.code}</span>
+      <p>${t.desc}</p>
+    </div>
+  `).join('');
+}
+
+function renderDb(){
+  const wrap = document.getElementById('db-grid');
+  wrap.innerHTML = DBLINKS.map(d => `
+    <div class="db-card">
+      <h4>${d.name}</h4>
+      <div class="db-row"><div class="k">User Name</div><div class="v">${d.user}</div></div>
+      <div class="db-row"><div class="k">Host / Connect String</div><div class="v">${d.host}</div></div>
+    </div>
+  `).join('');
+}
+
+function renderFlows(){
+  const wrap = document.getElementById('flow-list');
+  wrap.innerHTML = SCENARIOS.map((g, i) => `
+    <div class="flow-group">
+      <div class="flow-head" data-idx="${i}">
+        <span>${g.type}</span>
+        <span class="count">${g.rows.length} posting${g.rows.length>1?'s':''}</span>
+      </div>
+      <div class="flow-body" id="flow-body-${i}">
+        ${g.rows.map(r => `
+          <div class="flow-row">
+            <span class="posting-name">${r[0]}</span>
+            <span class="arrow">→</span>
+            <span class="tbl">${r[1]}</span>
+            <span class="arrow">→</span>
+            <span class="tbl">${r[2]}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  wrap.querySelectorAll('.flow-head').forEach(h => {
+    h.addEventListener('click', () => {
+      const body = document.getElementById('flow-body-' + h.dataset.idx);
+      body.style.display = body.style.display === 'none' ? 'block' : 'none';
+    });
+  });
+}
+
+let currentTable = 'mkt_erp_inv_intf';
+
+function renderTableTabs(){
+  const wrap = document.getElementById('tbl-tabs');
+  wrap.innerHTML = Object.keys(TABLES).map(key => `
+    <button class="tbl-tab ${key===currentTable?'active':''}" data-key="${key}">${TABLES[key].label}</button>
+  `).join('');
+  wrap.querySelectorAll('.tbl-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentTable = btn.dataset.key;
+      renderTableTabs();
+      renderTableBody();
+    });
+  });
+}
+
+function renderTableBody(){
+  const t = TABLES[currentTable];
+  document.getElementById('tbl-meta').innerHTML = t.meta;
+  const q = document.getElementById('tbl-search').value.trim().toLowerCase();
+  const rows = t.cols.filter(c =>
+    !q || c[0].toLowerCase().includes(q) || c[2].toLowerCase().includes(q) || c[1].toLowerCase().includes(q) || c[3].toLowerCase().includes(q)
+  );
+  const body = document.getElementById('tbl-body');
+  if(rows.length === 0){
+    body.innerHTML = `<tr><td colspan="4"><div class="no-results">No columns match “${q}”.</div></td></tr>`;
+  } else {
+    body.innerHTML = rows.map(c => `
+      <tr>
+        <td class="col-name">${c[0]}</td>
+        <td class="col-type">${c[1]}</td>
+        <td class="col-desc">${c[2]}</td>
+        <td class="col-ref">${c[3]}</td>
+      </tr>
+    `).join('');
+  }
+  document.getElementById('row-count').textContent = `${rows.length} / ${t.cols.length} columns`;
+}
+
+document.getElementById('tbl-search').addEventListener('input', renderTableBody);
+
+/* -------------- SAMPLE RECORDS -------------- */
+
+let currentSample = SAMPLES.length ? SAMPLES[0].name : null;
+
+function smpEsc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderSampleTabs(){
+  const wrap = document.getElementById('smp-tabs');
+  if(!wrap) return;
+  wrap.innerHTML = SAMPLES.map(s => `
+    <button class="tbl-tab ${s.name===currentSample?'active':''}" data-name="${s.name}">${smpEsc(s.name)}</button>
+  `).join('');
+  wrap.querySelectorAll('.tbl-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentSample = btn.dataset.name;
+      renderSampleTabs();
+      renderSamplePanels();
+    });
+  });
+}
+
+function renderSamplePanels(){
+  const el = document.getElementById('smp-panels');
+  if(!el) return;
+  const sheet = SAMPLES.find(s => s.name === currentSample);
+  if(!sheet){ el.innerHTML = ''; return; }
+  el.innerHTML = sheet.blocks.map(b => {
+    const head = b.table
+      ? `<div class="smp-block-head"><span class="smp-tbl">${smpEsc(b.table)}</span>${b.note?`<span class="smp-note">${smpEsc(b.note)}</span>`:''}</div>`
+      : '';
+    const thead = `<tr>${b.cols.map(c => `<th>${smpEsc(c)}</th>`).join('')}</tr>`;
+    const body = b.rows.map(r => `<tr>${
+      r.map(v => v===''
+        ? `<td class="smp-cell smp-empty">&middot;</td>`
+        : `<td class="smp-cell">${smpEsc(v)}</td>`).join('')
+    }</tr>`).join('');
+    const rc = b.rows.length;
+    return `<div class="smp-block">
+      ${head}
+      <div class="data-table-wrap"><table class="data-table smp-table"><thead>${thead}</thead><tbody>${body}</tbody></table></div>
+      <div class="row-count">${rc} sample row${rc!==1?'s':''} &middot; ${b.cols.length} populated columns</div>
+    </div>`;
+  }).join('');
+}
+
+/* -------------- THEME SWITCHER -------------- */
+(function(){
+  const opts = document.getElementById('theme-opts');
+  if(!opts) return;
+  function apply(theme){
+    document.documentElement.setAttribute('data-theme', theme);
+    opts.querySelectorAll('.theme-opt').forEach(b =>
+      b.classList.toggle('active', b.dataset.theme === theme));
+  }
+  opts.querySelectorAll('.theme-opt').forEach(btn => {
+    btn.addEventListener('click', () => apply(btn.dataset.theme));
+  });
+  apply('light');
+})();
+
+/* ---------------- NAV ---------------- */
+
+document.querySelectorAll('.nav-btn[data-panel]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + btn.dataset.panel).classList.add('active');
+    window.scrollTo({top:0, behavior:'instant'});
+  });
+});
+
+/* ---------------- INIT ---------------- */
+renderRequirements();
+renderGlossary();
+renderDb();
+renderFlows();
+renderProcTabs();
+renderProcPanels();
+renderSampleTabs();
+renderSamplePanels();
+renderTableTabs();
+renderTableBody();
+</script>
+</body>
+</html>

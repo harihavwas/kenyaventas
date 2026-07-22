@@ -153,10 +153,11 @@
     grid-template-columns:280px 1fr;
     min-height:100vh;
   }
-  @media (max-width:860px){
-    .app{grid-template-columns:1fr;}
-    .sidebar{position:static; height:auto;}
-  }
+
+  /* mobile chrome — hidden on desktop, revealed in the responsive block below */
+  .topbar{display:none;}
+  .scrim{display:none;}
+  .nav-toggle{display:none;}
 
   /* ---------- Sidebar ---------- */
   .sidebar{
@@ -293,7 +294,9 @@
   main{
     padding:40px 48px 80px;
     max-width:980px;
+    min-width:0;          /* grid item may shrink; inner scroll areas handle overflow */
   }
+  .data-table-wrap{max-width:100%;}
   @media (max-width:640px){ main{padding:28px 20px 60px;} }
 
   .panel{display:none;}
@@ -824,12 +827,141 @@
   ::-webkit-scrollbar{width:9px; height:9px;}
   ::-webkit-scrollbar-track{background:transparent;}
   ::-webkit-scrollbar-thumb{background:var(--bp-line-dim); border-radius:5px;}
+
+  /* keep long code/formula blocks from forcing horizontal page scroll */
+  .call-card{overflow-x:auto; min-width:0;}
+  .call-grid{min-width:0;}
+  .formula-box{overflow-x:auto;}
+  .proc-sig{overflow-x:auto;}
+  .rowtype-wrap{overflow-x:auto; -webkit-overflow-scrolling:touch;}
+  main img{max-width:100%;}
+
+  /* =====================================================================
+     RESPONSIVE  —  tablet & mobile
+     Placed last so these rules win the cascade over the base layout.
+     ===================================================================== */
+  @media (max-width:960px){
+    /* single column; sidebar leaves the flow and becomes a drawer */
+    .app{grid-template-columns:1fr;}
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      position:fixed;
+      top:0; left:0; right:0;
+      height:56px;
+      padding:0 16px;
+      background:var(--bp-bg);
+      border-bottom:1px dashed var(--bp-line-dim);
+      z-index:60;
+    }
+    .topbar-title{
+      font-family:var(--font-display);
+      font-weight:600;
+      font-size:15px;
+      color:var(--bp-white);
+      letter-spacing:-.01em;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .nav-toggle{
+      display:inline-flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:5px;
+      width:40px; height:40px;
+      flex:none;
+      background:transparent;
+      border:1px solid var(--bp-line-dim);
+      border-radius:4px;
+      cursor:pointer;
+      padding:0 9px;
+    }
+    .nav-toggle span{
+      display:block;
+      height:2px;
+      width:100%;
+      background:var(--bp-line);
+      border-radius:2px;
+      transition:transform .25s ease, opacity .2s ease;
+    }
+    .nav-toggle.is-open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+    .nav-toggle.is-open span:nth-child(2){opacity:0;}
+    .nav-toggle.is-open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+
+    /* off-canvas drawer */
+    .sidebar{
+      position:fixed;
+      top:0; left:0;
+      height:100dvh;
+      width:min(300px, 84vw);
+      z-index:70;
+      background:var(--bp-bg);
+      border-right:1px dashed var(--bp-line-dim);
+      transform:translateX(-100%);
+      transition:transform .28s cubic-bezier(.4,0,.2,1);
+      overscroll-behavior:contain;
+      box-shadow:none;
+    }
+    .sidebar.open{
+      transform:none;
+      box-shadow:0 0 0 100vmax rgba(0,0,0,0.001), 12px 0 34px rgba(0,0,0,0.35);
+    }
+
+    .scrim{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.5);
+      z-index:65;
+      opacity:0;
+      transition:opacity .25s ease;
+    }
+    .scrim.show{display:block; opacity:1;}
+
+    body.nav-open{overflow:hidden;}
+
+    /* content clears the fixed top bar */
+    main{
+      padding:76px 28px 64px;
+      max-width:none;
+    }
+  }
+
+  @media (max-width:640px){
+    main{padding:72px 18px 56px;}
+    .brand h1{font-size:20px;}
+    .stat .num{font-size:26px;}
+    .stat-row{grid-template-columns:repeat(2,1fr); gap:12px;}
+  }
+
+  /* very small phones */
+  @media (max-width:430px){
+    .topbar-title{font-size:13.5px;}
+    main{padding:70px 14px 52px;}
+    .stat-row{grid-template-columns:1fr;}
+    .card{padding:20px 16px;}
+  }
+
+  /* honour reduced-motion preference */
+  @media (prefers-reduced-motion:reduce){
+    .sidebar, .scrim, .nav-toggle span{transition:none;}
+  }
 </style>
 </head>
 <body>
 
+<header class="topbar">
+  <button class="nav-toggle" id="nav-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="topbar-title">Airtel Ventas — ERP Posting</div>
+</header>
+<div class="scrim" id="scrim" hidden></div>
+
 <div class="app">
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="brand">
       <div class="stamp">Confidential Spec</div>
       <h1>Airtel Ventas<br>Congo‑B</h1>
@@ -2509,7 +2641,7 @@ function renderProcPanels(){
       </p>
     </div>
 
-    <table class="rowtype-table">
+    <div class="rowtype-wrap"><table class="rowtype-table">
       <thead>
         <tr><th>#</th><th>Row type</th><th>Line type</th><th>Invoice type</th><th>Type code</th><th>Sign</th><th>Amount formula</th></tr>
       </thead>
@@ -2526,7 +2658,7 @@ function renderProcPanels(){
           </tr>
         `).join('')}
       </tbody>
-    </table>
+    </table></div>
 
     <button class="code-toggle" id="code-toggle-btn">Show full PL/SQL — ${p.label}</button>
     <div class="code-view" id="code-view"><pre></pre></div>
@@ -2705,6 +2837,40 @@ function renderSamplePanels(){
     btn.addEventListener('click', () => apply(btn.dataset.theme));
   });
   apply('light');
+})();
+
+/* -------------- MOBILE DRAWER -------------- */
+(function(){
+  const toggle = document.getElementById('nav-toggle');
+  const sidebar = document.getElementById('sidebar');
+  const scrim = document.getElementById('scrim');
+  if(!toggle || !sidebar || !scrim) return;
+
+  function setOpen(open){
+    sidebar.classList.toggle('open', open);
+    scrim.classList.toggle('show', open);
+    scrim.hidden = !open;
+    document.body.classList.toggle('nav-open', open);
+    toggle.classList.toggle('is-open', open);
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+  }
+
+  toggle.addEventListener('click', () => setOpen(!sidebar.classList.contains('open')));
+  scrim.addEventListener('click', () => setOpen(false));
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') setOpen(false); });
+
+  // tapping a section link closes the drawer on small screens
+  document.querySelectorAll('.nav-btn[data-panel]').forEach(btn => {
+    btn.addEventListener('click', () => { if(window.innerWidth <= 960) setOpen(false); });
+  });
+
+  // if the viewport grows back to desktop, always reset to a clean state
+  let t;
+  window.addEventListener('resize', () => {
+    clearTimeout(t);
+    t = setTimeout(() => { if(window.innerWidth > 960) setOpen(false); }, 120);
+  });
 })();
 
 /* ---------------- NAV ---------------- */

@@ -147,27 +147,73 @@
       white-space: nowrap;
     }
 
-    .precision-control input[type="number"] {
-      width: 52px;
-      background: rgba(255, 255, 255, 0.08);
+    .stepper {
+      display: inline-flex;
+      align-items: stretch;
       border: 1px solid rgba(255, 255, 255, 0.16);
-      color: #fff;
-      font-family: var(--mono);
-      font-size: 12px;
-      border-radius: 6px;
-      padding: 4px 6px;
-      text-align: center;
+      border-radius: 8px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.08);
+      transition: border-color .12s ease;
     }
 
-    .precision-control input[type="number"]:focus {
-      outline: none;
+    .stepper:focus-within {
       border-color: var(--red);
+    }
+
+    .stepper .step-btn {
+      border: none;
+      background: transparent;
+      color: #fff;
+      width: 28px;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      font-family: var(--sans);
+      transition: background .12s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .stepper .step-btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    .stepper .step-btn:active:not(:disabled) {
+      background: var(--red);
+    }
+
+    .stepper .step-btn:disabled {
+      color: rgba(255, 255, 255, 0.26);
+      cursor: not-allowed;
+    }
+
+    .stepper #decimalsInput {
+      width: 34px;
+      background: transparent;
+      border: none;
+      border-left: 1px solid rgba(255, 255, 255, 0.16);
+      border-right: 1px solid rgba(255, 255, 255, 0.16);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      text-align: center;
+      padding: 5px 2px;
+      -moz-appearance: textfield;
+    }
+
+    .stepper #decimalsInput:focus {
+      outline: none;
       background: rgba(255, 255, 255, 0.14);
     }
 
-    .precision-control input[type="number"]::-webkit-inner-spin-button,
-    .precision-control input[type="number"]::-webkit-outer-spin-button {
-      opacity: 1;
+    .stepper #decimalsInput::-webkit-inner-spin-button,
+    .stepper #decimalsInput::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
     }
 
     .tabs {
@@ -854,11 +900,11 @@
     }
 
     table.sheet-table tbody tr {
-      cursor: pointer;
+      cursor: default;
     }
 
     table.sheet-table tbody tr:hover {
-      background: #FBE9EC;
+      background: #FBF3F4;
     }
 
     .sheet-code-cell {
@@ -1219,6 +1265,118 @@
         width: 100%;
       }
     }
+
+    /* ---------- UPC view ---------- */
+    .upc-cat-field { max-width: 340px; margin-bottom: 0; }
+    .upc-cat-field select {
+      width: 100%; box-sizing: border-box;
+      font-family: var(--sans); font-size: 13px; color: var(--ink);
+      padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: #fff;
+    }
+    .upc-cat-field select:focus { outline: none; border-color: var(--red); }
+
+    .upc-layout {
+      display: grid; grid-template-columns: 320px minmax(0, 1fr);
+      gap: var(--gutter); align-items: start; margin-top: var(--gutter);
+    }
+    @media (max-width: 900px) { .upc-layout { grid-template-columns: minmax(0, 1fr); } }
+
+    .upc-picker-card { position: sticky; top: 18px; padding: 14px; }
+    @media (max-width: 900px) { .upc-picker-card { position: static; } }
+
+    .upc-picker-head {
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .4px;
+      color: var(--ink-soft); margin-bottom: 10px;
+    }
+    .upc-count {
+      background: var(--ink); color: #fff; border-radius: 999px;
+      padding: 1px 8px; font-size: 11px; font-weight: 700;
+    }
+    .upc-search input {
+      width: 100%; box-sizing: border-box; font-family: var(--sans); font-size: 12.5px;
+      padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcfd; color: var(--ink);
+      margin-bottom: 10px;
+    }
+    .upc-search input:focus { outline: none; border-color: var(--red); background: #fff; }
+
+    .upc-list { display: flex; flex-direction: column; gap: 6px; max-height: 60vh; overflow-y: auto; }
+    .upc-item {
+      text-align: left; border: 1px solid var(--line); background: #fff; border-radius: 9px;
+      padding: 9px 11px; cursor: pointer; font-family: var(--sans);
+      display: flex; align-items: center; gap: 10px; transition: border-color .12s, background .12s;
+    }
+    .upc-item:hover { border-color: #E9AEB8; background: #FBF3F4; }
+    .upc-item.active { border-color: var(--red); background: #FCEDEF; }
+    .upc-denom {
+      flex: none; min-width: 40px; text-align: center; font-family: var(--mono); font-weight: 700;
+      font-size: 12px; color: var(--red-dark); background: rgba(228,0,43,.08);
+      border-radius: 6px; padding: 4px 6px;
+    }
+    .upc-item-name { font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.2; }
+    .upc-item-code { font-family: var(--mono); font-size: 10.5px; color: var(--ink-soft); margin-top: 2px; }
+    .upc-empty { font-size: 12.5px; color: var(--ink-soft); padding: 10px 2px; }
+
+    /* detail */
+    .upc-detail { display: flex; flex-direction: column; gap: var(--gutter); min-width: 0; }
+    .upc-detail .card { padding: clamp(16px, 2.2vw, 20px); }
+    .upc-hero-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+    .upc-hero-title { font-size: 19px; font-weight: 700; color: var(--ink); margin: 0; line-height: 1.15; }
+    .upc-hero-sub { font-family: var(--mono); font-size: 11.5px; color: var(--ink-soft); margin-top: 4px; }
+    .upc-status {
+      display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700;
+      font-family: var(--mono); text-transform: uppercase; letter-spacing: .4px;
+      padding: 4px 10px; border-radius: 999px;
+    }
+    .upc-status.ok { background: rgba(31,138,86,.12); color: var(--good); }
+    .upc-status.ok::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--good); }
+
+    .upc-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .upc-chip {
+      display: inline-flex; flex-direction: column; gap: 1px;
+      border: 1px solid var(--line); border-radius: 9px; padding: 7px 11px; background: #fbfcfd;
+    }
+    .upc-chip .k { font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .5px; color: var(--ink-soft); }
+    .upc-chip .v { font-size: 12.5px; font-weight: 600; color: var(--ink); }
+
+    .upc-section-title {
+      font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .6px;
+      color: var(--ink-soft); margin: 0 0 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .upc-section-title::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+    .upc-desc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+    .upc-desc-cell { border-left: 3px solid var(--line); padding: 2px 0 2px 10px; }
+    .upc-desc-cell .k { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .4px; color: var(--ink-soft); }
+    .upc-desc-cell .v { font-size: 13px; color: var(--ink); margin-top: 2px; }
+
+    .upc-controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    @media (max-width: 560px) { .upc-controls { grid-template-columns: 1fr; } }
+    .upc-control {
+      border: 1px solid var(--line); border-radius: 11px; padding: 14px; text-align: center; background: #fff;
+    }
+    .upc-control .cnum { font-size: 22px; font-weight: 700; color: var(--ink); font-family: var(--mono); }
+    .upc-control .clbl { font-size: 11px; color: var(--ink-soft); margin-top: 3px; }
+
+    table.upc-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    table.upc-table th, table.upc-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+    table.upc-table thead th {
+      font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .5px;
+      color: var(--ink-soft); font-weight: 600; background: #fafbfc;
+    }
+    table.upc-table td.mono { font-family: var(--mono); }
+    table.upc-table td .muted { color: #9499A8; }
+    .upc-flag {
+      display: inline-block; font-family: var(--mono); font-size: 9.5px; font-weight: 700;
+      padding: 2px 6px; border-radius: 5px; margin-right: 4px;
+    }
+    .upc-flag.on { background: rgba(43,108,168,.12); color: var(--vat); }
+    .upc-flag.off { background: #F2F1EE; color: #A9ADB8; }
+    .upc-price-val { font-family: var(--mono); font-weight: 700; color: var(--red-dark); }
+    .upc-detail-empty {
+      border: 1px dashed var(--line); border-radius: 14px; padding: 40px 20px; text-align: center; color: var(--ink-soft);
+    }
+    .upc-detail-empty .icon { font-size: 26px; margin-bottom: 8px; }
   </style>
 </head>
 
@@ -1238,6 +1396,7 @@
         <button class="tab-btn active" data-view="calculator">Calculator</button>
         <button class="tab-btn" data-view="sheet">Product Sheet</button>
         <button class="tab-btn" data-view="docs">How calculations work</button>
+        <button class="tab-btn" data-view="upc">UPC</button>
       </nav>
 
       <div class="topbar-meta">
@@ -1246,7 +1405,11 @@
         <div>Sheet rows: <b id="sheetRowCount">0</b></div>
         <div class="precision-control" title="Number of decimal places shown in calculated results (calculations always run at full precision)">
           <label for="decimalsInput">Decimals</label>
-          <input type="number" id="decimalsInput" min="0" max="10" step="1" value="2">
+          <div class="stepper" role="group" aria-label="Decimal places">
+            <button type="button" class="step-btn" id="decMinus" aria-label="Fewer decimal places">&minus;</button>
+            <input type="text" inputmode="numeric" id="decimalsInput" value="2" aria-label="Decimal places" aria-live="polite">
+            <button type="button" class="step-btn" id="decPlus" aria-label="More decimal places">+</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1405,7 +1568,7 @@
       <div class="card">
         <h2>Product &amp; Segment Sheet</h2>
         <p class="sub">Every row from the source workbook (<code>Sheet1</code> of the Product Vs Segment
-          spreadsheet) — searchable, sortable, and filterable per column. Click any row, or its <b>Use →</b> button,
+          spreadsheet) — searchable, sortable, and filterable per column. Click a row's <b>Use →</b> button
           to load that exact product + segment straight into the Calculator with quantity 1.</p>
 
         <div class="field sheet-search-field">
@@ -1497,7 +1660,41 @@
     </div>
   </section>
 
-  <footer>
+  <!-- ================= UPC VIEW ================= -->
+  <section class="view" id="view-upc" hidden>
+    <div class="docs-wrap">
+      <div class="card">
+        <h2>UPC — Product Catalogue</h2>
+        <p class="sub">Product offerings as configured in UPC (Unified Product Catalogue). Choose a category, then a
+          product, to see its full configuration — group &amp; family, descriptions, pricing, order controls and every
+          characteristic exactly as defined in the catalogue response.</p>
+
+        <div class="field upc-cat-field">
+          <label for="upcCategory">Category</label>
+          <select id="upcCategory">
+            <option value="voucher_scratch">Voucher &amp; Scratch Cards</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="upc-layout">
+        <!-- product picker -->
+        <div class="card upc-picker-card">
+          <div class="upc-picker-head">
+            <span id="upcCatLabel">Voucher &amp; Scratch Cards</span>
+            <span class="upc-count" id="upcCount">0</span>
+          </div>
+          <div class="upc-search">
+            <input type="text" id="upcSearch" placeholder="Filter by name, code, denomination…" autocomplete="off">
+          </div>
+          <div class="upc-list" id="upcList"></div>
+        </div>
+
+        <!-- product detail -->
+        <div class="upc-detail" id="upcDetail"></div>
+      </div>
+    </div>
+  </section>
     Formulas replicated from PrimarySale!H:M and Total Summary (DUTY 15% on KE-EXCISE DUTY-tagged items, VAT 16% on
     VAT-tagged items, applied cumulatively where both apply). All calculations use full precision; only the on-screen
     display is rounded to <span id="footerDecimals">2</span> decimal<span id="footerDecimalsPlural">s</span> &mdash; adjust this with the <b>Decimals</b> control at the top of the page.
@@ -1546,7 +1743,8 @@
       var views = {
         calculator: document.getElementById('view-calculator'),
         sheet: document.getElementById('view-sheet'),
-        docs: document.getElementById('view-docs')
+        docs: document.getElementById('view-docs'),
+        upc: document.getElementById('view-upc')
       };
       function activateTab(view) {
         tabBtns.forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-view') === view); });
@@ -2217,7 +2415,7 @@
         }
         $sheetEmptyState.style.display = 'none';
         $sheetBody.innerHTML = rowsToShow.map(function (r) {
-          return '<tr data-code="' + escapeHtml(r.code) + '" data-segment="' + escapeHtml(r.segment) + '">' +
+          return '<tr>' +
             '<td class="sheet-code-cell">' + escapeHtml(r.code) + '</td>' +
             '<td class="name-cell">' + escapeHtml(r.name) + '</td>' +
             '<td class="seg-cell">' + escapeHtml(r.segment) + '</td>' +
@@ -2271,7 +2469,7 @@
       });
 
       $sheetBody.addEventListener('click', function (e) {
-        var el = e.target.closest('[data-code]');
+        var el = e.target.closest('.use-btn');
         if (!el) return;
         loadIntoCalculator(el.getAttribute('data-code'), el.getAttribute('data-segment'));
       });
@@ -2298,15 +2496,21 @@
       // in the calculator, results table, totals, summary cards, and the
       // Product Sheet — without touching the underlying full-precision math.
       var $decimalsInput = document.getElementById('decimalsInput');
+      var $decMinus = document.getElementById('decMinus');
+      var $decPlus = document.getElementById('decPlus');
       var $footerDecimals = document.getElementById('footerDecimals');
       var $footerDecimalsPlural = document.getElementById('footerDecimalsPlural');
 
+      var DEC_MIN = 0, DEC_MAX = 10;
+
       function applyDecimalSetting() {
         var v = parseInt($decimalsInput.value, 10);
-        if (isNaN(v) || v < 0) v = 0;
-        if (v > 10) v = 10;
+        if (isNaN(v) || v < DEC_MIN) v = DEC_MIN;
+        if (v > DEC_MAX) v = DEC_MAX;
         DISPLAY_DECIMALS = v;
         $decimalsInput.value = v;
+        $decMinus.disabled = (v <= DEC_MIN);
+        $decPlus.disabled = (v >= DEC_MAX);
         $footerDecimals.textContent = v;
         $footerDecimalsPlural.textContent = v === 1 ? '' : 's';
         // Re-render every view that currently has numbers on screen.
@@ -2314,13 +2518,211 @@
         renderTable();
         renderSheet();
       }
+
+      function stepDecimals(delta) {
+        var v = parseInt($decimalsInput.value, 10);
+        if (isNaN(v)) v = DISPLAY_DECIMALS;
+        $decimalsInput.value = v + delta;
+        applyDecimalSetting();
+      }
+
+      $decMinus.addEventListener('click', function () { stepDecimals(-1); });
+      $decPlus.addEventListener('click', function () { stepDecimals(1); });
       $decimalsInput.addEventListener('input', applyDecimalSetting);
       $decimalsInput.addEventListener('change', applyDecimalSetting);
+      $decimalsInput.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowUp') { e.preventDefault(); stepDecimals(1); }
+        else if (e.key === 'ArrowDown') { e.preventDefault(); stepDecimals(-1); }
+      });
+
+
+      /* ================= UPC catalogue ================= */
+      var UPC_DATA = [{"id":"27715","name":"Scratch Cards 10","denom":"10","plan":"100007050","status":"Active","sellable":true,"family":"PHYSICAL","group":"Voucher and Scratch Card","subType":"Recharge Coupons","business":"COMMERCIAL - RC","voucher":"VOU","desc":{"description":"Scratch Cards 10","invoice":"Scratch Cards 10","marketing":"Scratch Cards 10"},"createdBy":"-99","createdDate":"02/21/2026 04:17:34","validFrom":"12/03/2013 00:00:00","price":{"name":"Upfront Discount-6.5% of Scratch Cards 10","category":"Discount","mode":"Non-Recurring","type":"Fixed","code":"Discount","pop":"Normal","dynamic":true},"rules":[{"segment":"Express Plus","price":"0.65","code":"Discount"},{"segment":"Van Agencies","price":"0.65","code":"Discount"}],"base":[{"label":"Product Code","raw":"PRODUCT_CODE","value":"100007050","m":true,"pi":true,"oe":true},{"label":"Denomination","raw":"Denomination","value":"10","m":false,"pi":true,"oe":true},{"label":"Threshold Limit","raw":"ThresholdLimit","value":null,"m":false,"pi":true,"oe":true},{"label":"Card Group","raw":"CARD_GROUP","value":"10","m":false,"pi":true,"oe":true},{"label":"Non-Serializable","raw":"NONSERIALIZABLE","value":"false","m":false,"pi":true,"oe":true},{"label":"Unit of Measure","raw":"UOM","value":"EA","m":false,"pi":true,"oe":true}],"controls":{"lot":"1","min":"0","max":"10000000"}},{"id":"90846","name":"Scratch Card 20U","denom":"20","plan":"100049507","status":"Active","sellable":true,"family":"PHYSICAL","group":"Voucher and Scratch Card","subType":"Recharge Coupons","business":"COMMERCIAL - RC","voucher":"VOU","desc":{"description":"Scratch Card 20U","invoice":"Scratch Card 20U","marketing":"Scratch Card 20U"},"createdBy":"1943225","createdDate":"02/21/2026 04:23:52","validFrom":"05/25/2015 00:00:00","price":{"name":"Scratch Card 20U","category":"Unit Price","mode":"Non-Recurring","type":"Fixed","code":"Unit Price","pop":"Normal","dynamic":true},"rules":[{"segment":"SIM DISTRIBUTOR","price":"0","code":"Unit Price"}],"base":[{"label":"Product Code","raw":"PRODUCT_CODE","value":"100049507","m":true,"pi":true,"oe":true},{"label":"Denomination","raw":"Denomination","value":"1","m":false,"pi":true,"oe":true},{"label":"Threshold Limit","raw":"ThresholdLimit","value":null,"m":false,"pi":true,"oe":true},{"label":"Card Group","raw":"CARD_GROUP","value":"1","m":false,"pi":true,"oe":true},{"label":"Non-Serializable","raw":"NONSERIALIZABLE","value":"false","m":false,"pi":true,"oe":true},{"label":"Unit of Measure","raw":"UOM","value":"EA","m":false,"pi":true,"oe":true}],"controls":{"lot":"1","min":"0","max":"10000000"}},{"id":"27718","name":"Scratch Cards 20","denom":"20","plan":"100007054","status":"Active","sellable":true,"family":"PHYSICAL","group":"Voucher and Scratch Card","subType":"Recharge Coupons","business":"COMMERCIAL - RC","voucher":"VOU","desc":{"description":"Scratch Cards 20","invoice":"Scratch Cards 20","marketing":"Scratch Cards 20"},"createdBy":"-99","createdDate":"02/21/2026 04:17:34","validFrom":"12/03/2013 00:00:00","price":{"name":"Upfront Discount-6.5% of Scratch Cards 20","category":"Discount","mode":"Non-Recurring","type":"Fixed","code":"Discount","pop":"Normal","dynamic":true},"rules":[{"segment":"Mini-Shop","price":"1.3","code":"Discount"},{"segment":"Van Agencies","price":"1.3","code":"Discount"},{"segment":"Yu P2P Dealer","price":"1.3","code":"Discount"},{"segment":"Dealer","price":"1.3","code":"Discount"},{"segment":"SIM DISTRIBUTOR","price":"1.3","code":"Discount"},{"segment":"HBB-5G","price":"1.3","code":"Discount"},{"segment":"SUPPER-DISTRIBUTOR","price":"1.3","code":"Discount"},{"segment":"HBB-5G-SD","price":"1.3","code":"Discount"},{"segment":"HBB-5G-D","price":"1.3","code":"Discount"}],"base":[{"label":"Product Code","raw":"PRODUCT_CODE","value":"100007054","m":true,"pi":true,"oe":true},{"label":"Denomination","raw":"Denomination","value":"20","m":false,"pi":true,"oe":true},{"label":"Threshold Limit","raw":"ThresholdLimit","value":null,"m":false,"pi":true,"oe":true},{"label":"Card Group","raw":"CARD_GROUP","value":"53","m":false,"pi":true,"oe":true},{"label":"Non-Serializable","raw":"NONSERIALIZABLE","value":"false","m":false,"pi":true,"oe":true},{"label":"Unit of Measure","raw":"UOM","value":"EA","m":false,"pi":true,"oe":true}],"controls":{"lot":"1","min":"0","max":"10000000"}},{"id":"27714","name":"Scratch Card 50","denom":"50","plan":"100007049","status":"Active","sellable":true,"family":"PHYSICAL","group":"Voucher and Scratch Card","subType":"Recharge Coupons","business":"COMMERCIAL - RC","voucher":"VOU","desc":{"description":"Scratch Card 50","invoice":"Scratch Card 50","marketing":"Scratch Card 50"},"createdBy":"-99","createdDate":"02/21/2026 04:17:34","validFrom":"12/03/2013 00:00:00","price":{"name":"Upfront Discount-6.5% of Scratch Cards 50","category":"Discount","mode":"Non-Recurring","type":"Fixed","code":"Discount","pop":"Normal","dynamic":true},"rules":[{"segment":"Van Agencies","price":"3.25","code":"Discount"},{"segment":"Mini-Shop","price":"3.25","code":"Discount"},{"segment":"Yu P2P Dealer","price":"3.25","code":"Discount"},{"segment":"Express Plus","price":"3.25","code":"Discount"},{"segment":"Dealer","price":"3.25","code":"Discount"},{"segment":"SUPPER-DISTRIBUTOR","price":"3.25","code":"Discount"},{"segment":"HBB-5G-D","price":"3.25","code":"Discount"},{"segment":"HBB-5G","price":"3.25","code":"Discount"},{"segment":"HBB-5G-SD","price":"3.25","code":"Discount"}],"base":[{"label":"Product Code","raw":"PRODUCT_CODE","value":"100007049","m":true,"pi":true,"oe":true},{"label":"Denomination","raw":"Denomination","value":"50","m":false,"pi":true,"oe":true},{"label":"Threshold Limit","raw":"ThresholdLimit","value":null,"m":false,"pi":true,"oe":true},{"label":"Card Group","raw":"CARD_GROUP","value":"55","m":false,"pi":true,"oe":true},{"label":"Non-Serializable","raw":"NONSERIALIZABLE","value":"false","m":false,"pi":true,"oe":true},{"label":"Unit of Measure","raw":"UOM","value":"EA","m":false,"pi":true,"oe":true}],"controls":{"lot":"1","min":"0","max":"10000000"}},{"id":"4093274","name":"Scratch Cards 60","denom":"60","plan":"101603168","status":"Active","sellable":true,"family":"PHYSICAL","group":"Voucher and Scratch Card","subType":"RCV","business":"COMMERCIAL - RC","voucher":"VOU","desc":{"description":"Scratch Cards 60","invoice":"Scratch Cards 60","marketing":"Scratch Cards 60"},"createdBy":"1943225","createdDate":"02/21/2026 04:25:00","validFrom":"12/02/2021 00:00:00","price":{"name":"Upfront Discount-8.5% of Scratch Cards 60","category":"Discount","mode":"Non-Recurring","type":"Fixed","code":"Discount","pop":"Normal","dynamic":true},"rules":[{"segment":"SUPPER-DISTRIBUTOR","price":"5.1","code":"Discount"},{"segment":"New Modern Trade","price":"5.1","code":"Discount"},{"segment":"Mini-Shop","price":"5.1","code":"Discount"},{"segment":"Dealer","price":"5.1","code":"Discount"}],"base":[{"label":"Product Code","raw":"PRODUCT_CODE","value":"101603168","m":true,"pi":true,"oe":true},{"label":"Denomination","raw":"Denomination","value":"60","m":false,"pi":true,"oe":true},{"label":"Threshold Limit","raw":"ThresholdLimit","value":null,"m":false,"pi":true,"oe":true},{"label":"Card Group","raw":"CARD_GROUP","value":"1","m":false,"pi":true,"oe":true},{"label":"Non-Serializable","raw":"NONSERIALIZABLE","value":"false","m":false,"pi":true,"oe":true},{"label":"Unit of Measure","raw":"UOM","value":"EA","m":false,"pi":true,"oe":true}],"controls":{"lot":"1","min":"0","max":"10000000"}},{"id":"27716","name":"Scratch Cards 100","denom":"100","plan":"100007051","status":"Active","sellable":true,"family":"PHYSICAL","group":"Voucher and Scratch Card","subType":"Recharge Coupons","business":"COMMERCIAL - RC","voucher":"VOU","desc":{"description":"Scratch Cards 100","invoice":"Scratch Cards 100","marketing":"Scratch Cards 100"},"createdBy":"-99","createdDate":"02/21/2026 04:17:34","validFrom":"12/03/2013 00:00:00","price":{"name":"Upfront Discount-6.5% of Scratch Cards 100","category":"Discount","mode":"Non-Recurring","type":"Fixed","code":"Discount","pop":"Normal","dynamic":true},"rules":[{"segment":"Mini-Shop","price":"6.5","code":"Discount"},{"segment":"Van Agencies","price":"6.5","code":"Discount"},{"segment":"Yu P2P Dealer","price":"6.5","code":"Discount"},{"segment":"Express Plus","price":"6.5","code":"Discount"},{"segment":"Dealer","price":"6.5","code":"Discount"},{"segment":"SUPPER-DISTRIBUTOR","price":"6.5","code":"Discount"},{"segment":"HBB-5G-D","price":"6.5","code":"Discount"},{"segment":"HBB-5G","price":"6.5","code":"Discount"},{"segment":"HBB-5G-SD","price":"6.5","code":"Discount"}],"base":[{"label":"Product Code","raw":"PRODUCT_CODE","value":"100007051","m":true,"pi":true,"oe":true},{"label":"Denomination","raw":"Denomination","value":"100","m":false,"pi":true,"oe":true},{"label":"Threshold Limit","raw":"ThresholdLimit","value":null,"m":false,"pi":true,"oe":true},{"label":"Card Group","raw":"CARD_GROUP","value":"39","m":false,"pi":true,"oe":true},{"label":"Non-Serializable","raw":"NONSERIALIZABLE","value":"false","m":false,"pi":true,"oe":true},{"label":"Unit of Measure","raw":"UOM","value":"EA","m":false,"pi":true,"oe":true}],"controls":{"lot":"1","min":"0","max":"10000000"}},{"id":"4093275","name":"Scratch Cards 200","denom":"200","plan":"101603038","status":"Active","sellable":true,"family":"PHYSICAL","group":"Voucher and Scratch Card","subType":"RCV","business":"COMMERCIAL - RC","voucher":"VOU","desc":{"description":"Scratch Cards 200","invoice":"Scratch Cards 200","marketing":"Scratch Cards 200"},"createdBy":"1943225","createdDate":"02/21/2026 04:25:00","validFrom":"12/02/2021 00:00:00","price":{"name":"Upfront Discount-8.5% of Scratch Cards 200","category":"Discount","mode":"Non-Recurring","type":"Fixed","code":"Discount","pop":"Normal","dynamic":true},"rules":[{"segment":"Dealer","price":"17","code":"Discount"},{"segment":"New Modern Trade","price":"17","code":"Discount"},{"segment":"Mini-Shop","price":"17","code":"Discount"},{"segment":"SUPPER-DISTRIBUTOR","price":"17","code":"Discount"}],"base":[{"label":"Product Code","raw":"PRODUCT_CODE","value":"101603038","m":true,"pi":true,"oe":true},{"label":"Denomination","raw":"Denomination","value":"200","m":false,"pi":true,"oe":true},{"label":"Threshold Limit","raw":"ThresholdLimit","value":null,"m":false,"pi":true,"oe":true},{"label":"Card Group","raw":"CARD_GROUP","value":"1","m":false,"pi":true,"oe":true},{"label":"Non-Serializable","raw":"NONSERIALIZABLE","value":"false","m":false,"pi":true,"oe":true},{"label":"Unit of Measure","raw":"UOM","value":"EA","m":false,"pi":true,"oe":true}],"controls":{"lot":"1","min":"0","max":"10000000"}},{"id":"27719","name":"Scratch Cards 250","denom":"250","plan":"100007055","status":"Active","sellable":true,"family":"PHYSICAL","group":"Voucher and Scratch Card","subType":"Recharge Coupons","business":"COMMERCIAL - RC","voucher":"VOU","desc":{"description":"Scratch Cards 250","invoice":"Scratch Cards 250","marketing":"Scratch Cards 250"},"createdBy":"-99","createdDate":"02/21/2026 04:17:34","validFrom":"12/03/2013 00:00:00","price":{"name":"Upfront Discount-6.5% of Scratch Cards 250","category":"Discount","mode":"Non-Recurring","type":"Fixed","code":"Discount","pop":"Normal","dynamic":true},"rules":[{"segment":"Mini-Shop","price":"16.25","code":"Discount"},{"segment":"Van Agencies","price":"16.25","code":"Discount"},{"segment":"Yu P2P Dealer","price":"16.25","code":"Discount"},{"segment":"Express Plus","price":"16.25","code":"Discount"},{"segment":"Dealer","price":"16.25","code":"Discount"},{"segment":"SUPPER-DISTRIBUTOR","price":"16.25","code":"Discount"},{"segment":"HBB-5G","price":"16.25","code":"Discount"},{"segment":"HBB-5G-SD","price":"16.25","code":"Discount"},{"segment":"HBB-5G-D","price":"16.25","code":"Discount"}],"base":[{"label":"Product Code","raw":"PRODUCT_CODE","value":"100007055","m":true,"pi":true,"oe":true},{"label":"Denomination","raw":"Denomination","value":"250","m":false,"pi":true,"oe":true},{"label":"Threshold Limit","raw":"ThresholdLimit","value":null,"m":false,"pi":true,"oe":true},{"label":"Card Group","raw":"CARD_GROUP","value":"57","m":false,"pi":true,"oe":true},{"label":"Non-Serializable","raw":"NONSERIALIZABLE","value":"false","m":false,"pi":true,"oe":true},{"label":"Unit of Measure","raw":"UOM","value":"EA","m":false,"pi":true,"oe":true}],"controls":{"lot":"1","min":"0","max":"10000000"}},{"id":"27720","name":"Scratch Cards 500","denom":"500","plan":"100007057","status":"Active","sellable":true,"family":"PHYSICAL","group":"Voucher and Scratch Card","subType":"Recharge Coupons","business":"COMMERCIAL - RC","voucher":"VOU","desc":{"description":"Scratch Cards 500","invoice":"Scratch Cards 500","marketing":"Scratch Cards 500"},"createdBy":"-99","createdDate":"02/21/2026 04:17:34","validFrom":"12/03/2013 00:00:00","price":{"name":"Upfront Discount-6.5% of Scratch Cards 500","category":"Discount","mode":"Non-Recurring","type":"Fixed","code":"Discount","pop":"Normal","dynamic":true},"rules":[{"segment":"Dealer","price":"32.5","code":"Discount"},{"segment":"Van Agencies","price":"32.5","code":"Discount"},{"segment":"Yu P2P Dealer","price":"32.5","code":"Discount"},{"segment":"Express Plus","price":"32.5","code":"Discount"},{"segment":"Mini-Shop","price":"32.5","code":"Discount"},{"segment":"HBB-5G","price":"32.5","code":"Discount"},{"segment":"HBB-5G-D","price":"32.5","code":"Discount"},{"segment":"SUPPER-DISTRIBUTOR","price":"32.5","code":"Discount"},{"segment":"HBB-5G-SD","price":"32.5","code":"Discount"}],"base":[{"label":"Product Code","raw":"PRODUCT_CODE","value":"100007057","m":true,"pi":true,"oe":true},{"label":"Denomination","raw":"Denomination","value":"500","m":false,"pi":true,"oe":true},{"label":"Threshold Limit","raw":"ThresholdLimit","value":null,"m":false,"pi":true,"oe":true},{"label":"Card Group","raw":"CARD_GROUP","value":"45","m":false,"pi":true,"oe":true},{"label":"Non-Serializable","raw":"NONSERIALIZABLE","value":"false","m":false,"pi":true,"oe":true},{"label":"Unit of Measure","raw":"UOM","value":"EA","m":false,"pi":true,"oe":true}],"controls":{"lot":"1","min":"0","max":"10000000"}},{"id":"27717","name":"Scratch Cards 1000","denom":"1000","plan":"100007052","status":"Active","sellable":true,"family":"PHYSICAL","group":"Voucher and Scratch Card","subType":"Recharge Coupons","business":"COMMERCIAL - RC","voucher":"VOU","desc":{"description":"Scratch Cards 1000","invoice":"Scratch Cards 1000","marketing":"Scratch Cards 1000"},"createdBy":"-99","createdDate":"02/21/2026 04:17:34","validFrom":"12/03/2013 00:00:00","price":{"name":"Upfront Discount-6.5% of Scratch Cards 1000","category":"Discount","mode":"Non-Recurring","type":"Fixed","code":"Discount","pop":"Normal","dynamic":true},"rules":[{"segment":"Yu P2P Dealer","price":"65","code":"Discount"},{"segment":"Van Agencies","price":"65","code":"Discount"},{"segment":"Dealer","price":"65","code":"Discount"},{"segment":"Express Plus","price":"65","code":"Discount"},{"segment":"Mini-Shop","price":"65","code":"Discount"},{"segment":"SUPPER-DISTRIBUTOR","price":"65","code":"Discount"},{"segment":"HBB-5G-D","price":"65","code":"Discount"},{"segment":"HBB-5G","price":"65","code":"Discount"},{"segment":"HBB-5G-SD","price":"65","code":"Discount"}],"base":[{"label":"Product Code","raw":"PRODUCT_CODE","value":"100007052","m":true,"pi":true,"oe":true},{"label":"Denomination","raw":"Denomination","value":"1000","m":false,"pi":true,"oe":true},{"label":"Threshold Limit","raw":"ThresholdLimit","value":null,"m":false,"pi":true,"oe":true},{"label":"Card Group","raw":"CARD_GROUP","value":"8","m":false,"pi":true,"oe":true},{"label":"Non-Serializable","raw":"NONSERIALIZABLE","value":"false","m":false,"pi":true,"oe":true},{"label":"Unit of Measure","raw":"UOM","value":"EA","m":false,"pi":true,"oe":true}],"controls":{"lot":"1","min":"0","max":"10000000"}}];
+      var UPC_CATEGORIES = {
+        voucher_scratch: { label: 'Voucher & Scratch Cards', products: UPC_DATA }
+      };
+      var $upcCategory = document.getElementById('upcCategory');
+      var $upcSearch   = document.getElementById('upcSearch');
+      var $upcList     = document.getElementById('upcList');
+      var $upcCount    = document.getElementById('upcCount');
+      var $upcDetail   = document.getElementById('upcDetail');
+      var $upcCatLabel = document.getElementById('upcCatLabel');
+      var upcState = { cat: 'voucher_scratch', selectedId: null, query: '' };
+
+      function upcNum(v) {
+        if (v === null || v === undefined || v === '') return null;
+        var n = Number(v);
+        return isNaN(n) ? String(v) : n.toLocaleString('en-KE');
+      }
+      function upcCatProducts() { return (UPC_CATEGORIES[upcState.cat] || {}).products || []; }
+      function upcFiltered() {
+        var q = upcState.query.trim().toLowerCase();
+        var list = upcCatProducts();
+        if (!q) return list;
+        return list.filter(function (p) {
+          return (p.name || '').toLowerCase().indexOf(q) > -1 ||
+                 (p.plan || '').toLowerCase().indexOf(q) > -1 ||
+                 String(p.id).indexOf(q) > -1 ||
+                 (p.denom || '').toLowerCase().indexOf(q) > -1;
+        });
+      }
+
+      function renderUpcList() {
+        var list = upcFiltered();
+        $upcCount.textContent = list.length;
+        if (!list.length) { $upcList.innerHTML = '<div class="upc-empty">No products match that filter.</div>'; return; }
+        $upcList.innerHTML = list.map(function (p) {
+          return '<button type="button" class="upc-item' + (p.id === upcState.selectedId ? ' active' : '') +
+            '" data-id="' + escapeHtml(String(p.id)) + '">' +
+            '<span class="upc-denom">' + escapeHtml(p.denom || '—') + '</span>' +
+            '<span><span class="upc-item-name">' + escapeHtml(p.name) + '</span>' +
+            '<span class="upc-item-code">Plan ' + escapeHtml(p.plan || '—') + ' &middot; ID ' + escapeHtml(String(p.id)) + '</span></span>' +
+            '</button>';
+        }).join('');
+      }
+
+      function chip(k, v) {
+        if (v === null || v === undefined || v === '') return '';
+        return '<span class="upc-chip"><span class="k">' + escapeHtml(k) + '</span><span class="v">' + escapeHtml(String(v)) + '</span></span>';
+      }
+      function descCell(k, v) {
+        return '<div class="upc-desc-cell"><div class="k">' + escapeHtml(k) + '</div><div class="v">' + escapeHtml(v || '—') + '</div></div>';
+      }
+      function flag(on, label) {
+        return '<span class="upc-flag ' + (on ? 'on' : 'off') + '">' + label + '</span>';
+      }
+
+      function renderUpcDetail() {
+        var list = upcCatProducts();
+        var p = null;
+        for (var i = 0; i < list.length; i++) { if (list[i].id === upcState.selectedId) { p = list[i]; break; } }
+        if (!p) {
+          $upcDetail.innerHTML = '<div class="upc-detail-empty"><div class="icon">🎫</div>' +
+            '<p>Select a product on the left to see its full UPC configuration.</p></div>';
+          return;
+        }
+
+        // hero
+        var hero = '<div class="card"><div class="upc-hero-head"><div>' +
+          '<h3 class="upc-hero-title">' + escapeHtml(p.name) + '</h3>' +
+          '<div class="upc-hero-sub">Product ID ' + escapeHtml(String(p.id)) + ' &middot; Plan Code ' + escapeHtml(p.plan || '—') + '</div>' +
+          '</div><span class="upc-status ' + (String(p.status).toLowerCase() === 'active' ? 'ok' : '') + '">' + escapeHtml(p.status || '—') + '</span></div>' +
+          '<div class="upc-chips">' +
+            chip('Denomination', p.denom) +
+            chip('Family', p.family) +
+            chip('Offer Group', p.group) +
+            chip('Sub-type', p.subType) +
+            chip('Business', p.business) +
+            chip('Voucher Code', p.voucher) +
+            chip('Sellable', p.sellable ? 'Yes' : 'No') +
+          '</div></div>';
+
+        // descriptions
+        var desc = '<div class="card"><p class="upc-section-title">Descriptions &amp; Provenance</p>' +
+          '<div class="upc-desc-grid">' +
+            descCell('Description', p.desc.description) +
+            descCell('Invoice Description', p.desc.invoice) +
+            descCell('Marketing Description', p.desc.marketing) +
+            descCell('Created By', p.createdBy) +
+            descCell('Created Date', p.createdDate) +
+            descCell('Valid From', p.validFrom) +
+          '</div></div>';
+
+        // pricing
+        var pr = p.price || {};
+        var pricing = '<div class="card"><p class="upc-section-title">Pricing</p>' +
+          '<div class="upc-chips">' +
+            chip('Price Category', pr.category) +
+            chip('Price Mode', pr.mode) +
+            chip('Price Type', pr.type) +
+            chip('Price Code', pr.code) +
+            chip('POP Type', pr.pop) +
+            chip('Dynamic Price', pr.dynamic ? 'Yes' : 'No') +
+          '</div>';
+        if (p.rules && p.rules.length) {
+          pricing += '<div style="overflow-x:auto;margin-top:14px;"><table class="upc-table"><thead><tr>' +
+            '<th>Customer Segment</th><th>Price</th><th>Price Code</th></tr></thead><tbody>' +
+            p.rules.map(function (r) {
+              return '<tr><td>' + escapeHtml(r.segment || 'All segments') + '</td>' +
+                '<td class="upc-price-val">' + escapeHtml(upcNum(r.price) === null ? '—' : upcNum(r.price)) + '</td>' +
+                '<td class="mono">' + escapeHtml(r.code || '—') + '</td></tr>';
+            }).join('') +
+            '</tbody></table></div>' +
+            '<p class="sub" style="margin:10px 0 0;">' + p.rules.length + ' segment-based price rule' + (p.rules.length > 1 ? 's' : '') +
+            ' defined for this offering.</p>';
+        } else {
+          pricing += '<p class="sub" style="margin:12px 0 0;">No segment-specific price rules — the base ' +
+            escapeHtml(pr.category || 'price') + ' applies.</p>';
+        }
+        pricing += '</div>';
+
+        // order controls
+        var c = p.controls || {};
+        var controls = '<div class="card"><p class="upc-section-title">Order Controls <span style="text-transform:none;letter-spacing:0;color:#9499A8;">(default / all segments)</span></p>' +
+          '<div class="upc-controls">' +
+            '<div class="upc-control"><div class="cnum">' + escapeHtml(upcNum(c.lot) || '—') + '</div><div class="clbl">Lot Size</div></div>' +
+            '<div class="upc-control"><div class="cnum">' + escapeHtml(upcNum(c.min) || '—') + '</div><div class="clbl">Minimum Order Qty</div></div>' +
+            '<div class="upc-control"><div class="cnum">' + escapeHtml(upcNum(c.max) || '—') + '</div><div class="clbl">Maximum Order Qty</div></div>' +
+          '</div></div>';
+
+        // characteristics (Base)
+        var baseRows = (p.base || []).map(function (b) {
+          var flags = flag(b.m, 'MAND') + flag(b.pi, 'PRICE') + flag(b.oe, 'ORDER');
+          return '<tr><td>' + escapeHtml(b.label) + '<div class="upc-item-code" style="margin-top:2px;">' + escapeHtml(b.raw) + '</div></td>' +
+            '<td class="mono">' + (b.value === null || b.value === undefined ? '<span class="muted">not set</span>' : escapeHtml(String(b.value))) + '</td>' +
+            '<td>' + flags + '</td></tr>';
+        }).join('');
+        var chars = '<div class="card"><p class="upc-section-title">Characteristics</p>' +
+          '<div style="overflow-x:auto;"><table class="upc-table"><thead><tr>' +
+          '<th>Attribute</th><th>Value</th><th>Flags</th></tr></thead><tbody>' + baseRows + '</tbody></table></div>' +
+          '<p class="sub" style="margin:10px 0 0;">' +
+          flag(true, 'MAND') + ' Mandatory &nbsp; ' + flag(true, 'PRICE') + ' Price-impacting &nbsp; ' + flag(true, 'ORDER') + ' Order-entry attribute</p>' +
+          '</div>';
+
+        $upcDetail.innerHTML = hero + desc + pricing + controls + chars;
+      }
+
+      function selectUpc(id) {
+        upcState.selectedId = id;
+        renderUpcList();
+        renderUpcDetail();
+      }
+
+      $upcCategory.addEventListener('change', function () {
+        upcState.cat = $upcCategory.value;
+        $upcCatLabel.textContent = (UPC_CATEGORIES[upcState.cat] || {}).label || '';
+        upcState.query = ''; $upcSearch.value = '';
+        var list = upcCatProducts();
+        upcState.selectedId = list.length ? list[0].id : null;
+        renderUpcList(); renderUpcDetail();
+      });
+      $upcSearch.addEventListener('input', function () {
+        upcState.query = $upcSearch.value;
+        renderUpcList();
+      });
+      $upcList.addEventListener('click', function (e) {
+        var el = e.target.closest('[data-id]');
+        if (!el) return;
+        var id = el.getAttribute('data-id');
+        // ids are strings in data; match loosely
+        var list = upcCatProducts(), match = null;
+        for (var i = 0; i < list.length; i++) { if (String(list[i].id) === id) { match = list[i]; break; } }
+        if (match) selectUpc(match.id);
+      });
+
+      function initUpc() {
+        $upcCatLabel.textContent = (UPC_CATEGORIES[upcState.cat] || {}).label || '';
+        var list = upcCatProducts();
+        upcState.selectedId = list.length ? list[0].id : null;
+        renderUpcList();
+        renderUpcDetail();
+      }
 
       // init
       renderTable();
       renderSheet();
       buildDocs();
+      initUpc();
       applyDecimalSetting();
     })();
 

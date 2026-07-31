@@ -1480,8 +1480,8 @@
                   <th>Product Code</th>
                   <th>Product Name</th>
                   <th>Quantity</th>
-                  <th>Base Price</th>
                   <th>Unit Price</th>
+                  <th>Base Price</th>
                   <th>Total Amount</th>
                   <th>DUTY 15%</th>
                   <th>VAT Taxable Amount</th>
@@ -1642,7 +1642,7 @@
           <div><span>Product</span><b>Electronic Vouchers (100007533)</b></div>
           <div><span>Segment</span><b>Dealer</b></div>
           <div><span>Quantity</span><b>2,000,000</b></div>
-          <div><span>Base price (from Products sheet)</span><b>0.7946027</b></div>
+          <div><span>Unit Price (from Products sheet)</span><b>0.7946027</b></div>
           <div><span>Discount per unit (from Products sheet)</span><b>0.06</b></div>
           <div><span>Tax classes for this Product+Segment combo</span><b>KE-EXCISE DUTY &amp; VAT 16%</b></div>
         </div>
@@ -2102,10 +2102,10 @@
 
         var cards = [
           {
-            cls: '', col: 'Column E', name: 'Base Price',
+            cls: '', col: 'Column E', name: 'Unit Price',
             desc: 'The unit price looked up from the Products sheet for this exact Product Code + Segment combination \u2014 the very first matching row, taken at full precision.',
-            formula: 'Base Price = Products.PRICE',
-            example: result('Base price for 100007533 / Dealer', combo.price, 7)
+            formula: 'Unit Price = Products.PRICE',
+            example: result('Unit price for 100007533 / Dealer', combo.price, 7)
           },
           {
             cls: '', col: 'Column D', name: 'Quantity',
@@ -2115,8 +2115,8 @@
           },
           {
             cls: 'total-card', col: 'Column G', name: 'Total Amount',
-            desc: 'Base Price multiplied by Quantity \u2014 the pre-tax value of the sale, before any duty or VAT is added.',
-            formula: 'Total Amount = Base Price \u00d7 Quantity',
+            desc: 'Unit Price multiplied by Quantity \u2014 the pre-tax value of the sale, before any duty or VAT is added.',
+            formula: 'Total Amount = Unit Price \u00d7 Quantity',
             example: expr('0.7946027 \u00d7 2,000,000') + result('Total Amount', line.total)
           },
           {
@@ -2152,10 +2152,10 @@
             example: expr('1,589,205.40 + 530,794.60') + result('Total Amount (incl. tax)', line.finalTotal)
           },
           {
-            cls: '', col: 'Column F', name: 'Unit Price',
+            cls: '', col: 'Column F', name: 'Base Price',
             desc: 'A derived, tax-inclusive price per unit \u2014 the final tax-inclusive Total Amount divided back by the Quantity. Shown for reference; it never feeds into another calculation.',
-            formula: 'Unit Price = Total Amount (incl. tax) \u00f7 Quantity',
-            example: expr('2,120,000.00 \u00f7 2,000,000') + result('Unit Price', line.unit, 4)
+            formula: 'Base Price = Total Amount (incl. tax) \u00f7 Quantity',
+            example: expr('2,120,000.00 \u00f7 2,000,000') + result('Base Price', line.base, 4)
           },
           {
             cls: 'disc-card', col: 'Column M', name: 'Discount',

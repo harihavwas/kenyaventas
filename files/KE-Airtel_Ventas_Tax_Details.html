@@ -955,6 +955,41 @@
       background: var(--red);
     }
 
+    .qty-input {
+      width: 84px;
+      box-sizing: border-box;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      text-align: right;
+      padding: 4px 7px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      -moz-appearance: textfield;
+    }
+
+    .qty-input:hover {
+      border-color: #C9C6BE;
+    }
+
+    .qty-input:focus {
+      outline: none;
+      border-color: var(--red);
+      box-shadow: 0 0 0 2px rgba(228, 0, 43, 0.12);
+    }
+
+    .qty-input.err {
+      border-color: var(--red);
+      background: #FCEDEF;
+    }
+
+    .qty-input::-webkit-inner-spin-button,
+    .qty-input::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
     /* ---------- Summary cards ---------- */
     .summary-grid {
       display: grid;
@@ -1480,8 +1515,8 @@
                   <th>Product Code</th>
                   <th>Product Name</th>
                   <th>Quantity</th>
-                  <th>Unit Price</th>
                   <th>Base Price</th>
+                  <th>Unit Price</th>
                   <th>Total Amount</th>
                   <th>DUTY 15%</th>
                   <th>VAT Taxable Amount</th>
@@ -1642,7 +1677,7 @@
           <div><span>Product</span><b>Electronic Vouchers (100007533)</b></div>
           <div><span>Segment</span><b>Dealer</b></div>
           <div><span>Quantity</span><b>2,000,000</b></div>
-          <div><span>Unit Price (from Products sheet)</span><b>0.7946027</b></div>
+          <div><span>Base price (from Products sheet)</span><b>0.7946027</b></div>
           <div><span>Discount per unit (from Products sheet)</span><b>0.06</b></div>
           <div><span>Tax classes for this Product+Segment combo</span><b>KE-EXCISE DUTY &amp; VAT 16%</b></div>
         </div>
@@ -2003,6 +2038,58 @@
         renderTable();
       });
 
+      // ---- Editable line-item quantity ----
+      // Live update as the user types: recompute that line at FULL precision
+      // (via the same computeLine engine) and refresh every total. Focus and
+      // caret position are preserved across the table re-render.
+      $rowsBody.addEventListener('input', function (e) {
+        var inp = e.target.closest('.qty-input');
+        if (!inp) return;
+        var i = parseInt(inp.getAttribute('data-i'), 10);
+        if (isNaN(i) || !rows[i]) return;
+        var v = parseFloat(inp.value);
+        if (isNaN(v) || v <= 0) { inp.classList.add('err'); return; }
+        inp.classList.remove('err');
+        var caret = inp.selectionStart;
+        var line = computeLine(rows[i].code, rows[i].segment, v);
+        if (line) rows[i] = line;
+        renderTable();
+        var ni = $rowsBody.querySelector('.qty-input[data-i="' + i + '"]');
+        if (ni) { ni.focus(); try { ni.setSelectionRange(caret, caret); } catch (_) {} }
+      });
+
+      // On commit (blur / Enter), snap an invalid or empty entry back to the
+      // last valid quantity so a row can never be left in a broken state.
+      $rowsBody.addEventListener('change', function (e) {
+        var inp = e.target.closest('.qty-input');
+        if (!inp) return;
+        var i = parseInt(inp.getAttribute('data-i'), 10);
+        if (isNaN(i) || !rows[i]) return;
+        var v = parseFloat(inp.value);
+        if (isNaN(v) || v <= 0) {
+          inp.classList.remove('err');
+          inp.value = rows[i].qty;
+          renderTable();
+        }
+      });
+
+      // Arrow keys nudge the quantity by 1 (never below 1); Enter commits/blurs.
+      $rowsBody.addEventListener('keydown', function (e) {
+        var inp = e.target.closest('.qty-input');
+        if (!inp) return;
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          var i = parseInt(inp.getAttribute('data-i'), 10);
+          var v = parseFloat(inp.value);
+          if (isNaN(v)) v = rows[i] ? rows[i].qty : 1;
+          v = Math.max(1, v + (e.key === 'ArrowUp' ? 1 : -1));
+          inp.value = v;
+          inp.dispatchEvent(new Event('input', { bubbles: true }));
+        } else if (e.key === 'Enter') {
+          inp.blur();
+        }
+      });
+
       function renderTable() {
         if (!rows.length) {
           $rowsBody.innerHTML = '';
@@ -2019,7 +2106,8 @@
             '<td class="seg-cell">' + escapeHtml(r.segment) + '</td>' +
             '<td>' + escapeHtml(r.code) + '</td>' +
             '<td class="name-cell" title="' + escapeHtml(r.name) + '">' + escapeHtml(r.name) + '</td>' +
-            '<td>' + fmt(r.qty, 0) + '</td>' +
+            '<td><input type="text" inputmode="numeric" class="qty-input" data-i="' + i +
+              '" value="' + escapeHtml(String(r.qty)) + '" title="Edit quantity" aria-label="Quantity for ' + escapeHtml(r.name) + '"></td>' +
             '<td>' + fmt(r.base) + '</td>' +
             '<td>' + fmt(r.unit) + '</td>' +
             '<td>' + fmt(r.total) + '</td>' +
@@ -2102,10 +2190,10 @@
 
         var cards = [
           {
-            cls: '', col: 'Column E', name: 'Unit Price',
+            cls: '', col: 'Column E', name: 'Base Price',
             desc: 'The unit price looked up from the Products sheet for this exact Product Code + Segment combination \u2014 the very first matching row, taken at full precision.',
-            formula: 'Unit Price = Products.PRICE',
-            example: result('Unit price for 100007533 / Dealer', combo.price, 7)
+            formula: 'Base Price = Products.PRICE',
+            example: result('Base price for 100007533 / Dealer', combo.price, 7)
           },
           {
             cls: '', col: 'Column D', name: 'Quantity',
@@ -2115,8 +2203,8 @@
           },
           {
             cls: 'total-card', col: 'Column G', name: 'Total Amount',
-            desc: 'Unit Price multiplied by Quantity \u2014 the pre-tax value of the sale, before any duty or VAT is added.',
-            formula: 'Total Amount = Unit Price \u00d7 Quantity',
+            desc: 'Base Price multiplied by Quantity \u2014 the pre-tax value of the sale, before any duty or VAT is added.',
+            formula: 'Total Amount = Base Price \u00d7 Quantity',
             example: expr('0.7946027 \u00d7 2,000,000') + result('Total Amount', line.total)
           },
           {
@@ -2152,10 +2240,10 @@
             example: expr('1,589,205.40 + 530,794.60') + result('Total Amount (incl. tax)', line.finalTotal)
           },
           {
-            cls: '', col: 'Column F', name: 'Base Price',
+            cls: '', col: 'Column F', name: 'Unit Price',
             desc: 'A derived, tax-inclusive price per unit \u2014 the final tax-inclusive Total Amount divided back by the Quantity. Shown for reference; it never feeds into another calculation.',
-            formula: 'Base Price = Total Amount (incl. tax) \u00f7 Quantity',
-            example: expr('2,120,000.00 \u00f7 2,000,000') + result('Base Price', line.base, 4)
+            formula: 'Unit Price = Total Amount (incl. tax) \u00f7 Quantity',
+            example: expr('2,120,000.00 \u00f7 2,000,000') + result('Unit Price', line.unit, 4)
           },
           {
             cls: 'disc-card', col: 'Column M', name: 'Discount',

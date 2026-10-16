@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Primary Sales explorer – Ventas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0A2A57;--navy-deep:#06224A;--blue:#2563AB;--orange:#F47B20;--orange-deep:#D9601A;--gold:#FFB347;
+  --bg:#F7F9FC;--surface:#FFFFFF;--ink:#1F2937;--muted:#5F6673;--line:#E5E7EB;
+  --head:#0A2A57;--blue-soft:#DCE9F7;--orange-soft:#FCE4CC;--stop:#B4441B;--stop-soft:#FBE3D8;
+  --ok:#1F7A5A;--ok-soft:#DDF1E8;--link:#2563AB;--dot3:#0A2A57;--shadow:0 1px 2px rgba(10,42,87,.06),0 4px 14px rgba(10,42,87,.06);
+  --banner:linear-gradient(90deg,#06224A 0%,#0A2A57 35%,#2563AB 100%);
+  color-scheme:light;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#071B36;--surface:#0D2546;--ink:#E4EAF3;--muted:#A3B0C4;--line:#1F3B63;--head:#D6E4F7;
+  --blue-soft:#15355F;--orange-soft:#3A2614;--stop:#FF9A6B;--stop-soft:#3A1F17;--ok:#6FD3AA;--ok-soft:#123A2D;--link:#8DBBF0;--dot3:#8FA3C0;
+  --shadow:0 1px 2px rgba(0,0,0,.3);color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#071B36;--surface:#0D2546;--ink:#E4EAF3;--muted:#A3B0C4;--line:#1F3B63;--head:#D6E4F7;
+  --blue-soft:#15355F;--orange-soft:#3A2614;--stop:#FF9A6B;--stop-soft:#3A1F17;--ok:#6FD3AA;--ok-soft:#123A2D;--link:#8DBBF0;--dot3:#8FA3C0;
+  --shadow:0 1px 2px rgba(0,0,0,.3);color-scheme:dark;}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "Open Sans","Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+h1,h2,h3{font-family:Montserrat,"Open Sans","Segoe UI",Arial,sans-serif;color:var(--head);margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.banner{background:var(--banner);color:#fff;display:flex;align-items:center;gap:20px;padding:14px clamp(16px,3vw,32px);min-height:76px}
+.banner .t{flex:1;min-width:0}
+.banner .sub{font-size:13px;opacity:.85}
+.banner h1{color:#fff;font-size:clamp(19px,2.4vw,24px);line-height:1.2}
+.banner .logo{height:40px;width:auto;display:block}
+.ventas-tile{background:#fff;border-radius:8px;padding:7px 10px;display:flex;align-items:center}
+.ventas-tile img{height:18px;width:auto;display:block}
+.theme-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px}
+.shell{display:grid;grid-template-columns:250px minmax(0,1fr);max-width:1280px;margin:0 auto;gap:28px;padding:24px clamp(12px,3vw,32px) 48px}
+nav.side{position:sticky;top:calc(16px + env(safe-area-inset-top,0px));align-self:start}
+.navgroup{margin-bottom:18px}
+.navgroup h3{font-size:12px;color:var(--muted);font-family:"Open Sans",sans-serif;font-weight:600;margin:0 0 6px 10px}
+.navbtn{display:flex;width:100%;text-align:left;align-items:center;gap:10px;background:none;border:0;border-radius:8px;padding:8px 10px;cursor:pointer;color:var(--ink);font-size:14.5px}
+.navbtn:hover{background:var(--blue-soft)}
+.navbtn[aria-current="page"]{background:var(--surface);box-shadow:var(--shadow);font-weight:600;color:var(--head)}
+.navbtn[aria-current="page"]::before{content:"";width:4px;height:18px;border-radius:2px;background:var(--orange);margin-left:-4px}
+.navbtn .dot{width:8px;height:8px;border-radius:50%;flex:none}
+.mobile-nav{display:none}
+main{min-width:0}
+.lead{font-size:16.5px;max-width:72ch;color:var(--ink);margin:6px 0 22px}
+.view-title{font-size:clamp(22px,2.6vw,28px);line-height:1.2}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow)}
+.accent-o{border-top:5px solid var(--orange)}
+.accent-b{border-top:5px solid var(--blue)}
+/* product picker on overview */
+.products{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:28px}
+.prod{padding:18px 18px 16px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:6px;border-top-width:5px}
+.prod:hover{transform:translateY(-1px)}
+.prod h2{font-size:17px}
+.prod p{margin:0;color:var(--muted);font-size:14px}
+.prod .go{margin-top:8px;font-weight:600;color:var(--link);font-size:14px}
+/* matrix */
+.matrix{overflow-x:auto}
+.matrix table{border-collapse:separate;border-spacing:0;width:100%;min-width:760px}
+.matrix th,.matrix td{padding:0;border-bottom:1px solid var(--line);vertical-align:top}
+.matrix thead th{font-family:Montserrat,sans-serif;font-size:13.5px;color:#fff;background:var(--navy);padding:10px 12px;text-align:left}
+.matrix thead th:first-child{border-top-left-radius:10px}.matrix thead th:last-child{border-top-right-radius:10px}
+.matrix tbody th{font-weight:600;text-align:left;padding:10px 12px;font-size:14px;color:var(--head);width:18%}
+.cellbtn{display:block;width:100%;height:100%;text-align:left;background:none;border:0;padding:10px 12px;cursor:pointer;font-size:14px}
+.cellbtn:hover{background:var(--blue-soft)}
+.cellbtn.shared{background:color-mix(in srgb,var(--blue-soft) 55%,transparent)}
+.cellbtn.skip{color:var(--muted);font-style:italic}
+.cellbtn small{display:block;color:var(--muted);font-size:12.5px;font-style:normal}
+/* flow rail */
+.tabs{display:flex;gap:6px;margin:4px 0 18px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;cursor:pointer;font-size:14px}
+.tab[aria-selected="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.rail{display:flex;gap:0;overflow-x:auto;padding:6px 2px 14px;scroll-snap-type:x proximity}
+.step{flex:1 0 128px;position:relative;background:none;border:0;cursor:pointer;padding:0 6px;text-align:center;scroll-snap-align:start}
+.step::before{content:"";position:absolute;top:21px;left:-50%;right:50%;height:2px;background:var(--line);z-index:0}
+.step:first-child::before{display:none}
+.step .n{position:relative;z-index:1;display:inline-grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--surface);border:2px solid var(--line);font-weight:700;color:var(--muted);font-family:Montserrat,sans-serif;transition:background .15s,border-color .15s}
+.step .l{display:block;margin-top:8px;font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.3}
+.step .s{display:block;font-size:12px;color:var(--muted);line-height:1.3;margin-top:2px}
+.step.seen .n{border-color:var(--blue);color:var(--blue)}
+.step.seen::before{background:var(--blue)}
+.step[aria-current="step"] .n{background:var(--orange);border-color:var(--orange);color:#fff}
+.step.auto .n{border-style:dashed}
+.detail{padding:22px 24px;margin-top:6px}
+.detail-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 16px;margin-bottom:14px}
+.detail-head h2{font-size:20px}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:600}
+.pill.status{background:var(--blue-soft);color:var(--head)}
+.pill.who{background:var(--orange-soft);color:var(--ink)}
+.sys{display:flex;gap:6px;flex-wrap:wrap}
+.sys span{border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:12px;color:var(--muted);font-weight:600}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px 28px}
+.cols h3{font-size:14px;margin-bottom:6px}
+.cols ul{margin:0;padding-left:18px}
+.cols li{margin:3px 0}
+.fail{background:var(--stop-soft);border-radius:8px;padding:12px 14px}
+.fail h3{color:var(--stop)}
+.navrow{display:flex;justify-content:space-between;gap:10px;margin-top:20px;border-top:1px solid var(--line);padding-top:14px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600;font-size:14px}
+.btn.primary{background:var(--orange);border-color:var(--orange);color:#fff}
+.btn.primary:hover{background:var(--orange-deep)}
+.btn:disabled{opacity:.4;cursor:default}
+.note{font-size:13px;color:var(--muted);margin-top:10px}
+/* tables */
+.tbl{overflow-x:auto;margin-top:6px}
+.tbl table{border-collapse:collapse;width:100%;min-width:520px;font-size:14px;background:var(--surface)}
+.tbl th{background:var(--navy);color:#fff;text-align:left;padding:9px 12px;font-weight:600;font-size:13.5px}
+.tbl td{border-bottom:1px solid var(--line);padding:9px 12px;vertical-align:top}
+.tbl tr:last-child td{border-bottom:0}
+.tbl code,code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;background:var(--blue-soft);padding:1px 5px;border-radius:4px;color:var(--head)}
+.req{font-weight:700;color:var(--orange-deep)}
+/* simulator */
+.sim{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:24px;align-items:start}
+.controls{padding:20px}
+.ctl{margin-bottom:16px;border:0;padding:0}
+.ctl legend{font-weight:600;font-size:14px;color:var(--head);margin-bottom:6px;padding:0}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg label{position:relative}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg span{display:inline-block;border:1px solid var(--line);border-radius:8px;padding:6px 11px;font-size:13.5px;cursor:pointer;background:var(--surface)}
+.seg input:checked+span{background:var(--navy);color:#fff;border-color:var(--navy)}
+.seg input:focus-visible+span{outline:3px solid var(--orange);outline-offset:2px}
+.ctl .hint{font-size:12.5px;color:var(--muted);margin-top:5px}
+.ctl.off{opacity:.45}
+.journey{padding:20px 22px}
+.result{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.result .big{font-family:Montserrat,sans-serif;font-size:24px;font-weight:700}
+.result .big.ok{color:var(--ok)}.result .big.bad{color:var(--stop)}.result .big.wait{color:var(--orange-deep)}
+.tl{list-style:none;margin:0;padding:0;position:relative}
+.tl li{display:grid;grid-template-columns:28px 1fr;gap:12px;padding:0 0 14px;position:relative}
+.tl li::before{content:"";position:absolute;left:13px;top:26px;bottom:0;width:2px;background:var(--line)}
+.tl li:last-child::before{display:none}
+.tl .mk{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:700;border:2px solid var(--line);background:var(--surface);z-index:1}
+.tl .done .mk{background:var(--blue);border-color:var(--blue);color:#fff}
+.tl .skip .mk{border-style:dashed;color:var(--muted)}
+.tl .stop .mk{background:var(--stop);border-color:var(--stop);color:#fff}
+.tl .wait .mk{border-color:var(--orange);color:var(--orange-deep)}
+.tl .ttl{font-weight:600}
+.tl .skip .ttl{color:var(--muted);font-weight:400}
+.tl .why{font-size:13.5px;color:var(--muted)}
+.tl .stop .why{color:var(--stop)}
+.fired{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.fired span{background:var(--orange-soft);border-radius:6px;padding:3px 9px;font-size:12.5px;font-weight:600}
+@media (prefers-reduced-motion:no-preference){.tl li{animation:in .28s ease both}@keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}}
+/* errors */
+.search{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.search input{flex:1 1 240px;border:1px solid var(--line);border-radius:8px;padding:9px 12px;font:inherit;background:var(--surface);color:var(--ink)}
+.empty{padding:22px;color:var(--muted)}
+/* integrations */
+.ints{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:24px}
+.int{padding:16px 18px;text-align:left;cursor:pointer;border-top-width:5px}
+.int h3{font-size:16px;margin-bottom:4px}
+.int p{margin:0;font-size:13.5px;color:var(--muted)}
+.int[aria-pressed="true"]{outline:2px solid var(--orange)}
+.conf{padding:16px 18px;margin-bottom:12px}
+.conf h3{font-size:15px;margin-bottom:8px}
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.vs div{border-radius:8px;padding:10px 12px;font-size:14px}
+.vs .b{background:var(--blue-soft)}.vs .l{background:var(--orange-soft)}
+.vs strong{display:block;font-size:12.5px;margin-bottom:2px}
+.check{list-style:none;padding:0;margin:0}
+.check li{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.check li:last-child{border-bottom:0}
+.check input{width:18px;height:18px;margin-top:2px;accent-color:var(--orange)}
+section.block{margin-top:30px}
+section.block>h2{font-size:19px;margin-bottom:10px}
+@media (max-width:1180px){.products{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr;gap:12px}
+  nav.side{display:none}
+  .mobile-nav{display:block;position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--bg);padding:10px 0}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+  .mobile-nav select{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;font:inherit;background:var(--surface);color:var(--ink)}
+  .sim{grid-template-columns:1fr}
+  .products{grid-template-columns:1fr}
+  .banner .ventas-tile{display:none}
+}
+@media (max-width:560px){.banner .logo{height:26px}.banner .sub{display:none}.banner{gap:10px}.theme-btn{padding:5px 8px;font-size:12px}.vs{grid-template-columns:1fr}.detail{padding:18px}}
+</style>
+</head>
+<body>
+<header class="banner">
+  <div class="t">
+    <div class="sub">Ventas BSS for Airtel Kenya – functional and technical guide</div>
+    <h1>Primary Sales explorer</h1>
+  </div>
+  <div class="ventas-tile"><img src="data:image/png;base64,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" alt="Ventas"></div>
+  <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch light or dark theme">Theme</button>
+  <img class="logo" src="data:image/png;base64,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" alt="6D Technologies – Smart Ideas, Delivered">
+</header>
+
+<div class="shell">
+  <nav class="side" aria-label="Sections" id="sideNav"></nav>
+  <main id="main">
+    <div class="mobile-nav"><label for="mSel" class="sr" style="position:absolute;left:-9999px">Section</label><select id="mSel"></select></div>
+    <div id="view"></div>
+  </main>
+</div>
+
+<script>
+const NAV=[
+ {g:"Start here",items:[["overview","Overview",""],["simulator","Try an order","var(--orange)"]]},
+ {g:"Sales flows",items:[["physical","Physical products","var(--blue)"],["rcv","Voucher & Scratch Card","var(--blue)"],["epin","Virtual – ePIN","var(--blue)"],["evd","Virtual – EVD / eRCV","var(--blue)"]]},
+ {g:"Related processes",items:[["vouchers","Voucher activation","var(--dot3)"],["returns","Sales return","var(--dot3)"],["transfer","Stock transfer","var(--dot3)"]]},
+ {g:"Reference",items:[["rules","Business rules",""],["integrations","Integrations",""],["errors","Error codes",""],["open","Open points",""]]}
+];
+
+/* ---------- step data ---------- */
+const S={
+ create:{t:"Create order",s:"Partner, products, Ship-To",who:"Admin, privileged user, sales support or partner",status:"Draft → Pending",sys:["POS","UPC","CPM"],
+  what:["Sales support picks the first-level partner; a partner login loads its own details","Pick the product category and the Bill-To account","Add products by name or ID and enter quantities","Choose the Ship-To address and the source warehouse","Review the cart: price, discount, VAT and excise per line","Save as a draft, or submit"],
+  rules:["Only products applicable and available to the buyer are listed","Minimum quantity, maximum quantity and lot size are checked","A duplicate-order warning appears for the same product and quantity within a short window"],
+  fail:["A draft can be changed, cancelled or submitted later by the initiator","After submit, only an approver's rejection lets the initiator change it"]},
+ balance:{t:"Balance check",s:"Wallet vs order total",who:"System",status:"Pending",sys:["POS","CPM"],
+  what:["Compares the partner wallet balance with the order total, including tax and discount","Balance met: \u201cOrder placed successfully\u201d","Balance low: a warning offers Continue Order or Add Fund","Add Fund opens a payment receipt pop-up; Finance approves the receipt and credits the wallet"],
+  rules:["The order can always be submitted, whatever the balance","The balance is deducted only at Finance approval"],fail:[]},
+ finance:{t:"Finance (ACE) approval",s:"Final financial audit",who:"Accounts (ACE) finance team, or the system",status:"Approved",sys:["ROM","CPM","POS"],
+  what:["Manual approve validates the balance and shows an error if it is not met","Auto-approve when balance exceeds the order value and the order has waited 30 minutes (configurable)","The balance is deducted the moment the order is approved"],
+  rules:["Can be configured as a mandatory manual step even when the balance is met","If a payment receipt was raised, this step waits for the receipt's approval"],
+  fail:["Reject: back to the initiator to change items or payment","Cancel: cancelled permanently","Unprocessed for 48 hours (configurable): auto-cancelled"]},
+ allocation:{t:"Stock allocation",s:"Courier manual, pickup auto",who:"Supply team at the source warehouse",status:"Stock Reserved → In transit",sys:["ROM","ARM"],
+  what:["Supply team allocates by serial scan, range or file upload","Assets move from Available to Sold and change owner","A transfer order and a PDF delivery note are created","Courier details or pickup-person details are captured"],
+  rules:["The supply team can change the source warehouse before allocating","Pickup orders are allocated automatically (per the LLD)"],
+  fail:["The warehouse can cancel while delivery is pending: balance reversed, initiator notified"]},
+ invoice:{t:"Invoice generation",s:"Tax invoice, RA, QR",who:"System",status:"Invoiced",sys:["POS","ESB","RA","ERP"],
+  what:["A tax invoice is generated once and can be downloaded at any time","Uploaded to the Kenya Revenue Authority","The RA response is printed as a QR code on the invoice PDF","Invoice data is posted to the ERP staging tables"],
+  rules:["Invoice numbers come from configurable ranges per product category (prefix, year, start and end)"],fail:[]},
+ grn:{t:"Goods receipt (GRN)",s:"Delivery confirmed",who:"Destination user, or the system for pickup",status:"Completed",sys:["ARM","ERP"],
+  what:["Courier: the destination user searches the stock request and submits the GR","Pickup: GRN completes automatically","Delivery status becomes Completed","Inventory movement is posted to ERP"],rules:[],fail:[]}
+};
+const clone=(o,x)=>Object.assign({},o,x);
+
+const FLOWS={
+ physical:{title:"Physical products",lead:"SIM cards and devices. Stock is allocated by the warehouse and confirmed by goods receipt; no activation is needed.",
+  steps:[S.create,S.balance,S.finance,S.allocation,S.invoice,S.grn],
+  fields:[["Seller Type / Seller","Who sells",1,""],["Buyer Type / Buyer","Who buys",1,"Auto-filled for partner logins"],["Product Type / Category","Devices, scratch cards, EPIN, EVD",0,"Filters the product list"],["Bill To","Billable account from onboarding",1,"<partnerid>-<partnername>, default self"],["Product Name / ID","Search the catalogue",0,""],["Total Quantity","Quantity per product",1,"Min, max and lot-size checks"],["Ship To","Delivery address from onboarding",1,""],["Source Warehouse","Airtel warehouse",0,"By location, distance, mapping or availability"]]},
+ rcv:{title:"Voucher & Scratch Card",lead:"Printed recharge vouchers (RCV) and scratch cards. The order runs exactly like a physical order, then the vouchers are activated through NGVS before they can be used.",
+  steps:[clone(S.create,{s:"Category Scratch Cards",what:["Sales support picks the first-level partner; a partner login loads its own details","Pick the category Physical – Scratch Cards and the Bill-To account","Add voucher products and quantities","Choose the Ship-To address and the source warehouse","Review the cart and submit"]}),S.balance,S.finance,S.allocation,S.invoice,S.grn,
+   {t:"RCV activation",s:"NGVS, OTP",who:"Admin, distributor, supply chain or sales user",status:"Activated",sys:["POS","ESB","NGVS"],what:["Enter the order ID (primary sale ID) or a serial range","An OTP goes to the customer's masked mobile number","Click Save: the system validates the order and serials, then calls NGVS (XML over HTTP)","Response code 0 with a task ID means activated","Inventory moves Available → Sold → Activated; SMS and email sent"],rules:["Uses the Ericsson (E///) voucher APIs","Unsold vouchers can be deactivated later (see Voucher activation)"],fail:["No reply in 30 s: retry every 30 s, up to 4 times","Still no reply: voucher marked Unactivated"]}],
+  fields:[["Seller Type / Seller","Who sells",1,""],["Buyer Type / Buyer","Who buys",1,"Auto-filled for partner logins"],["Product Type / Category","Physical – Scratch Cards",0,"Filters the product list"],["Bill To","Billable account from onboarding",1,"<partnerid>-<partnername>, default self"],["Total Quantity","Quantity per voucher product",1,"Min, max and lot-size checks"],["Ship To","Delivery address from onboarding",1,""],["Source Warehouse","Airtel warehouse",0,""],["Order ID (activation)","Primary sale ID",1,"Text, up to 30 characters"],["Activation mobile number","Customer the vouchers are sold to",1,"Receives the OTP"]]},
+ epin:{title:"Virtual – ePIN",lead:"Electronic PINs. No Commercial review, automatic first-in-first-out allocation and GRN, then activation and an OTP-protected download.",
+  steps:[clone(S.create,{s:"Category EPIN",what:["Pick the partner and the EPIN category","Add products and quantities; several Ship-To addresses are allowed","No source warehouse is needed","Review the cart and submit"]}),S.balance,
+   clone(S.finance,{rules:["If the balance is not met, the order stays Pending"]}),
+   {t:"Auto allocation",s:"First in, first out",auto:1,who:"System",status:"Stock Reserved",sys:["ROM","ARM"],what:["ePINs are allocated automatically, oldest first"],rules:[],fail:["No ePIN available: an error is shown and the order is cancelled"]},
+   S.invoice,
+   {t:"Auto GRN",s:"Delivery completed",auto:1,who:"System",status:"Completed",sys:["ARM","ERP"],what:["GRN completes automatically and delivery is marked Completed","Inventory movement posted to ERP"],rules:[],fail:[]},
+   {t:"Activation",s:"NGVS, OTP",who:"Admin, distributor, supply chain or sales user",status:"Active",sys:["POS","NGVS"],what:["Enter the order ID or a serial range","An OTP goes to the customer's masked mobile number","Ventas calls NGVS (XML over HTTP); code 0 with a task ID means activated","ePINs become Active, a download link is created, and SMS and email are sent"],rules:["Uses the Ericsson (E///) voucher APIs"],fail:["No reply in 30 s: retry every 30 s, up to 4 times","Still no reply: ePINs go back to Sold"]},
+   {t:"Download",s:"OTP, 10k per file",who:"Distributor",status:"Downloaded",sys:["POS"],what:["Open the download link or the download menu","Select the order line","Enter the OTP sent by SMS or email","Download files of up to 10,000 PINs each"],rules:["PINs are decrypted on the fly and never stored","The file is a PGP-encrypted .txt","Each file can be downloaded a set number of times, usually 3","No more than 500k per denomination"],fail:["Misallocated serials trigger blocking or deactivation"]}],
+  fields:[["Buyer / Seller","As physical orders",1,""],["Product Type","EPIN",0,""],["Bill To","Billable account",1,""],["Total Quantity","Quantity per product",1,""],["Ship To","Multiple addresses allowed",1,""],["Order Line ID (download)","Line per denomination",1,"Drives serial range and quantity"],["OTP (download)","Sent by SMS or email",1,"Required for every download"]]},
+ evd:{title:"Virtual – EVD / eRCV",lead:"Electronic top-up stock. After Finance approval the system either moves balance through Pretups, or only records revenue for transfers the partner already made.",
+  steps:[clone(S.create,{s:"Balance Transfer or Revenue Capture",what:["Pick the partner and the EVD product","Choose the order type: Balance Transfer (default) or Revenue Capture","Enter the quantity, review and submit"],rules:["Balance Transfer = Individual option; Revenue Capture = Corporate option"]}),S.balance,
+   clone(S.finance,{rules:["If the balance is not met, the order stays Pending"]}),
+   {t:"Pretups transfer",s:"Individual orders only",auto:1,who:"System",status:"Transferred",sys:["ESB","Pretups"],what:["Ventas calls the Pretups O2C API with the order amount","Balance moves from Airtel to the partner wallet"],rules:["Revenue Capture (Corporate) orders skip this step","POS sales use the C2S API instead"],fail:["Any failure response from Pretups marks the order Failed"]},
+   clone(S.invoice,{what:["An invoice is generated per transaction","Uploaded to the Revenue Authority where applicable, with QR code","Posted to ERP for reconciliation"]})],
+  fields:[["Buyer / Seller","As physical orders",1,""],["Product Type","Virtual – EVD (Single or Corporate)",0,""],["Bill To","Billable account",1,""],["Type of Order","Balance Transfer or Revenue Capture",1,"Defaults to Balance Transfer"],["Quantity","Required amount",1,""]]}
+};
+const PROCS={
+ returns:{title:"Primary sales return",lead:"Partners return physical products or ePINs against the original order and invoice. EVD cannot be returned.",
+  steps:[{t:"Find the order",s:"Order or invoice ID",who:"Authorized user",status:"–",sys:["POS"],what:["Search by order ID or invoice ID","Open More Info and choose Return Order"],rules:["The original invoice reference is mandatory","Several returns can be placed against one invoice while items remain"],fail:[]},
+   {t:"Capture items",s:"Saleable or Damaged",who:"Authorized user",status:"Submitted",sys:["POS","ARM"],what:["Enter or scan one or more asset IDs","Mark each as Saleable or Damaged","Review the cart and submit"],rules:["Return eligibility follows each item's return policy"],fail:["Nothing returnable: the system shows an error","Each asset's status is validated and shown"]},
+   {t:"Approval",s:"Where the OpCo requires it",who:"OpCo finance and ACE finance",status:"Approved",sys:["ROM","CPM"],what:["Approve, reject or cancel"],rules:[],fail:["A rejected return is cancelled"]},
+   {t:"Allocation and GRN",s:"Automatic",auto:1,who:"System",status:"Received",sys:["ARM"],what:["Stock comes back automatically and inventory status is updated","Damaged vouchers are flagged on the voucher server"],rules:[],fail:[]},
+   {t:"Return invoice",s:"Refund, RA, ERP",who:"System",status:"Completed",sys:["POS","RA","ERP"],what:["Return invoice with the reference invoice number and refund amount","Uploaded to RA where applicable, with QR code","Posted to ERP; partner notified by SMS and email"],rules:["A credit note for the refund is planned but not yet specified"],fail:[]}],
+  fields:[["Partner","Who returns",1,""],["Destination Warehouse","Where stock goes",1,""],["Order Number","Original order",1,""],["Invoice Number","Auto-filled or searched",0,""],["Return Item Status","Saleable or Damaged",1,""],["Item serial number","Items and quantities",0,""],["Reason / Comments","Free text",0,""]]},
+ transfer:{title:"Stock transfer",lead:"Moves stock between warehouses and shops. Primary sales reuses it for allocation and goods receipt. One request carries one product type.",
+  steps:[{t:"Create request",s:"Source, destination, items",who:"Source or destination user",status:"Draft / Created",sys:["ARM"],what:["Pick source and destination warehouse or shop","Add products and quantities","Save as draft or submit"],rules:["Allowed: main warehouse → warehouse or shop; warehouse → warehouse or shop; shop → shop"],fail:[]},
+   {t:"Approval",s:"Configured approver",who:"Configured approver",status:"Approved / Rejected",sys:["CPM"],what:["Approve or reject; users are notified"],rules:[],fail:["Rejected requests stop here"]},
+   {t:"Allocation",s:"Scan, range or file",who:"Source user",status:"Allocation in progress → Dispatched",sys:["ARM"],what:["Scan serials singly or by range, or upload a file","Capture delivery details","Scan checks are instant; submit checks run in the background (File Upload List)","A transfer order and PDF delivery note are created"],rules:["Virtual stock (ePIN) is allocated FIFO and received in the same step","Runs on a configurable worker-thread pool; pending work resumes after a pod restart"],fail:["Any allocation error returns the request to Approved for a retry"]},
+   {t:"Goods receive",s:"Destination confirms",who:"Destination user",status:"Delivered",sys:["ARM"],what:["Search by stock request ID; transfer order and serials fill in","Submit the GR; serial status and ownership update"],rules:[],fail:[]},
+   {t:"ERP posting",s:"Inventory movement",auto:1,who:"System",status:"Posted",sys:["ESB","ERP"],what:["Inventory movement posted to the ERP staging tables"],rules:[],fail:[]}],
+  fields:null}
+};
+const VOUCH={
+ act:{title:"RCV activation",steps:[
+  {t:"Find vouchers",s:"Order or serial range",who:"Admin, distributor, supply chain or sales user",status:"Sold",sys:["POS"],what:["Enter the order ID (primary sale ID) or a serial range"],rules:["Whether a serial range is mandatory is still open"],fail:[]},
+  {t:"Verify OTP",s:"Masked customer mobile",who:"Customer",status:"Sold",sys:["POS"],what:["An OTP goes to the customer's masked mobile number","Click Save to validate order and serials"],rules:[],fail:["Validation failure shows the matching error"]},
+  {t:"Call NGVS",s:"XML over HTTP",auto:1,who:"System",status:"Pending",sys:["ESB","NGVS"],what:["Ventas sends the order to NGVS","Response code 0 with a task ID means activated"],rules:["Uses the Ericsson (E///) voucher APIs"],fail:["No reply in 30 s: retry every 30 s, up to 4 times","Still no reply: voucher marked Unactivated"]},
+  {t:"Activated",s:"Sold, Activated",auto:1,who:"System",status:"Activated",sys:["ARM"],what:["Inventory moves Available → Sold → Activated","SMS and email notification sent"],rules:[],fail:[]}]},
+ deact:{title:"Voucher deactivation",steps:[
+  {t:"Request",s:"Order ID and mobile",who:"Admin, distributor, supply chain or sales user",status:"–",sys:["POS"],what:["Enter the order ID or serial range and the mobile number","Click Save to validate"],rules:["Applies to unsold vouchers after a set period"],fail:[]},
+  {t:"Finance approval",s:"Required",who:"Finance",status:"Approved",sys:["CPM"],what:["Finance approves the deactivation"],rules:[],fail:[]},
+  {t:"Voucher server",s:"Damaged, Stolen, Deactivate",auto:1,who:"System",status:"Inactive",sys:["NGVS"],what:["Unsold stock: status set to Damaged, Stolen or Deactivate","Sold stock comes back through a sales return; Damaged items are flagged on the voucher server","Ventas inventory updated on confirmation"],rules:[],fail:[]}]}
+};
+
+const ERRORS=[["POS3400","Mandatory parameters missing","UI validation failed","POS"],["POS4615","Order is not eligible for modification","Modifying an ineligible order","POS"],["POS4616","Same order is already placed. Duplicate order not allowed","Duplicate order","POS"],["POS46404","Sale order id not found","Modifying an unknown order","POS"],["POS57006","Quantity is above maximum limit for the product","Above partner maximum","POS"],["POS57007","Quantity is below minimum limit for the product","Below partner minimum","POS"],["POS57008","Quantity must be multiple of lot size","Lot-size check","POS"],["POS57009","Maximum quantity reached for the product in the current month","Monthly maximum reached","POS"],["POS57010","Minimum quantity product in the current month","Monthly minimum not met","POS"],["POS78506","Switch Over Not Allowed","Status change not allowed","POS"],["POS81030","Cart minimum order amount validation failed","Cart value too low","POS"],["POS81404","Cart not found","Empty cart on submit","POS"],["POS3500","Internal server error","POS service error","POS"],["POS77400","ROM bad request","Invalid request to ROM","ROM"],["POS77404","No data found","Order view returned nothing","ROM"],["POS77417","Invalid response from ROM service","Bad ROM response on create","ROM"],["POS77418","Failed to submit order","Submission failed","ROM"],["POS77422","ROM failed to cancel the order!","Cancellation error","ROM"],["POS77500","ROM internal server error","Uncaught ROM error","ROM"],["POS77503","ROM service unavailable","ROM not running","ROM"],["POS77503","CPM service unavailable","CPM not available (same code as ROM)","CPM"],["POS777404","No data found (CPM)","Data missing in CPM","CPM"],["POS77504","Partner ID is missing","Partner not supplied","CPM"],["POS3404","ARM Resource not found","ARM or asset not available","ARM"],["POS3503","ARM service unavailable","ARM not available","ARM"],["POS3505","ARM failed to process assets locking","Asset lock failed","ARM"],["POS3508","ARM failed to un-lock assets","Asset unlock failed","ARM"],["ST-1","Invalid serial number","Serial from another owner or product","Stock transfer"],["ST-2","Start range should not be greater than end range","Reversed range","Stock transfer"],["ST-3","Asset ranges are overlapping","Overlapping ranges","Stock transfer"],["ST-4","Duplicate entry","Same serial scanned twice","Stock transfer"],["ST-5","Requested qty & allocated qty mismatch","Quantities differ","Stock transfer"],["ST-6","Product code not associated with the stock request","Wrong product","Stock transfer"],["ST-7","Requested qty is invalid","Same start and end serial, quantity not 1","Stock transfer"],["ST-8","Invalid header","Upload file header wrong","Stock transfer"]];
+
+const INTS=[
+ {k:"notif",n:"SMS and email",d:"Order events to partners and approvers",acc:"o",body:`<p>Sent through the 6D ESB to the Airtel ESB, then the SMSC or email server.</p><div class="tbl"><table><tr><th>Event</th><th>Email</th><th>SMS</th></tr><tr><td>Order submitted</td><td>Yes</td><td>Yes</td></tr><tr><td>Stock allocated</td><td>Yes</td><td>Yes</td></tr><tr><td>Order completed</td><td>Yes</td><td>Yes</td></tr><tr><td>Order cancelled</td><td>Yes</td><td>Yes</td></tr><tr><td>Order rejected</td><td>Yes</td><td>Yes</td></tr><tr><td>Invoice generated</td><td colspan="2">Not specified yet</td></tr></table></div><p class="note"><code>NotificationEmailAPI</code> → <code>/api/email/v2/send-email-notification</code> · <code>NotificationSMSAPI</code> → <code>/api/sms/v1/send-sms-notification</code> (JSON)</p>`},
+ {k:"ra",n:"Revenue Authority",d:"Invoice upload and QR code",acc:"b",body:`<p>After the invoice is generated, Ventas uploads it through the ESB. The RA response becomes the QR code on the PDF.</p><div class="tbl"><table><tr><th>Kenya Revenue Authority call</th><th>Required</th></tr><tr><td>Invoice upload (sales)</td><td>Yes</td></tr><tr><td>Return invoice upload</td><td>Yes – endpoint still to be confirmed</td></tr><tr><td>Query and re-upload</td><td>Not applicable</td></tr><tr><td>Daily Z-report posting and retry</td><td>Not applicable</td></tr></table></div>`},
+ {k:"erp",n:"ERP",d:"Invoices, receipts and stock movement",acc:"o",body:`<p>Ventas writes to its own staging tables first; a scheduled job syncs them to ERP over a DB link, so ERP downtime never blocks a sale.</p><div class="tbl"><table><tr><th>Data</th><th>Posted when</th><th>Table</th></tr><tr><td>Invoice</td><td>Invoice is ready</td><td><code>MKT_ERP_INV_INTF</code></td></tr><tr><td>Inventory movement</td><td>GRN is done</td><td><code>MKT_ERP_INVT_UPD_INTF</code></td></tr><tr><td>Payment receipt</td><td>Receipt approved</td><td><code>MKT_ERP_RECEIPT_INTF</code></td></tr><tr><td>Receipt reversal</td><td>Receipt reversed</td><td><code>MKT_ERP_RECEIPT_REV_INTF</code></td></tr></table></div>`},
+ {k:"pretups",n:"Pretups",d:"EVD balance transfer",acc:"b",body:`<p>O2C API for primary sales (Airtel → partner wallet); C2S API for POS sales. Only Balance Transfer (Individual) orders call it. A failure response marks the order Failed.</p>`},
+ {k:"ngvs",n:"NGVS voucher server",d:"Activate and deactivate RCV and ePIN",acc:"o",body:`<p>XML over HTTP, using the Ericsson (E///) voucher APIs.</p><ol><li>Ventas sends the order; NGVS returns a task ID.</li><li>Code 0 with a task ID = activated.</li><li>No reply in 30 s → retry every 30 s, 4 times.</li><li>Still nothing → ePIN back to Sold, RCV marked Unactivated.</li></ol>`},
+ {k:"arch",n:"Inside Ventas",d:"How the modules work together",acc:"b",body:`<div class="tbl"><table><tr><th>Module</th><th>Role</th></tr><tr><td>POS</td><td>Cart, pricing, tax, invoice</td></tr><tr><td>ROM</td><td>Orchestrates every order as a Camunda workflow (ROM Core + ROM Executor)</td></tr><tr><td>CPM</td><td>Partners, wallet, approvals</td></tr><tr><td>UPC</td><td>Product catalogue</td></tr><tr><td>ARM</td><td>Inventory, allocation, GRN</td></tr><tr><td>ESB</td><td>Every external call</td></tr></table></div><p class="note">Synchronous APIs for requests, Kafka events for callbacks, Oracle for storage, Redis cache, a dead-letter queue for poison messages, Kibana logs and Grafana metrics.</p>`}
+];
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ul=a=>a&&a.length?`<ul>${a.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:"";
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+function fieldsTable(f){
+ if(!f)return"";
+ return `<section class="block"><h2>Screen fields</h2><div class="tbl card"><table><tr><th>Field</th><th>What it holds</th><th>Required</th><th>Checks</th></tr>${f.map(r=>`<tr><td><strong>${esc(r[0])}</strong></td><td>${esc(r[1])}</td><td>${r[2]?'<span class="req">Yes</span>':"No"}</td><td>${esc(r[3]||"–")}</td></tr>`).join("")}</table></div></section>`;
+}
+
+/* flow viewer: rail + detail */
+function flowViewer(host,steps,key){
+ let i=0;const seen=new Set([0]);
+ function draw(){
+  const st=steps[i];
+  host.innerHTML=`<div class="rail" role="tablist" aria-label="Steps">${steps.map((s,j)=>`<button class="step ${seen.has(j)?"seen":""} ${s.auto?"auto":""}" role="tab" aria-selected="${j===i}" ${j===i?'aria-current="step"':""} data-j="${j}"><span class="n">${j+1}</span><span class="l">${esc(s.t)}</span><span class="s">${esc(s.s)}</span></button>`).join("")}</div>
+  <div class="card detail accent-${i%2?"b":"o"}" aria-live="polite">
+   <div class="detail-head"><h2>${i+1}. ${esc(st.t)}</h2><span class="pill who">${esc(st.who)}</span><span class="pill status">Status: ${esc(st.status)}</span><div class="sys">${st.sys.map(x=>`<span>${x}</span>`).join("")}</div></div>
+   <div class="cols"><div><h3>What happens</h3>${ul(st.what)}</div>${st.rules.length?`<div><h3>Rules</h3>${ul(st.rules)}</div>`:""}${st.fail.length?`<div class="fail"><h3>If it doesn't go through</h3>${ul(st.fail)}</div>`:""}</div>
+   <div class="navrow"><button class="btn" data-mv="-1" ${i===0?"disabled":""}>Previous step</button><button class="btn primary" data-mv="1" ${i===steps.length-1?"disabled":""}>Next step</button></div>
+  </div>`;
+  host.querySelectorAll(".step").forEach(b=>b.onclick=()=>{i=+b.dataset.j;seen.add(i);draw();});
+  host.querySelectorAll("[data-mv]").forEach(b=>b.onclick=()=>{i=Math.max(0,Math.min(steps.length-1,i+ +b.dataset.mv));seen.add(i);draw();host.querySelector('[aria-current="step"]').scrollIntoView({block:"nearest",inline:"center",behavior:"smooth"});});
+  host.querySelector(".rail").onkeydown=e=>{if(e.key==="ArrowRight"||e.key==="ArrowLeft"){i=Math.max(0,Math.min(steps.length-1,i+(e.key==="ArrowRight"?1:-1)));seen.add(i);draw();host.querySelector('[aria-current="step"]').focus();}};
+ }
+ draw();
+}
+
+/* ---------- views ---------- */
+const V={};
+V.overview=()=>{
+ const rows=[
+  ["Create and submit","create","Draft or submit; balance checked"],
+  ["Finance (ACE) approval","finance","Manual, or auto after 30 min"],
+  ["Fulfilment","fulfil",[["own","Stock allocation","Supply team; pickup auto"],["own","Stock allocation","Supply team; pickup auto"],["own","Auto allocation","First in, first out"],["own","Pretups transfer","Individual orders only"]]],
+  ["Invoice","invoice","Tax invoice, RA upload, QR code"],
+  ["Goods receipt","grn",[["own","GRN","Manual courier, auto pickup"],["own","GRN","Manual courier, auto pickup"],["own","Auto GRN","Delivery completed"],["skip","Skipped","Nothing to receive"]]],
+  ["After the sale","after",[["skip","No activation","Ready to sell"],["own","RCV activation","Through NGVS, OTP"],["own","Activate and download","OTP-protected"],["skip","Skipped","Balance is live"]]],
+ ];
+ const FL=["physical","rcv","epin","evd"];
+ const goto={physical:"physical",epin:"epin",evd:"evd"};
+ const stepIndex={physical:{create:0,finance:2,fulfil:3,invoice:4,grn:5,after:5},rcv:{create:0,finance:2,fulfil:3,invoice:4,grn:5,after:6},epin:{create:0,finance:2,fulfil:3,invoice:4,grn:5,after:6},evd:{create:0,finance:2,fulfil:3,invoice:4,grn:4,after:4}};
+ $("#view").innerHTML=`<h2 class="view-title">How a primary sales order moves</h2>
+ <p class="lead">Airtel Kenya sells to its first-level partners through the Ventas web console. Every order is created, approved by Finance and invoiced the same way; the product type decides everything in between. Pick a product to walk its flow, or click any cell below.</p>
+ <div class="products">
+  ${[["physical","Physical products","SIM cards and devices. Warehouse allocation, then manual or automatic GRN.","o"],["rcv","Voucher & Scratch Card","Same flow as physical, then vouchers are activated through NGVS.","b"],["epin","Virtual – ePIN","Electronic PINs. Automatic allocation and GRN, then activation and OTP download.","o"],["evd","Virtual – EVD / eRCV","Balance transfer through Pretups, or revenue capture for corporate partners.","b"]].map(p=>`<button class="card prod accent-${p[3]}" data-go="${p[0]}"><h2>${p[1]}</h2><p>${p[2]}</p><span class="go">Walk this flow</span></button>`).join("")}
+ </div>
+ <div class="card matrix"><table><thead><tr><th>Milestone</th><th>Physical</th><th>Voucher &amp; Scratch Card</th><th>ePIN</th><th>EVD / eRCV</th></tr></thead><tbody>
+ ${rows.map(r=>`<tr><th scope="row">${r[0]}</th>${typeof r[2]==="string"?`<td colspan="4"><button class="cellbtn shared" data-flow="physical" data-step="${r[1]}"><strong>${esc(r[2])}</strong><small>Same for all products</small></button></td>`:r[2].map((c,k)=>`<td><button class="cellbtn ${c[0]}" data-flow="${FL[k]}" data-step="${r[1]}">${c[0]==="skip"?esc(c[1]):`<strong>${esc(c[1])}</strong>`}<small>${esc(c[2])}</small></button></td>`).join("")}</tr>`).join("")}
+ </tbody></table></div>
+ <p class="note">Tinted rows are shared by every product; italic cells are steps that product skips.</p>`;
+ document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>show(b.dataset.go));
+ document.querySelectorAll(".cellbtn").forEach(b=>b.onclick=()=>show(b.dataset.flow,stepIndex[b.dataset.flow][b.dataset.step]));
+};
+function flowView(key,startAt){
+ const f=FLOWS[key]||PROCS[key];
+ $("#view").innerHTML=`<h2 class="view-title">${f.title}</h2><p class="lead">${f.lead}</p><div id="fv"></div>${fieldsTable(f.fields)}`;
+ flowViewer($("#fv"),f.steps,key);
+ if(startAt){const b=document.querySelectorAll("#fv .step")[startAt];if(b)b.click();}
+}
+V.physical=s=>flowView("physical",s);V.rcv=s=>flowView("rcv",s);V.epin=s=>flowView("epin",s);V.evd=s=>flowView("evd",s);V.returns=()=>flowView("returns");V.transfer=()=>flowView("transfer");
+V.vouchers=()=>{
+ let cur="act";
+ $("#view").innerHTML=`<h2 class="view-title">Voucher activation and deactivation</h2><p class="lead">Printed RCV vouchers must be activated before use; unsold vouchers can be switched off after a set period. Both go through the NGVS voucher server.</p><div class="tabs" role="tablist"><button class="tab" role="tab" data-t="act">Activate RCV</button><button class="tab" role="tab" data-t="deact">Deactivate</button></div><div id="fv"></div>`;
+ const draw=()=>{document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.t===cur));flowViewer($("#fv"),VOUCH[cur].steps,cur);};
+ document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{cur=t.dataset.t;draw();});draw();
+};
+V.rules=()=>{
+ $("#view").innerHTML=`<h2 class="view-title">Business rules</h2><p class="lead">These apply to every order unless a product flow says otherwise.</p>
+ <div class="cols">
+  <div class="card detail accent-o"><h3>Order modes</h3>${ul(["Save: kept as a draft; the initiator can change, cancel or submit it later","Submit: locked for the initiator and sent for approval"])}</div>
+  <div class="card detail accent-b"><h3>Order checks</h3>${ul(["Only applicable, available products are listed","Minimum, maximum and lot-size quantity checks","Discount, VAT and excise shown per line","Duplicate-order warning within a short window"])}</div>
+ </div>
+ <section class="block"><h2>Who can see and change orders</h2><div class="tbl card"><table><tr><th>User</th><th>Can see</th><th>Can change</th></tr>
+ <tr><td><strong>Partner / distributor</strong></td><td>Own orders and direct hierarchy</td><td>The whole order before approval; items, quantities and payment after a rejection</td></tr>
+ <tr><td><strong>Sales team</strong></td><td>All orders in their territory</td><td>–</td></tr><tr><td><strong>Finance team</strong></td><td>All orders</td><td>–</td></tr>
+ <tr><td><strong>Supply team</strong></td><td>Orders for their warehouse</td><td>Source warehouse before allocation; can cancel</td></tr>
+ <tr><td><strong>Supply admin / manager</strong></td><td>All warehouses</td><td>–</td></tr></table></div></section>
+ <section class="block"><h2>Timers</h2><div class="tbl card"><table><tr><th>Rule</th><th>Default</th><th>Effect</th></tr>
+ <tr><td>Finance auto-approve</td><td>30 minutes</td><td>Approved if balance exceeds the order value</td></tr>
+ <tr><td>Finance auto-cancel</td><td>48 hours</td><td>Cancelled if still unprocessed</td></tr>
+ 
+ <tr><td>NGVS retry</td><td>Every 30 s, 4 times</td><td>Then reverted to the previous state</td></tr>
+ <tr><td>ePIN download limit</td><td>Usually 3 per file</td><td>Further downloads blocked</td></tr></table></div></section>
+ <section class="block"><h2>Invoice numbering</h2><p>Configurable per product category: prefix or suffix, optional financial year, a numeric start and end range. The end must be greater than the start, ranges for the same year and prefix may not overlap, and the current sequence shows on the order configuration page.</p></section>`;
+};
+V.integrations=()=>{
+ $("#view").innerHTML=`<h2 class="view-title">Integrations</h2><p class="lead">Every external call leaves Ventas through the 6D ESB and the Airtel ESB, except ERP, which uses a database link. Pick a system to see what it does.</p><div class="ints">${INTS.map(x=>`<button class="card int accent-${x.acc}" aria-pressed="false" data-k="${x.k}"><h3>${x.n}</h3><p>${x.d}</p></button>`).join("")}</div><div id="intBody" class="card detail accent-o" aria-live="polite"></div>`;
+ const pick=k=>{const x=INTS.find(i=>i.k===k);document.querySelectorAll(".int").forEach(b=>b.setAttribute("aria-pressed",b.dataset.k===k));$("#intBody").innerHTML=`<h2 style="font-size:19px;margin-bottom:8px">${x.n}</h2>${x.body}`;};
+ document.querySelectorAll(".int").forEach(b=>b.onclick=()=>pick(b.dataset.k));pick("notif");
+};
+V.errors=()=>{
+ const mods=["All","POS","ROM","CPM","ARM","Stock transfer"];let mod="All";
+ $("#view").innerHTML=`<h2 class="view-title">Error codes</h2><p class="lead">Users see two messages: “Please enter all mandatory fields highlighted.” for missing fields and “Your request cannot be processed due to errors.” for everything else. The codes below are what the system logs.</p>
+ <div class="search"><input id="q" type="search" placeholder="Search by code or words, e.g. lot size" aria-label="Search error codes"><div class="tabs" role="tablist" style="margin:0">${mods.map(m=>`<button class="tab" role="tab" data-m="${m}">${m}</button>`).join("")}</div></div><div class="tbl card"><table><thead><tr><th>Code</th><th>Message</th><th>When it happens</th><th>Source</th></tr></thead><tbody id="eb"></tbody></table><div id="ee" class="empty" hidden>No error matches. Clear the search or pick All.</div></div>`;
+ const draw=()=>{const q=$("#q").value.trim().toLowerCase();const r=ERRORS.filter(e=>(mod==="All"||e[3]===mod)&&(!q||e.join(" ").toLowerCase().includes(q)));
+  $("#eb").innerHTML=r.map(e=>`<tr><td><code>${e[0]}</code></td><td>${esc(e[1])}</td><td>${esc(e[2])}</td><td>${e[3]}</td></tr>`).join("");$("#ee").hidden=r.length>0;
+  document.querySelectorAll("[data-m]").forEach(b=>b.setAttribute("aria-selected",b.dataset.m===mod));};
+ $("#q").oninput=draw;document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{mod=b.dataset.m;draw();});draw();
+};
+V.open=()=>{
+ const conf=[["Pickup orders: allocation and GRN","GRN is automatic for pickup, manual for courier","Sales table: allocation auto, GR manual. Stock transfer table: both manual"],["Finance auto-cancel","Unprocessed orders are auto-cancelled","Rule text says “automatically approves” after 48 hours"],["Code POS77503","–","Used for both ROM and CPM being unavailable"],["Activation timeout","ePIN reverts to Sold","RCV is marked Unactivated – should they match?"]];
+ const todo=["Serial range as an activation field – required or not","ePIN .txt file layout","Sample invoices for physical, RCV, ePIN and eRCV","Sample return invoice from Airtel","Credit note content and RA integration","RA endpoint for Kenya return invoices","ERP integration details (pending review)","Notifications on invoice generation","ROM data model as a table definition","Meaning of Y / N in the ARM table constraints"];
+ const done=new Set(JSON.parse(store.get("ps-open")||"[]"));
+ $("#view").innerHTML=`<h2 class="view-title">Open points</h2><p class="lead">Where the BRS and the LLD disagree, and what is still to be defined. Ticks are saved in this browser only.</p>
+ <section class="block" style="margin-top:0"><h2>BRS and LLD disagree</h2>${conf.map(c=>`<div class="card conf"><h3>${c[0]}</h3><div class="vs"><div class="b"><strong>BRS</strong>${esc(c[1])}</div><div class="l"><strong>LLD</strong>${esc(c[2])}</div></div></div>`).join("")}</section>
+ <section class="block"><h2>Still to define</h2><div class="card detail"><ul class="check">${todo.map((t,i)=>`<li><input type="checkbox" id="c${i}" ${done.has(i)?"checked":""}><label for="c${i}">${esc(t)}</label></li>`).join("")}</ul></div></section>`;
+ document.querySelectorAll(".check input").forEach((c,i)=>c.onchange=()=>{c.checked?done.add(i):done.delete(i);store.set("ps-open",JSON.stringify([...done]));});
+};
+
+/* ---------- simulator ---------- */
+V.simulator=()=>{
+ const ctl=(name,label,opts,hint)=>`<fieldset class="ctl" id="f-${name}"><legend>${label}</legend><div class="seg">${opts.map((o,i)=>`<label><input type="radio" name="${name}" value="${o[0]}" ${i===0?"checked":""}><span>${o[1]}</span></label>`).join("")}</div>${hint?`<div class="hint">${hint}</div>`:""}</fieldset>`;
+ $("#view").innerHTML=`<h2 class="view-title">Try an order</h2><p class="lead">Set up a Kenya order and see exactly which steps it passes, which it skips, and where it stops.</p>
+ <div class="sim"><form class="card controls accent-o" id="simf" onsubmit="return false">
+  ${ctl("prod","Product",[["physical","Physical"],["rcv","Voucher & Scratch Card"],["epin","ePIN"],["evd","EVD"]])}
+  ${ctl("bal","Wallet balance",[["met","Enough"],["receipt","Low – add fund"],["cont","Low – continue"]],"Add fund raises a payment receipt for Finance.")}
+  ${ctl("fin","Finance team",[["approve","Approves"],["none","No action"],["reject","Rejects"],["cancel","Cancels"]])}
+  ${ctl("disp","Delivery",[["courier","Courier"],["pickup","Pickup"]])}
+  ${ctl("evdt","EVD order type",[["ind","Balance Transfer"],["corp","Revenue Capture"]])}
+ </form><div class="card journey accent-b" id="jr" aria-live="polite"></div></div>`;
+ const f=$("#simf");f.onchange=run;run();
+ function run(){
+  const v=Object.fromEntries(new FormData(f));
+  const P=v.prod,phys=P==="physical"||P==="rcv";
+  $("#f-disp").classList.toggle("off",!phys);$("#f-evdt").classList.toggle("off",P!=="evd");
+  const T=[];let stopped=null;const add=(st,t,w)=>T.push({st,t,w});
+  const fired=new Set(["SMS and email"]);
+  add("done","Order created and submitted","Status Pending; approver and partner notified");
+  if(v.bal==="met")add("done","Balance check","Balance covers the order total");
+  else if(v.bal==="receipt")add("done","Balance check","Low balance – payment receipt raised and sent to Finance");
+  else add("wait","Balance check","Low balance – submitted anyway with Continue Order");
+  if(!stopped){
+   const balOK=v.bal!=="cont";
+   if(v.fin==="approve"){if(balOK)add("done","Finance (ACE) approval",v.bal==="receipt"?"Receipt approved, wallet credited, order approved – balance deducted":"Approved – balance deducted");else{stopped="pending";add("stop","Finance (ACE) approval","Approval blocked: balance not met. Order stays Pending until funds arrive, and is auto-cancelled after 48 h");}}
+   else if(v.fin==="none"){if(balOK)add("done","Finance (ACE) approval",v.bal==="receipt"?"Auto-approved once the receipt is approved and 30 min have passed":"Auto-approved after 30 minutes – balance deducted");else{stopped="autocancel";add("stop","Finance (ACE) approval","Balance never met – auto-cancelled after 48 hours");}}
+   else{stopped=v.fin;add("stop","Finance (ACE) approval",v.fin==="reject"?"Rejected – back to the initiator to fix items or payment":"Cancelled permanently");}
+  }
+  if(!stopped){
+   if(phys)add("done","Stock allocation",v.disp==="courier"?"Supply team allocates manually; courier details captured; delivery note created":"Allocated automatically; pickup person captured");
+   else if(P==="epin")add("done","Auto allocation","ePINs allocated first in, first out");
+   else if(v.evdt==="ind"){add("done","Pretups balance transfer","O2C API moves balance from Airtel to the partner wallet");fired.add("Pretups");}
+   else add("skip","Pretups balance transfer","Revenue Capture – the partner already moved the balance");
+   add("done","Invoice generated","Tax invoice uploaded to the Kenya Revenue Authority; QR code printed");
+   fired.add("Revenue Authority");fired.add("ERP");
+   if(phys)add("done","Goods receipt (GRN)",v.disp==="courier"?"Destination user confirms delivery (manual GRN)":"GRN completes automatically");
+   else if(P==="epin")add("done","Auto GRN","Delivery marked completed");
+   else add("skip","Goods receipt (GRN)","Nothing physical to receive");
+   if(P==="epin"){add("done","Activation and download","Activated through NGVS; downloaded as PGP-encrypted .txt with OTP");fired.add("NGVS");}
+   else if(P==="rcv"){add("done","RCV activation","OTP checked, then activated through NGVS; vouchers move to Activated");fired.add("NGVS");}
+   add("done","ERP posting","Invoice and inventory movement synced to ERP staging");
+  }else fired.delete("ERP");
+  const final=!stopped?["ok","Completed","The order went all the way through."]:stopped==="reject"?["wait","Rejected","Waiting for the initiator to modify and resubmit."]:stopped==="pending"?["wait","Pending","Waiting for funds; auto-cancels after 48 hours."]:["bad","Cancelled","Any deducted balance is reversed and the initiator is notified."];
+  const mk={done:"✓",skip:"–",stop:"!",wait:"…"};
+  $("#jr").innerHTML=`<div class="result"><span class="big ${final[0]}">${final[1]}</span><span>${final[2]}</span></div><ol class="tl">${T.map(x=>`<li class="${x.st}"><span class="mk" aria-hidden="true">${mk[x.st]}</span><div><div class="ttl">${x.t}${x.st==="skip"?" (skipped)":""}</div><div class="why">${x.w}</div></div></li>`).join("")}</ol><div style="margin-top:6px"><strong style="font-size:14px">Systems called</strong><div class="fired">${[...fired].map(x=>`<span>${x}</span>`).join("")}</div></div>`;
+ }
+};
+
+/* ---------- nav ---------- */
+function buildNav(){
+ $("#sideNav").innerHTML=NAV.map(g=>`<div class="navgroup"><h3>${g.g}</h3>${g.items.map(i=>`<button class="navbtn" data-v="${i[0]}">${i[2]?`<span class="dot" style="background:${i[2]}"></span>`:'<span class="dot"></span>'}${i[1]}</button>`).join("")}</div>`).join("");
+ $("#mSel").innerHTML=NAV.map(g=>`<optgroup label="${g.g}">${g.items.map(i=>`<option value="${i[0]}">${i[1]}</option>`).join("")}</optgroup>`).join("");
+ document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>show(b.dataset.v));
+ $("#mSel").onchange=e=>show(e.target.value);
+}
+function show(v,arg){
+ if(!V[v])v="overview";
+ document.querySelectorAll(".navbtn").forEach(b=>b.toggleAttribute("aria-current",b.dataset.v===v)||b.dataset.v===v&&b.setAttribute("aria-current","page"));
+ document.querySelectorAll(".navbtn").forEach(b=>{if(b.dataset.v===v)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
+ $("#mSel").value=v;V[v](arg);store.set("ps-view",v);
+ window.scrollTo({top:0,behavior:"auto"});
+}
+/* theme */
+(function(){const t=store.get("ps-theme");if(t)document.documentElement.dataset.theme=t;
+ $("#themeBtn").onclick=()=>{const cur=document.documentElement.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const n=cur==="dark"?"light":"dark";document.documentElement.dataset.theme=n;store.set("ps-theme",n);};})();
+buildNav();show(store.get("ps-view")||"overview");
+</script>
+</body>
+</html>

@@ -185,6 +185,19 @@ section.block>h2{font-size:19px;margin-bottom:10px}
 }
 @media (max-width:560px){.banner .logo{height:26px}.banner .sub{display:none}.banner{gap:10px}.theme-btn{padding:5px 8px;font-size:12px}.vs{grid-template-columns:1fr}.detail{padding:18px}}
 </style>
+<script>
+(function(){var d=document.documentElement,K='kv-theme';
+try{if(window.self!==window.top)d.classList.add('in-frame')}catch(e){d.classList.add('in-frame')}
+var t=null;try{t=localStorage.getItem(K)}catch(e){}
+if(t==='light'||t==='dark')d.setAttribute('data-theme',t);else if(!d.getAttribute('data-theme'))d.setAttribute('data-theme','light');
+window.__kvApply=function(t){d.setAttribute('data-theme',t)};
+window.kvSetTheme=function(t){window.__kvApply(t);try{localStorage.setItem(K,t)}catch(e){}
+ var fr=document.querySelectorAll('iframe');for(var i=0;i<fr.length;i++){try{fr[i].contentWindow.postMessage({kvTheme:t},'*')}catch(e){}}};
+window.kvToggleTheme=function(){window.kvSetTheme(d.getAttribute('data-theme')==='dark'?'light':'dark')};
+window.addEventListener('storage',function(e){if(e.key===K&&e.newValue)window.__kvApply(e.newValue)});
+window.addEventListener('message',function(e){if(e.data&&e.data.kvTheme)window.__kvApply(e.data.kvTheme)});
+})();
+</script><style>html.in-frame #themeBtn,html.in-frame .banner .logo{display:none!important}</style>
 </head>
 <body>
 <header class="banner">
@@ -475,8 +488,7 @@ function show(v,arg){
  window.scrollTo({top:0,behavior:"auto"});
 }
 /* theme */
-(function(){const t=store.get("ps-theme");if(t)document.documentElement.dataset.theme=t;
- $("#themeBtn").onclick=()=>{const cur=document.documentElement.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const n=cur==="dark"?"light":"dark";document.documentElement.dataset.theme=n;store.set("ps-theme",n);};})();
+$("#themeBtn").onclick=()=>kvToggleTheme();
 buildNav();show(store.get("ps-view")||"overview");
 </script>
 </body>

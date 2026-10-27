@@ -1,0 +1,2888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KRA TIMS Integration explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0A2A57;--navy-deep:#06224A;--blue:#2563AB;--orange:#F47B20;--orange-deep:#D9601A;--gold:#FFB347;
+  --bg:#F7F9FC;--surface:#FFFFFF;--ink:#1F2937;--muted:#5F6673;--line:#E5E7EB;
+  --head:#0A2A57;--blue-soft:#DCE9F7;--orange-soft:#FCE4CC;--stop:#B4441B;--stop-soft:#FBE3D8;
+  --ok:#1F7A5A;--ok-soft:#DDF1E8;--link:#2563AB;--dot3:#0A2A57;--shadow:0 1px 2px rgba(10,42,87,.06),0 4px 14px rgba(10,42,87,.06);
+  --banner:linear-gradient(90deg,#06224A 0%,#0A2A57 35%,#2563AB 100%);
+  color-scheme:light;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#071B36;--surface:#0D2546;--ink:#E4EAF3;--muted:#A3B0C4;--line:#1F3B63;--head:#D6E4F7;
+  --blue-soft:#15355F;--orange-soft:#3A2614;--stop:#FF9A6B;--stop-soft:#3A1F17;--ok:#6FD3AA;--ok-soft:#123A2D;--link:#8DBBF0;--dot3:#8FA3C0;
+  --shadow:0 1px 2px rgba(0,0,0,.3);color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#071B36;--surface:#0D2546;--ink:#E4EAF3;--muted:#A3B0C4;--line:#1F3B63;--head:#D6E4F7;
+  --blue-soft:#15355F;--orange-soft:#3A2614;--stop:#FF9A6B;--stop-soft:#3A1F17;--ok:#6FD3AA;--ok-soft:#123A2D;--link:#8DBBF0;--dot3:#8FA3C0;
+  --shadow:0 1px 2px rgba(0,0,0,.3);color-scheme:dark;}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "Open Sans","Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+h1,h2,h3{font-family:Montserrat,"Open Sans","Segoe UI",Arial,sans-serif;color:var(--head);margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.banner{background:var(--banner);color:#fff;display:flex;align-items:center;gap:20px;padding:14px clamp(16px,3vw,32px);min-height:76px}
+.banner .t{flex:1;min-width:0}
+.banner .sub{font-size:13px;opacity:.85}
+.banner h1{color:#fff;font-size:clamp(19px,2.4vw,24px);line-height:1.2}
+.banner .logo{height:40px;width:auto;display:block}
+.ventas-tile{background:#fff;border-radius:8px;padding:7px 10px;display:flex;align-items:center}
+.ventas-tile img{height:18px;width:auto;display:block}
+.theme-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px}
+.shell{display:grid;grid-template-columns:250px minmax(0,1fr);max-width:1280px;margin:0 auto;gap:28px;padding:24px clamp(12px,3vw,32px) 48px}
+nav.side{position:sticky;top:calc(16px + env(safe-area-inset-top,0px));align-self:start}
+.navgroup{margin-bottom:18px}
+.navgroup h3{font-size:12px;color:var(--muted);font-family:"Open Sans",sans-serif;font-weight:600;margin:0 0 6px 10px}
+.navbtn{display:flex;width:100%;text-align:left;align-items:center;gap:10px;background:none;border:0;border-radius:8px;padding:8px 10px;cursor:pointer;color:var(--ink);font-size:14.5px}
+.navbtn:hover{background:var(--blue-soft)}
+.navbtn[aria-current="page"]{background:var(--surface);box-shadow:var(--shadow);font-weight:600;color:var(--head)}
+.navbtn[aria-current="page"]::before{content:"";width:4px;height:18px;border-radius:2px;background:var(--orange);margin-left:-4px}
+.navbtn .dot{width:8px;height:8px;border-radius:50%;flex:none}
+.mobile-nav{display:none}
+main{min-width:0}
+.lead{font-size:16.5px;max-width:72ch;color:var(--ink);margin:6px 0 22px}
+.view-title{font-size:clamp(22px,2.6vw,28px);line-height:1.2}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow)}
+.accent-o{border-top:5px solid var(--orange)}
+.accent-b{border-top:5px solid var(--blue)}
+/* product picker on overview */
+.products{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:28px}
+.prod{padding:18px 18px 16px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:6px;border-top-width:5px}
+.prod:hover{transform:translateY(-1px)}
+.prod h2{font-size:17px}
+.prod p{margin:0;color:var(--muted);font-size:14px}
+.prod .go{margin-top:8px;font-weight:600;color:var(--link);font-size:14px}
+/* matrix */
+.matrix{overflow-x:auto}
+.matrix table{border-collapse:separate;border-spacing:0;width:100%;min-width:760px}
+.matrix th,.matrix td{padding:0;border-bottom:1px solid var(--line);vertical-align:top}
+.matrix thead th{font-family:Montserrat,sans-serif;font-size:13.5px;color:#fff;background:var(--navy);padding:10px 12px;text-align:left}
+.matrix thead th:first-child{border-top-left-radius:10px}.matrix thead th:last-child{border-top-right-radius:10px}
+.matrix tbody th{font-weight:600;text-align:left;padding:10px 12px;font-size:14px;color:var(--head);width:18%}
+.cellbtn{display:block;width:100%;height:100%;text-align:left;background:none;border:0;padding:10px 12px;cursor:pointer;font-size:14px}
+.cellbtn:hover{background:var(--blue-soft)}
+.cellbtn.shared{background:color-mix(in srgb,var(--blue-soft) 55%,transparent)}
+.cellbtn.skip{color:var(--muted);font-style:italic}
+.cellbtn small{display:block;color:var(--muted);font-size:12.5px;font-style:normal}
+/* flow rail */
+.tabs{display:flex;gap:6px;margin:4px 0 18px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;cursor:pointer;font-size:14px}
+.tab[aria-selected="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.rail{display:flex;gap:0;overflow-x:auto;padding:6px 2px 14px;scroll-snap-type:x proximity}
+.step{flex:1 0 128px;position:relative;background:none;border:0;cursor:pointer;padding:0 6px;text-align:center;scroll-snap-align:start}
+.step::before{content:"";position:absolute;top:21px;left:-50%;right:50%;height:2px;background:var(--line);z-index:0}
+.step:first-child::before{display:none}
+.step .n{position:relative;z-index:1;display:inline-grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--surface);border:2px solid var(--line);font-weight:700;color:var(--muted);font-family:Montserrat,sans-serif;transition:background .15s,border-color .15s}
+.step .l{display:block;margin-top:8px;font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.3}
+.step .s{display:block;font-size:12px;color:var(--muted);line-height:1.3;margin-top:2px}
+.step.seen .n{border-color:var(--blue);color:var(--blue)}
+.step.seen::before{background:var(--blue)}
+.step[aria-current="step"] .n{background:var(--orange);border-color:var(--orange);color:#fff}
+.step.auto .n{border-style:dashed}
+.detail{padding:22px 24px;margin-top:6px}
+.detail-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 16px;margin-bottom:14px}
+.detail-head h2{font-size:20px}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:600}
+.pill.status{background:var(--blue-soft);color:var(--head)}
+.pill.who{background:var(--orange-soft);color:var(--ink)}
+.sys{display:flex;gap:6px;flex-wrap:wrap}
+.sys span{border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:12px;color:var(--muted);font-weight:600}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px 28px}
+.cols h3{font-size:14px;margin-bottom:6px}
+.cols ul{margin:0;padding-left:18px}
+.cols li{margin:3px 0}
+.fail{background:var(--stop-soft);border-radius:8px;padding:12px 14px}
+.fail h3{color:var(--stop)}
+.navrow{display:flex;justify-content:space-between;gap:10px;margin-top:20px;border-top:1px solid var(--line);padding-top:14px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600;font-size:14px}
+.btn.primary{background:var(--orange);border-color:var(--orange);color:#fff}
+.btn.primary:hover{background:var(--orange-deep)}
+.btn:disabled{opacity:.4;cursor:default}
+.note{font-size:13px;color:var(--muted);margin-top:10px}
+/* tables */
+.tbl{overflow-x:auto;margin-top:6px}
+.tbl table{border-collapse:collapse;width:100%;min-width:520px;font-size:14px;background:var(--surface)}
+.tbl th{background:var(--navy);color:#fff;text-align:left;padding:9px 12px;font-weight:600;font-size:13.5px}
+.tbl td{border-bottom:1px solid var(--line);padding:9px 12px;vertical-align:top}
+.tbl tr:last-child td{border-bottom:0}
+.tbl code,code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;background:var(--blue-soft);padding:1px 5px;border-radius:4px;color:var(--head)}
+.req{font-weight:700;color:var(--orange-deep)}
+/* simulator */
+.sim{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:24px;align-items:start}
+.controls{padding:20px}
+.ctl{margin-bottom:16px;border:0;padding:0}
+.ctl legend{font-weight:600;font-size:14px;color:var(--head);margin-bottom:6px;padding:0}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg label{position:relative}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg span{display:inline-block;border:1px solid var(--line);border-radius:8px;padding:6px 11px;font-size:13.5px;cursor:pointer;background:var(--surface)}
+.seg input:checked+span{background:var(--navy);color:#fff;border-color:var(--navy)}
+.seg input:focus-visible+span{outline:3px solid var(--orange);outline-offset:2px}
+.ctl .hint{font-size:12.5px;color:var(--muted);margin-top:5px}
+.ctl.off{opacity:.45}
+.journey{padding:20px 22px}
+.result{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.result .big{font-family:Montserrat,sans-serif;font-size:24px;font-weight:700}
+.result .big.ok{color:var(--ok)}.result .big.bad{color:var(--stop)}.result .big.wait{color:var(--orange-deep)}
+.tl{list-style:none;margin:0;padding:0;position:relative}
+.tl li{display:grid;grid-template-columns:28px 1fr;gap:12px;padding:0 0 14px;position:relative}
+.tl li::before{content:"";position:absolute;left:13px;top:26px;bottom:0;width:2px;background:var(--line)}
+.tl li:last-child::before{display:none}
+.tl .mk{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:700;border:2px solid var(--line);background:var(--surface);z-index:1}
+.tl .done .mk{background:var(--blue);border-color:var(--blue);color:#fff}
+.tl .skip .mk{border-style:dashed;color:var(--muted)}
+.tl .stop .mk{background:var(--stop);border-color:var(--stop);color:#fff}
+.tl .wait .mk{border-color:var(--orange);color:var(--orange-deep)}
+.tl .ttl{font-weight:600}
+.tl .skip .ttl{color:var(--muted);font-weight:400}
+.tl .why{font-size:13.5px;color:var(--muted)}
+.tl .stop .why{color:var(--stop)}
+.fired{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.fired span{background:var(--orange-soft);border-radius:6px;padding:3px 9px;font-size:12.5px;font-weight:600}
+@media (prefers-reduced-motion:no-preference){.tl li{animation:in .28s ease both}@keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}}
+/* errors */
+.search{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.search input{flex:1 1 240px;border:1px solid var(--line);border-radius:8px;padding:9px 12px;font:inherit;background:var(--surface);color:var(--ink)}
+.empty{padding:22px;color:var(--muted)}
+/* integrations */
+.ints{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:24px}
+.int{padding:16px 18px;text-align:left;cursor:pointer;border-top-width:5px}
+.int h3{font-size:16px;margin-bottom:4px}
+.int p{margin:0;font-size:13.5px;color:var(--muted)}
+.int[aria-pressed="true"]{outline:2px solid var(--orange)}
+.conf{padding:16px 18px;margin-bottom:12px}
+.conf h3{font-size:15px;margin-bottom:8px}
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.vs div{border-radius:8px;padding:10px 12px;font-size:14px}
+.vs .b{background:var(--blue-soft)}.vs .l{background:var(--orange-soft)}
+.vs strong{display:block;font-size:12.5px;margin-bottom:2px}
+.check{list-style:none;padding:0;margin:0}
+.check li{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.check li:last-child{border-bottom:0}
+.check input{width:18px;height:18px;margin-top:2px;accent-color:var(--orange)}
+section.block{margin-top:30px}
+section.block>h2{font-size:19px;margin-bottom:10px}
+@media (max-width:1180px){.products{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr;gap:12px}
+  nav.side{display:none}
+  .mobile-nav{display:block;position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--bg);padding:10px 0}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+  .mobile-nav select{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;font:inherit;background:var(--surface);color:var(--ink)}
+  .sim{grid-template-columns:1fr}
+  .products{grid-template-columns:1fr}
+  .banner .ventas-tile{display:none}
+}
+@media (max-width:560px){.banner .logo{height:26px}.banner .sub{display:none}.banner{gap:10px}.theme-btn{padding:5px 8px;font-size:12px}.vs{grid-template-columns:1fr}.detail{padding:18px}}
+
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:26px}
+.kpi{padding:16px 18px}
+.kpi .v{font-family:Montserrat,sans-serif;font-size:26px;font-weight:700;color:var(--head);line-height:1.1}
+.kpi .k{font-size:13.5px;color:var(--muted);margin-top:4px}
+.life{display:flex;gap:0;overflow-x:auto;padding:4px 2px 10px}
+.life .st{flex:1 0 150px;text-align:center;position:relative;padding:0 8px}
+.life .st::before{content:"";position:absolute;top:24px;left:-50%;right:50%;height:2px;background:var(--blue)}
+.life .st:first-child::before{display:none}
+.life .ic{position:relative;z-index:1;width:48px;height:48px;border-radius:50%;display:inline-grid;place-items:center;background:var(--navy);color:#fff;font-weight:700;font-family:Montserrat,sans-serif}
+.life .st.out .ic{background:var(--orange)}
+.life .nm{display:block;font-weight:600;margin-top:8px;font-size:14px}
+.life .ds{display:block;font-size:12.5px;color:var(--muted)}
+.bars{display:grid;grid-template-columns:minmax(120px,170px) 1fr 96px;gap:8px 14px;align-items:center;font-size:14px}
+.bar{height:18px;border-radius:4px;background:var(--blue);min-width:3px}
+.bars .q{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+textarea.code{width:100%;min-height:110px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--surface);color:var(--ink);resize:vertical}
+.parts{display:flex;flex-wrap:wrap;gap:4px;font:13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin:12px 0}
+.parts button{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:4px 7px;cursor:pointer;font:inherit}
+.parts button[aria-pressed="true"]{background:var(--orange);border-color:var(--orange);color:#fff}
+.kv{display:grid;grid-template-columns:minmax(140px,200px) 1fr;gap:8px 16px;font-size:14px}
+.kv dt{color:var(--muted);font-weight:600}.kv dd{margin:0}
+.ok{color:var(--ok);font-weight:600}.bad{color:var(--stop);font-weight:600}
+.numin{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;width:100%;background:var(--surface);color:var(--ink)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0 4px}
+.facts div{background:var(--blue-soft);border-radius:8px;padding:10px 12px}
+.facts strong{display:block;font-family:Montserrat,sans-serif;font-size:18px;color:var(--head)}
+.facts span{font-size:12.5px;color:var(--muted)}
+.diff td:nth-child(2){color:var(--muted)}
+.diff td:nth-child(3){font-weight:600}
+@media (max-width:1000px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ---- KRA explorer additions ---- */
+.seqwrap{overflow-x:auto}
+.seq svg{display:block;min-width:720px;width:100%;height:auto}
+.seq .msg{cursor:pointer}
+.seq .msg:hover .lbl{fill:var(--orange-deep)}
+.seq .msg.on .ln{stroke:var(--orange);stroke-width:2.5}
+.seq .msg.on .lbl{fill:var(--orange-deep);font-weight:700}
+.seqdetail{margin-top:12px;padding:14px 16px;border-radius:10px;background:var(--blue-soft);font-size:14px}
+.seqdetail strong{color:var(--head)}
+.dtree{display:grid;gap:10px}
+.dnode{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.dnode .q{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;font-weight:700;background:var(--blue-soft);color:var(--head);font-family:Montserrat,sans-serif}
+.dnode.hit{border-color:var(--orange);box-shadow:0 0 0 2px var(--orange-soft)}
+.dnode.hit .q{background:var(--orange);color:#fff}
+.dnode.end{background:var(--ok-soft);border-color:transparent}
+.dnode.end.err{background:var(--stop-soft)}
+.dnode.end .q{background:var(--ok);color:#fff}
+.dnode.end.err .q{background:var(--stop)}
+.dnode.dim{opacity:.4}
+.dnode h4{margin:0 0 2px;font-size:14.5px;color:var(--head);font-family:Montserrat,sans-serif}
+.dnode p{margin:0;font-size:13.5px;color:var(--muted)}
+.samples{display:grid;grid-template-columns:minmax(0,290px) minmax(0,1fr);gap:20px;align-items:start}
+.slist{display:grid;gap:10px;position:sticky;top:16px}
+.sbtn{text-align:left;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;display:grid;gap:3px;box-shadow:var(--shadow)}
+.sbtn[aria-pressed="true"]{border-color:var(--orange);box-shadow:inset 4px 0 0 var(--orange),var(--shadow)}
+.sbtn .t{font-weight:600;font-size:14px;color:var(--head)}
+.sbtn .m{font-size:12.5px;color:var(--muted)}
+.typetag{display:inline-block;font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 9px;margin-right:6px}
+.tt1{background:var(--blue-soft);color:var(--head)}
+.tt2{background:var(--orange-soft);color:var(--orange-deep)}
+.tt3{background:var(--ok-soft);color:var(--ok)}
+.json{margin:0;padding:14px 16px;border-radius:10px;background:var(--bg);border:1px solid var(--line);font:12.5px/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow:auto;max-height:560px;white-space:pre}
+.json .k{color:var(--blue)}.json .s{color:var(--ok)}.json .n{color:var(--orange-deep)}
+.json .hl{background:var(--orange-soft);border-radius:3px;outline:1px solid var(--orange)}
+.qrbox{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.qr{width:132px;height:132px;padding:8px;background:#fff;border-radius:8px;border:1px solid var(--line);display:grid;place-items:center;flex:none}
+.qr svg{width:116px;height:116px;display:block}
+.qrtext a{color:var(--blue)}
+#sd .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+#sd .facts strong{font-size:15px;overflow-wrap:anywhere}
+.qrtext{font:13px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:13.5px}
+.checks li{display:flex;gap:8px;align-items:flex-start}
+.checks .i{flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;color:#fff;background:var(--ok)}
+.checks .w .i{background:var(--orange)}
+.calc input{width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:inherit;font-size:13.5px;background:var(--surface);color:var(--ink)}
+.calc td{vertical-align:middle}
+.calc .num{text-align:right;font-variant-numeric:tabular-nums}
+.badge-ok{display:inline-block;background:var(--ok-soft);color:var(--ok);font-weight:700;font-size:12px;border-radius:999px;padding:3px 10px}
+.vs2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:900px){.samples{grid-template-columns:1fr}.slist{position:static}.vs2{grid-template-columns:1fr}}
+.inv{max-width:520px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:18px 20px;font-size:13.5px}
+.inv .row{display:flex;justify-content:space-between;gap:10px;padding:4px 0}
+.inv hr{border:0;border-top:1px dashed var(--line);margin:10px 0}
+html.in-frame #themeBtn,html.in-frame .banner .logo{display:none!important}
+</style>
+<script>
+(function(){var d=document.documentElement,K='kv-theme';
+try{if(window.self!==window.top)d.classList.add('in-frame')}catch(e){d.classList.add('in-frame')}
+var t=null;try{t=localStorage.getItem(K)}catch(e){}
+if(t==='light'||t==='dark')d.setAttribute('data-theme',t);else if(!d.getAttribute('data-theme'))d.setAttribute('data-theme','light');
+window.__kvApply=function(t){d.setAttribute('data-theme',t)};
+window.kvSetTheme=function(t){window.__kvApply(t);try{localStorage.setItem(K,t)}catch(e){}
+ var fr=document.querySelectorAll('iframe');for(var i=0;i<fr.length;i++){try{fr[i].contentWindow.postMessage({kvTheme:t},'*')}catch(e){}}};
+window.kvToggleTheme=function(){window.kvSetTheme(d.getAttribute('data-theme')==='dark'?'light':'dark')};
+window.addEventListener('storage',function(e){if(e.key===K&&e.newValue)window.__kvApply(e.newValue)});
+window.addEventListener('message',function(e){if(e.data&&e.data.kvTheme)window.__kvApply(e.data.kvTheme)});
+})();
+</script>
+</head>
+<body>
+<header class="banner">
+  <div class="t">
+    <div class="sub">USDM 2.0 for Airtel Kenya – Kenya Revenue Authority integration</div>
+    <h1>KRA TIMS Integration explorer</h1>
+  </div>
+  <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch light or dark theme">Theme</button>
+  <img class="logo" src="data:image/png;base64,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" alt="6D Technologies – Smart Ideas, Delivered">
+</header>
+<div class="shell">
+  <nav class="side" aria-label="Sections" id="sideNav"></nav>
+  <main id="main">
+    <div class="mobile-nav"><label for="mSel" style="position:absolute;left:-9999px">Section</label><select id="mSel"></select></div>
+    <div id="view"></div>
+  </main>
+</div>
+<script>
+/* qrcode-generator 1.4.4 (MIT, Kazuhiko Arase) */
+//---------------------------------------------------------------------
+//
+// QR Code Generator for JavaScript
+//
+// Copyright (c) 2009 Kazuhiko Arase
+//
+// URL: http://www.d-project.com/
+//
+// Licensed under the MIT license:
+//  http://www.opensource.org/licenses/mit-license.php
+//
+// The word 'QR Code' is registered trademark of
+// DENSO WAVE INCORPORATED
+//  http://www.denso-wave.com/qrcode/faqpatent-e.html
+//
+//---------------------------------------------------------------------
+
+var qrcode = function() {
+
+  //---------------------------------------------------------------------
+  // qrcode
+  //---------------------------------------------------------------------
+
+  /**
+   * qrcode
+   * @param typeNumber 1 to 40
+   * @param errorCorrectionLevel 'L','M','Q','H'
+   */
+  var qrcode = function(typeNumber, errorCorrectionLevel) {
+
+    var PAD0 = 0xEC;
+    var PAD1 = 0x11;
+
+    var _typeNumber = typeNumber;
+    var _errorCorrectionLevel = QRErrorCorrectionLevel[errorCorrectionLevel];
+    var _modules = null;
+    var _moduleCount = 0;
+    var _dataCache = null;
+    var _dataList = [];
+
+    var _this = {};
+
+    var makeImpl = function(test, maskPattern) {
+
+      _moduleCount = _typeNumber * 4 + 17;
+      _modules = function(moduleCount) {
+        var modules = new Array(moduleCount);
+        for (var row = 0; row < moduleCount; row += 1) {
+          modules[row] = new Array(moduleCount);
+          for (var col = 0; col < moduleCount; col += 1) {
+            modules[row][col] = null;
+          }
+        }
+        return modules;
+      }(_moduleCount);
+
+      setupPositionProbePattern(0, 0);
+      setupPositionProbePattern(_moduleCount - 7, 0);
+      setupPositionProbePattern(0, _moduleCount - 7);
+      setupPositionAdjustPattern();
+      setupTimingPattern();
+      setupTypeInfo(test, maskPattern);
+
+      if (_typeNumber >= 7) {
+        setupTypeNumber(test);
+      }
+
+      if (_dataCache == null) {
+        _dataCache = createData(_typeNumber, _errorCorrectionLevel, _dataList);
+      }
+
+      mapData(_dataCache, maskPattern);
+    };
+
+    var setupPositionProbePattern = function(row, col) {
+
+      for (var r = -1; r <= 7; r += 1) {
+
+        if (row + r <= -1 || _moduleCount <= row + r) continue;
+
+        for (var c = -1; c <= 7; c += 1) {
+
+          if (col + c <= -1 || _moduleCount <= col + c) continue;
+
+          if ( (0 <= r && r <= 6 && (c == 0 || c == 6) )
+              || (0 <= c && c <= 6 && (r == 0 || r == 6) )
+              || (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
+            _modules[row + r][col + c] = true;
+          } else {
+            _modules[row + r][col + c] = false;
+          }
+        }
+      }
+    };
+
+    var getBestMaskPattern = function() {
+
+      var minLostPoint = 0;
+      var pattern = 0;
+
+      for (var i = 0; i < 8; i += 1) {
+
+        makeImpl(true, i);
+
+        var lostPoint = QRUtil.getLostPoint(_this);
+
+        if (i == 0 || minLostPoint > lostPoint) {
+          minLostPoint = lostPoint;
+          pattern = i;
+        }
+      }
+
+      return pattern;
+    };
+
+    var setupTimingPattern = function() {
+
+      for (var r = 8; r < _moduleCount - 8; r += 1) {
+        if (_modules[r][6] != null) {
+          continue;
+        }
+        _modules[r][6] = (r % 2 == 0);
+      }
+
+      for (var c = 8; c < _moduleCount - 8; c += 1) {
+        if (_modules[6][c] != null) {
+          continue;
+        }
+        _modules[6][c] = (c % 2 == 0);
+      }
+    };
+
+    var setupPositionAdjustPattern = function() {
+
+      var pos = QRUtil.getPatternPosition(_typeNumber);
+
+      for (var i = 0; i < pos.length; i += 1) {
+
+        for (var j = 0; j < pos.length; j += 1) {
+
+          var row = pos[i];
+          var col = pos[j];
+
+          if (_modules[row][col] != null) {
+            continue;
+          }
+
+          for (var r = -2; r <= 2; r += 1) {
+
+            for (var c = -2; c <= 2; c += 1) {
+
+              if (r == -2 || r == 2 || c == -2 || c == 2
+                  || (r == 0 && c == 0) ) {
+                _modules[row + r][col + c] = true;
+              } else {
+                _modules[row + r][col + c] = false;
+              }
+            }
+          }
+        }
+      }
+    };
+
+    var setupTypeNumber = function(test) {
+
+      var bits = QRUtil.getBCHTypeNumber(_typeNumber);
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[Math.floor(i / 3)][i % 3 + _moduleCount - 8 - 3] = mod;
+      }
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[i % 3 + _moduleCount - 8 - 3][Math.floor(i / 3)] = mod;
+      }
+    };
+
+    var setupTypeInfo = function(test, maskPattern) {
+
+      var data = (_errorCorrectionLevel << 3) | maskPattern;
+      var bits = QRUtil.getBCHTypeInfo(data);
+
+      // vertical
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 6) {
+          _modules[i][8] = mod;
+        } else if (i < 8) {
+          _modules[i + 1][8] = mod;
+        } else {
+          _modules[_moduleCount - 15 + i][8] = mod;
+        }
+      }
+
+      // horizontal
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 8) {
+          _modules[8][_moduleCount - i - 1] = mod;
+        } else if (i < 9) {
+          _modules[8][15 - i - 1 + 1] = mod;
+        } else {
+          _modules[8][15 - i - 1] = mod;
+        }
+      }
+
+      // fixed module
+      _modules[_moduleCount - 8][8] = (!test);
+    };
+
+    var mapData = function(data, maskPattern) {
+
+      var inc = -1;
+      var row = _moduleCount - 1;
+      var bitIndex = 7;
+      var byteIndex = 0;
+      var maskFunc = QRUtil.getMaskFunction(maskPattern);
+
+      for (var col = _moduleCount - 1; col > 0; col -= 2) {
+
+        if (col == 6) col -= 1;
+
+        while (true) {
+
+          for (var c = 0; c < 2; c += 1) {
+
+            if (_modules[row][col - c] == null) {
+
+              var dark = false;
+
+              if (byteIndex < data.length) {
+                dark = ( ( (data[byteIndex] >>> bitIndex) & 1) == 1);
+              }
+
+              var mask = maskFunc(row, col - c);
+
+              if (mask) {
+                dark = !dark;
+              }
+
+              _modules[row][col - c] = dark;
+              bitIndex -= 1;
+
+              if (bitIndex == -1) {
+                byteIndex += 1;
+                bitIndex = 7;
+              }
+            }
+          }
+
+          row += inc;
+
+          if (row < 0 || _moduleCount <= row) {
+            row -= inc;
+            inc = -inc;
+            break;
+          }
+        }
+      }
+    };
+
+    var createBytes = function(buffer, rsBlocks) {
+
+      var offset = 0;
+
+      var maxDcCount = 0;
+      var maxEcCount = 0;
+
+      var dcdata = new Array(rsBlocks.length);
+      var ecdata = new Array(rsBlocks.length);
+
+      for (var r = 0; r < rsBlocks.length; r += 1) {
+
+        var dcCount = rsBlocks[r].dataCount;
+        var ecCount = rsBlocks[r].totalCount - dcCount;
+
+        maxDcCount = Math.max(maxDcCount, dcCount);
+        maxEcCount = Math.max(maxEcCount, ecCount);
+
+        dcdata[r] = new Array(dcCount);
+
+        for (var i = 0; i < dcdata[r].length; i += 1) {
+          dcdata[r][i] = 0xff & buffer.getBuffer()[i + offset];
+        }
+        offset += dcCount;
+
+        var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+        var rawPoly = qrPolynomial(dcdata[r], rsPoly.getLength() - 1);
+
+        var modPoly = rawPoly.mod(rsPoly);
+        ecdata[r] = new Array(rsPoly.getLength() - 1);
+        for (var i = 0; i < ecdata[r].length; i += 1) {
+          var modIndex = i + modPoly.getLength() - ecdata[r].length;
+          ecdata[r][i] = (modIndex >= 0)? modPoly.getAt(modIndex) : 0;
+        }
+      }
+
+      var totalCodeCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalCodeCount += rsBlocks[i].totalCount;
+      }
+
+      var data = new Array(totalCodeCount);
+      var index = 0;
+
+      for (var i = 0; i < maxDcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < dcdata[r].length) {
+            data[index] = dcdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      for (var i = 0; i < maxEcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < ecdata[r].length) {
+            data[index] = ecdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      return data;
+    };
+
+    var createData = function(typeNumber, errorCorrectionLevel, dataList) {
+
+      var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectionLevel);
+
+      var buffer = qrBitBuffer();
+
+      for (var i = 0; i < dataList.length; i += 1) {
+        var data = dataList[i];
+        buffer.put(data.getMode(), 4);
+        buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+        data.write(buffer);
+      }
+
+      // calc num max data.
+      var totalDataCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalDataCount += rsBlocks[i].dataCount;
+      }
+
+      if (buffer.getLengthInBits() > totalDataCount * 8) {
+        throw 'code length overflow. ('
+          + buffer.getLengthInBits()
+          + '>'
+          + totalDataCount * 8
+          + ')';
+      }
+
+      // end code
+      if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
+        buffer.put(0, 4);
+      }
+
+      // padding
+      while (buffer.getLengthInBits() % 8 != 0) {
+        buffer.putBit(false);
+      }
+
+      // padding
+      while (true) {
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD0, 8);
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD1, 8);
+      }
+
+      return createBytes(buffer, rsBlocks);
+    };
+
+    _this.addData = function(data, mode) {
+
+      mode = mode || 'Byte';
+
+      var newData = null;
+
+      switch(mode) {
+      case 'Numeric' :
+        newData = qrNumber(data);
+        break;
+      case 'Alphanumeric' :
+        newData = qrAlphaNum(data);
+        break;
+      case 'Byte' :
+        newData = qr8BitByte(data);
+        break;
+      case 'Kanji' :
+        newData = qrKanji(data);
+        break;
+      default :
+        throw 'mode:' + mode;
+      }
+
+      _dataList.push(newData);
+      _dataCache = null;
+    };
+
+    _this.isDark = function(row, col) {
+      if (row < 0 || _moduleCount <= row || col < 0 || _moduleCount <= col) {
+        throw row + ',' + col;
+      }
+      return _modules[row][col];
+    };
+
+    _this.getModuleCount = function() {
+      return _moduleCount;
+    };
+
+    _this.make = function() {
+      if (_typeNumber < 1) {
+        var typeNumber = 1;
+
+        for (; typeNumber < 40; typeNumber++) {
+          var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, _errorCorrectionLevel);
+          var buffer = qrBitBuffer();
+
+          for (var i = 0; i < _dataList.length; i++) {
+            var data = _dataList[i];
+            buffer.put(data.getMode(), 4);
+            buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+            data.write(buffer);
+          }
+
+          var totalDataCount = 0;
+          for (var i = 0; i < rsBlocks.length; i++) {
+            totalDataCount += rsBlocks[i].dataCount;
+          }
+
+          if (buffer.getLengthInBits() <= totalDataCount * 8) {
+            break;
+          }
+        }
+
+        _typeNumber = typeNumber;
+      }
+
+      makeImpl(false, getBestMaskPattern() );
+    };
+
+    _this.createTableTag = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var qrHtml = '';
+
+      qrHtml += '<table style="';
+      qrHtml += ' border-width: 0px; border-style: none;';
+      qrHtml += ' border-collapse: collapse;';
+      qrHtml += ' padding: 0px; margin: ' + margin + 'px;';
+      qrHtml += '">';
+      qrHtml += '<tbody>';
+
+      for (var r = 0; r < _this.getModuleCount(); r += 1) {
+
+        qrHtml += '<tr>';
+
+        for (var c = 0; c < _this.getModuleCount(); c += 1) {
+          qrHtml += '<td style="';
+          qrHtml += ' border-width: 0px; border-style: none;';
+          qrHtml += ' border-collapse: collapse;';
+          qrHtml += ' padding: 0px; margin: 0px;';
+          qrHtml += ' width: ' + cellSize + 'px;';
+          qrHtml += ' height: ' + cellSize + 'px;';
+          qrHtml += ' background-color: ';
+          qrHtml += _this.isDark(r, c)? '#000000' : '#ffffff';
+          qrHtml += ';';
+          qrHtml += '"/>';
+        }
+
+        qrHtml += '</tr>';
+      }
+
+      qrHtml += '</tbody>';
+      qrHtml += '</table>';
+
+      return qrHtml;
+    };
+
+    _this.createSvgTag = function(cellSize, margin, alt, title) {
+
+      var opts = {};
+      if (typeof arguments[0] == 'object') {
+        // Called by options.
+        opts = arguments[0];
+        // overwrite cellSize and margin.
+        cellSize = opts.cellSize;
+        margin = opts.margin;
+        alt = opts.alt;
+        title = opts.title;
+      }
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      // Compose alt property surrogate
+      alt = (typeof alt === 'string') ? {text: alt} : alt || {};
+      alt.text = alt.text || null;
+      alt.id = (alt.text) ? alt.id || 'qrcode-description' : null;
+
+      // Compose title property surrogate
+      title = (typeof title === 'string') ? {text: title} : title || {};
+      title.text = title.text || null;
+      title.id = (title.text) ? title.id || 'qrcode-title' : null;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var c, mc, r, mr, qrSvg='', rect;
+
+      rect = 'l' + cellSize + ',0 0,' + cellSize +
+        ' -' + cellSize + ',0 0,-' + cellSize + 'z ';
+
+      qrSvg += '<svg version="1.1" xmlns="http://www.w3.org/2000/svg"';
+      qrSvg += !opts.scalable ? ' width="' + size + 'px" height="' + size + 'px"' : '';
+      qrSvg += ' viewBox="0 0 ' + size + ' ' + size + '" ';
+      qrSvg += ' preserveAspectRatio="xMinYMin meet"';
+      qrSvg += (title.text || alt.text) ? ' role="img" aria-labelledby="' +
+          escapeXml([title.id, alt.id].join(' ').trim() ) + '"' : '';
+      qrSvg += '>';
+      qrSvg += (title.text) ? '<title id="' + escapeXml(title.id) + '">' +
+          escapeXml(title.text) + '</title>' : '';
+      qrSvg += (alt.text) ? '<description id="' + escapeXml(alt.id) + '">' +
+          escapeXml(alt.text) + '</description>' : '';
+      qrSvg += '<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>';
+      qrSvg += '<path d="';
+
+      for (r = 0; r < _this.getModuleCount(); r += 1) {
+        mr = r * cellSize + margin;
+        for (c = 0; c < _this.getModuleCount(); c += 1) {
+          if (_this.isDark(r, c) ) {
+            mc = c*cellSize+margin;
+            qrSvg += 'M' + mc + ',' + mr + rect;
+          }
+        }
+      }
+
+      qrSvg += '" stroke="transparent" fill="black"/>';
+      qrSvg += '</svg>';
+
+      return qrSvg;
+    };
+
+    _this.createDataURL = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      return createDataURL(size, size, function(x, y) {
+        if (min <= x && x < max && min <= y && y < max) {
+          var c = Math.floor( (x - min) / cellSize);
+          var r = Math.floor( (y - min) / cellSize);
+          return _this.isDark(r, c)? 0 : 1;
+        } else {
+          return 1;
+        }
+      } );
+    };
+
+    _this.createImgTag = function(cellSize, margin, alt) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+
+      var img = '';
+      img += '<img';
+      img += '\u0020src="';
+      img += _this.createDataURL(cellSize, margin);
+      img += '"';
+      img += '\u0020width="';
+      img += size;
+      img += '"';
+      img += '\u0020height="';
+      img += size;
+      img += '"';
+      if (alt) {
+        img += '\u0020alt="';
+        img += escapeXml(alt);
+        img += '"';
+      }
+      img += '/>';
+
+      return img;
+    };
+
+    var escapeXml = function(s) {
+      var escaped = '';
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charAt(i);
+        switch(c) {
+        case '<': escaped += '&lt;'; break;
+        case '>': escaped += '&gt;'; break;
+        case '&': escaped += '&amp;'; break;
+        case '"': escaped += '&quot;'; break;
+        default : escaped += c; break;
+        }
+      }
+      return escaped;
+    };
+
+    var _createHalfASCII = function(margin) {
+      var cellSize = 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r1, r2, p;
+
+      var blocks = {
+        '██': '█',
+        '█ ': '▀',
+        ' █': '▄',
+        '  ': ' '
+      };
+
+      var blocksLastLineNoMargin = {
+        '██': '▀',
+        '█ ': '▀',
+        ' █': ' ',
+        '  ': ' '
+      };
+
+      var ascii = '';
+      for (y = 0; y < size; y += 2) {
+        r1 = Math.floor((y - min) / cellSize);
+        r2 = Math.floor((y + 1 - min) / cellSize);
+        for (x = 0; x < size; x += 1) {
+          p = '█';
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r1, Math.floor((x - min) / cellSize))) {
+            p = ' ';
+          }
+
+          if (min <= x && x < max && min <= y+1 && y+1 < max && _this.isDark(r2, Math.floor((x - min) / cellSize))) {
+            p += ' ';
+          }
+          else {
+            p += '█';
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          ascii += (margin < 1 && y+1 >= max) ? blocksLastLineNoMargin[p] : blocks[p];
+        }
+
+        ascii += '\n';
+      }
+
+      if (size % 2 && margin > 0) {
+        return ascii.substring(0, ascii.length - size - 1) + Array(size+1).join('▀');
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.createASCII = function(cellSize, margin) {
+      cellSize = cellSize || 1;
+
+      if (cellSize < 2) {
+        return _createHalfASCII(margin);
+      }
+
+      cellSize -= 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r, p;
+
+      var white = Array(cellSize+1).join('██');
+      var black = Array(cellSize+1).join('  ');
+
+      var ascii = '';
+      var line = '';
+      for (y = 0; y < size; y += 1) {
+        r = Math.floor( (y - min) / cellSize);
+        line = '';
+        for (x = 0; x < size; x += 1) {
+          p = 1;
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r, Math.floor((x - min) / cellSize))) {
+            p = 0;
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          line += p ? white : black;
+        }
+
+        for (r = 0; r < cellSize; r += 1) {
+          ascii += line + '\n';
+        }
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.renderTo2dContext = function(context, cellSize) {
+      cellSize = cellSize || 2;
+      var length = _this.getModuleCount();
+      for (var row = 0; row < length; row++) {
+        for (var col = 0; col < length; col++) {
+          context.fillStyle = _this.isDark(row, col) ? 'black' : 'white';
+          context.fillRect(row * cellSize, col * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrcode.stringToBytes
+  //---------------------------------------------------------------------
+
+  qrcode.stringToBytesFuncs = {
+    'default' : function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        bytes.push(c & 0xff);
+      }
+      return bytes;
+    }
+  };
+
+  qrcode.stringToBytes = qrcode.stringToBytesFuncs['default'];
+
+  //---------------------------------------------------------------------
+  // qrcode.createStringToBytes
+  //---------------------------------------------------------------------
+
+  /**
+   * @param unicodeData base64 string of byte array.
+   * [16bit Unicode],[16bit Bytes], ...
+   * @param numChars
+   */
+  qrcode.createStringToBytes = function(unicodeData, numChars) {
+
+    // create conversion map.
+
+    var unicodeMap = function() {
+
+      var bin = base64DecodeInputStream(unicodeData);
+      var read = function() {
+        var b = bin.read();
+        if (b == -1) throw 'eof';
+        return b;
+      };
+
+      var count = 0;
+      var unicodeMap = {};
+      while (true) {
+        var b0 = bin.read();
+        if (b0 == -1) break;
+        var b1 = read();
+        var b2 = read();
+        var b3 = read();
+        var k = String.fromCharCode( (b0 << 8) | b1);
+        var v = (b2 << 8) | b3;
+        unicodeMap[k] = v;
+        count += 1;
+      }
+      if (count != numChars) {
+        throw count + ' != ' + numChars;
+      }
+
+      return unicodeMap;
+    }();
+
+    var unknownChar = '?'.charCodeAt(0);
+
+    return function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        if (c < 128) {
+          bytes.push(c);
+        } else {
+          var b = unicodeMap[s.charAt(i)];
+          if (typeof b == 'number') {
+            if ( (b & 0xff) == b) {
+              // 1byte
+              bytes.push(b);
+            } else {
+              // 2bytes
+              bytes.push(b >>> 8);
+              bytes.push(b & 0xff);
+            }
+          } else {
+            bytes.push(unknownChar);
+          }
+        }
+      }
+      return bytes;
+    };
+  };
+
+  //---------------------------------------------------------------------
+  // QRMode
+  //---------------------------------------------------------------------
+
+  var QRMode = {
+    MODE_NUMBER :    1 << 0,
+    MODE_ALPHA_NUM : 1 << 1,
+    MODE_8BIT_BYTE : 1 << 2,
+    MODE_KANJI :     1 << 3
+  };
+
+  //---------------------------------------------------------------------
+  // QRErrorCorrectionLevel
+  //---------------------------------------------------------------------
+
+  var QRErrorCorrectionLevel = {
+    L : 1,
+    M : 0,
+    Q : 3,
+    H : 2
+  };
+
+  //---------------------------------------------------------------------
+  // QRMaskPattern
+  //---------------------------------------------------------------------
+
+  var QRMaskPattern = {
+    PATTERN000 : 0,
+    PATTERN001 : 1,
+    PATTERN010 : 2,
+    PATTERN011 : 3,
+    PATTERN100 : 4,
+    PATTERN101 : 5,
+    PATTERN110 : 6,
+    PATTERN111 : 7
+  };
+
+  //---------------------------------------------------------------------
+  // QRUtil
+  //---------------------------------------------------------------------
+
+  var QRUtil = function() {
+
+    var PATTERN_POSITION_TABLE = [
+      [],
+      [6, 18],
+      [6, 22],
+      [6, 26],
+      [6, 30],
+      [6, 34],
+      [6, 22, 38],
+      [6, 24, 42],
+      [6, 26, 46],
+      [6, 28, 50],
+      [6, 30, 54],
+      [6, 32, 58],
+      [6, 34, 62],
+      [6, 26, 46, 66],
+      [6, 26, 48, 70],
+      [6, 26, 50, 74],
+      [6, 30, 54, 78],
+      [6, 30, 56, 82],
+      [6, 30, 58, 86],
+      [6, 34, 62, 90],
+      [6, 28, 50, 72, 94],
+      [6, 26, 50, 74, 98],
+      [6, 30, 54, 78, 102],
+      [6, 28, 54, 80, 106],
+      [6, 32, 58, 84, 110],
+      [6, 30, 58, 86, 114],
+      [6, 34, 62, 90, 118],
+      [6, 26, 50, 74, 98, 122],
+      [6, 30, 54, 78, 102, 126],
+      [6, 26, 52, 78, 104, 130],
+      [6, 30, 56, 82, 108, 134],
+      [6, 34, 60, 86, 112, 138],
+      [6, 30, 58, 86, 114, 142],
+      [6, 34, 62, 90, 118, 146],
+      [6, 30, 54, 78, 102, 126, 150],
+      [6, 24, 50, 76, 102, 128, 154],
+      [6, 28, 54, 80, 106, 132, 158],
+      [6, 32, 58, 84, 110, 136, 162],
+      [6, 26, 54, 82, 110, 138, 166],
+      [6, 30, 58, 86, 114, 142, 170]
+    ];
+    var G15 = (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0);
+    var G18 = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0);
+    var G15_MASK = (1 << 14) | (1 << 12) | (1 << 10) | (1 << 4) | (1 << 1);
+
+    var _this = {};
+
+    var getBCHDigit = function(data) {
+      var digit = 0;
+      while (data != 0) {
+        digit += 1;
+        data >>>= 1;
+      }
+      return digit;
+    };
+
+    _this.getBCHTypeInfo = function(data) {
+      var d = data << 10;
+      while (getBCHDigit(d) - getBCHDigit(G15) >= 0) {
+        d ^= (G15 << (getBCHDigit(d) - getBCHDigit(G15) ) );
+      }
+      return ( (data << 10) | d) ^ G15_MASK;
+    };
+
+    _this.getBCHTypeNumber = function(data) {
+      var d = data << 12;
+      while (getBCHDigit(d) - getBCHDigit(G18) >= 0) {
+        d ^= (G18 << (getBCHDigit(d) - getBCHDigit(G18) ) );
+      }
+      return (data << 12) | d;
+    };
+
+    _this.getPatternPosition = function(typeNumber) {
+      return PATTERN_POSITION_TABLE[typeNumber - 1];
+    };
+
+    _this.getMaskFunction = function(maskPattern) {
+
+      switch (maskPattern) {
+
+      case QRMaskPattern.PATTERN000 :
+        return function(i, j) { return (i + j) % 2 == 0; };
+      case QRMaskPattern.PATTERN001 :
+        return function(i, j) { return i % 2 == 0; };
+      case QRMaskPattern.PATTERN010 :
+        return function(i, j) { return j % 3 == 0; };
+      case QRMaskPattern.PATTERN011 :
+        return function(i, j) { return (i + j) % 3 == 0; };
+      case QRMaskPattern.PATTERN100 :
+        return function(i, j) { return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 == 0; };
+      case QRMaskPattern.PATTERN101 :
+        return function(i, j) { return (i * j) % 2 + (i * j) % 3 == 0; };
+      case QRMaskPattern.PATTERN110 :
+        return function(i, j) { return ( (i * j) % 2 + (i * j) % 3) % 2 == 0; };
+      case QRMaskPattern.PATTERN111 :
+        return function(i, j) { return ( (i * j) % 3 + (i + j) % 2) % 2 == 0; };
+
+      default :
+        throw 'bad maskPattern:' + maskPattern;
+      }
+    };
+
+    _this.getErrorCorrectPolynomial = function(errorCorrectLength) {
+      var a = qrPolynomial([1], 0);
+      for (var i = 0; i < errorCorrectLength; i += 1) {
+        a = a.multiply(qrPolynomial([1, QRMath.gexp(i)], 0) );
+      }
+      return a;
+    };
+
+    _this.getLengthInBits = function(mode, type) {
+
+      if (1 <= type && type < 10) {
+
+        // 1 - 9
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 10;
+        case QRMode.MODE_ALPHA_NUM : return 9;
+        case QRMode.MODE_8BIT_BYTE : return 8;
+        case QRMode.MODE_KANJI     : return 8;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 27) {
+
+        // 10 - 26
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 12;
+        case QRMode.MODE_ALPHA_NUM : return 11;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 10;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 41) {
+
+        // 27 - 40
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 14;
+        case QRMode.MODE_ALPHA_NUM : return 13;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 12;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else {
+        throw 'type:' + type;
+      }
+    };
+
+    _this.getLostPoint = function(qrcode) {
+
+      var moduleCount = qrcode.getModuleCount();
+
+      var lostPoint = 0;
+
+      // LEVEL1
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount; col += 1) {
+
+          var sameCount = 0;
+          var dark = qrcode.isDark(row, col);
+
+          for (var r = -1; r <= 1; r += 1) {
+
+            if (row + r < 0 || moduleCount <= row + r) {
+              continue;
+            }
+
+            for (var c = -1; c <= 1; c += 1) {
+
+              if (col + c < 0 || moduleCount <= col + c) {
+                continue;
+              }
+
+              if (r == 0 && c == 0) {
+                continue;
+              }
+
+              if (dark == qrcode.isDark(row + r, col + c) ) {
+                sameCount += 1;
+              }
+            }
+          }
+
+          if (sameCount > 5) {
+            lostPoint += (3 + sameCount - 5);
+          }
+        }
+      };
+
+      // LEVEL2
+
+      for (var row = 0; row < moduleCount - 1; row += 1) {
+        for (var col = 0; col < moduleCount - 1; col += 1) {
+          var count = 0;
+          if (qrcode.isDark(row, col) ) count += 1;
+          if (qrcode.isDark(row + 1, col) ) count += 1;
+          if (qrcode.isDark(row, col + 1) ) count += 1;
+          if (qrcode.isDark(row + 1, col + 1) ) count += 1;
+          if (count == 0 || count == 4) {
+            lostPoint += 3;
+          }
+        }
+      }
+
+      // LEVEL3
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount - 6; col += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row, col + 1)
+              &&  qrcode.isDark(row, col + 2)
+              &&  qrcode.isDark(row, col + 3)
+              &&  qrcode.isDark(row, col + 4)
+              && !qrcode.isDark(row, col + 5)
+              &&  qrcode.isDark(row, col + 6) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount - 6; row += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row + 1, col)
+              &&  qrcode.isDark(row + 2, col)
+              &&  qrcode.isDark(row + 3, col)
+              &&  qrcode.isDark(row + 4, col)
+              && !qrcode.isDark(row + 5, col)
+              &&  qrcode.isDark(row + 6, col) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      // LEVEL4
+
+      var darkCount = 0;
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount; row += 1) {
+          if (qrcode.isDark(row, col) ) {
+            darkCount += 1;
+          }
+        }
+      }
+
+      var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+      lostPoint += ratio * 10;
+
+      return lostPoint;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // QRMath
+  //---------------------------------------------------------------------
+
+  var QRMath = function() {
+
+    var EXP_TABLE = new Array(256);
+    var LOG_TABLE = new Array(256);
+
+    // initialize tables
+    for (var i = 0; i < 8; i += 1) {
+      EXP_TABLE[i] = 1 << i;
+    }
+    for (var i = 8; i < 256; i += 1) {
+      EXP_TABLE[i] = EXP_TABLE[i - 4]
+        ^ EXP_TABLE[i - 5]
+        ^ EXP_TABLE[i - 6]
+        ^ EXP_TABLE[i - 8];
+    }
+    for (var i = 0; i < 255; i += 1) {
+      LOG_TABLE[EXP_TABLE[i] ] = i;
+    }
+
+    var _this = {};
+
+    _this.glog = function(n) {
+
+      if (n < 1) {
+        throw 'glog(' + n + ')';
+      }
+
+      return LOG_TABLE[n];
+    };
+
+    _this.gexp = function(n) {
+
+      while (n < 0) {
+        n += 255;
+      }
+
+      while (n >= 256) {
+        n -= 255;
+      }
+
+      return EXP_TABLE[n];
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrPolynomial
+  //---------------------------------------------------------------------
+
+  function qrPolynomial(num, shift) {
+
+    if (typeof num.length == 'undefined') {
+      throw num.length + '/' + shift;
+    }
+
+    var _num = function() {
+      var offset = 0;
+      while (offset < num.length && num[offset] == 0) {
+        offset += 1;
+      }
+      var _num = new Array(num.length - offset + shift);
+      for (var i = 0; i < num.length - offset; i += 1) {
+        _num[i] = num[i + offset];
+      }
+      return _num;
+    }();
+
+    var _this = {};
+
+    _this.getAt = function(index) {
+      return _num[index];
+    };
+
+    _this.getLength = function() {
+      return _num.length;
+    };
+
+    _this.multiply = function(e) {
+
+      var num = new Array(_this.getLength() + e.getLength() - 1);
+
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        for (var j = 0; j < e.getLength(); j += 1) {
+          num[i + j] ^= QRMath.gexp(QRMath.glog(_this.getAt(i) ) + QRMath.glog(e.getAt(j) ) );
+        }
+      }
+
+      return qrPolynomial(num, 0);
+    };
+
+    _this.mod = function(e) {
+
+      if (_this.getLength() - e.getLength() < 0) {
+        return _this;
+      }
+
+      var ratio = QRMath.glog(_this.getAt(0) ) - QRMath.glog(e.getAt(0) );
+
+      var num = new Array(_this.getLength() );
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        num[i] = _this.getAt(i);
+      }
+
+      for (var i = 0; i < e.getLength(); i += 1) {
+        num[i] ^= QRMath.gexp(QRMath.glog(e.getAt(i) ) + ratio);
+      }
+
+      // recursive call
+      return qrPolynomial(num, 0).mod(e);
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // QRRSBlock
+  //---------------------------------------------------------------------
+
+  var QRRSBlock = function() {
+
+    var RS_BLOCK_TABLE = [
+
+      // L
+      // M
+      // Q
+      // H
+
+      // 1
+      [1, 26, 19],
+      [1, 26, 16],
+      [1, 26, 13],
+      [1, 26, 9],
+
+      // 2
+      [1, 44, 34],
+      [1, 44, 28],
+      [1, 44, 22],
+      [1, 44, 16],
+
+      // 3
+      [1, 70, 55],
+      [1, 70, 44],
+      [2, 35, 17],
+      [2, 35, 13],
+
+      // 4
+      [1, 100, 80],
+      [2, 50, 32],
+      [2, 50, 24],
+      [4, 25, 9],
+
+      // 5
+      [1, 134, 108],
+      [2, 67, 43],
+      [2, 33, 15, 2, 34, 16],
+      [2, 33, 11, 2, 34, 12],
+
+      // 6
+      [2, 86, 68],
+      [4, 43, 27],
+      [4, 43, 19],
+      [4, 43, 15],
+
+      // 7
+      [2, 98, 78],
+      [4, 49, 31],
+      [2, 32, 14, 4, 33, 15],
+      [4, 39, 13, 1, 40, 14],
+
+      // 8
+      [2, 121, 97],
+      [2, 60, 38, 2, 61, 39],
+      [4, 40, 18, 2, 41, 19],
+      [4, 40, 14, 2, 41, 15],
+
+      // 9
+      [2, 146, 116],
+      [3, 58, 36, 2, 59, 37],
+      [4, 36, 16, 4, 37, 17],
+      [4, 36, 12, 4, 37, 13],
+
+      // 10
+      [2, 86, 68, 2, 87, 69],
+      [4, 69, 43, 1, 70, 44],
+      [6, 43, 19, 2, 44, 20],
+      [6, 43, 15, 2, 44, 16],
+
+      // 11
+      [4, 101, 81],
+      [1, 80, 50, 4, 81, 51],
+      [4, 50, 22, 4, 51, 23],
+      [3, 36, 12, 8, 37, 13],
+
+      // 12
+      [2, 116, 92, 2, 117, 93],
+      [6, 58, 36, 2, 59, 37],
+      [4, 46, 20, 6, 47, 21],
+      [7, 42, 14, 4, 43, 15],
+
+      // 13
+      [4, 133, 107],
+      [8, 59, 37, 1, 60, 38],
+      [8, 44, 20, 4, 45, 21],
+      [12, 33, 11, 4, 34, 12],
+
+      // 14
+      [3, 145, 115, 1, 146, 116],
+      [4, 64, 40, 5, 65, 41],
+      [11, 36, 16, 5, 37, 17],
+      [11, 36, 12, 5, 37, 13],
+
+      // 15
+      [5, 109, 87, 1, 110, 88],
+      [5, 65, 41, 5, 66, 42],
+      [5, 54, 24, 7, 55, 25],
+      [11, 36, 12, 7, 37, 13],
+
+      // 16
+      [5, 122, 98, 1, 123, 99],
+      [7, 73, 45, 3, 74, 46],
+      [15, 43, 19, 2, 44, 20],
+      [3, 45, 15, 13, 46, 16],
+
+      // 17
+      [1, 135, 107, 5, 136, 108],
+      [10, 74, 46, 1, 75, 47],
+      [1, 50, 22, 15, 51, 23],
+      [2, 42, 14, 17, 43, 15],
+
+      // 18
+      [5, 150, 120, 1, 151, 121],
+      [9, 69, 43, 4, 70, 44],
+      [17, 50, 22, 1, 51, 23],
+      [2, 42, 14, 19, 43, 15],
+
+      // 19
+      [3, 141, 113, 4, 142, 114],
+      [3, 70, 44, 11, 71, 45],
+      [17, 47, 21, 4, 48, 22],
+      [9, 39, 13, 16, 40, 14],
+
+      // 20
+      [3, 135, 107, 5, 136, 108],
+      [3, 67, 41, 13, 68, 42],
+      [15, 54, 24, 5, 55, 25],
+      [15, 43, 15, 10, 44, 16],
+
+      // 21
+      [4, 144, 116, 4, 145, 117],
+      [17, 68, 42],
+      [17, 50, 22, 6, 51, 23],
+      [19, 46, 16, 6, 47, 17],
+
+      // 22
+      [2, 139, 111, 7, 140, 112],
+      [17, 74, 46],
+      [7, 54, 24, 16, 55, 25],
+      [34, 37, 13],
+
+      // 23
+      [4, 151, 121, 5, 152, 122],
+      [4, 75, 47, 14, 76, 48],
+      [11, 54, 24, 14, 55, 25],
+      [16, 45, 15, 14, 46, 16],
+
+      // 24
+      [6, 147, 117, 4, 148, 118],
+      [6, 73, 45, 14, 74, 46],
+      [11, 54, 24, 16, 55, 25],
+      [30, 46, 16, 2, 47, 17],
+
+      // 25
+      [8, 132, 106, 4, 133, 107],
+      [8, 75, 47, 13, 76, 48],
+      [7, 54, 24, 22, 55, 25],
+      [22, 45, 15, 13, 46, 16],
+
+      // 26
+      [10, 142, 114, 2, 143, 115],
+      [19, 74, 46, 4, 75, 47],
+      [28, 50, 22, 6, 51, 23],
+      [33, 46, 16, 4, 47, 17],
+
+      // 27
+      [8, 152, 122, 4, 153, 123],
+      [22, 73, 45, 3, 74, 46],
+      [8, 53, 23, 26, 54, 24],
+      [12, 45, 15, 28, 46, 16],
+
+      // 28
+      [3, 147, 117, 10, 148, 118],
+      [3, 73, 45, 23, 74, 46],
+      [4, 54, 24, 31, 55, 25],
+      [11, 45, 15, 31, 46, 16],
+
+      // 29
+      [7, 146, 116, 7, 147, 117],
+      [21, 73, 45, 7, 74, 46],
+      [1, 53, 23, 37, 54, 24],
+      [19, 45, 15, 26, 46, 16],
+
+      // 30
+      [5, 145, 115, 10, 146, 116],
+      [19, 75, 47, 10, 76, 48],
+      [15, 54, 24, 25, 55, 25],
+      [23, 45, 15, 25, 46, 16],
+
+      // 31
+      [13, 145, 115, 3, 146, 116],
+      [2, 74, 46, 29, 75, 47],
+      [42, 54, 24, 1, 55, 25],
+      [23, 45, 15, 28, 46, 16],
+
+      // 32
+      [17, 145, 115],
+      [10, 74, 46, 23, 75, 47],
+      [10, 54, 24, 35, 55, 25],
+      [19, 45, 15, 35, 46, 16],
+
+      // 33
+      [17, 145, 115, 1, 146, 116],
+      [14, 74, 46, 21, 75, 47],
+      [29, 54, 24, 19, 55, 25],
+      [11, 45, 15, 46, 46, 16],
+
+      // 34
+      [13, 145, 115, 6, 146, 116],
+      [14, 74, 46, 23, 75, 47],
+      [44, 54, 24, 7, 55, 25],
+      [59, 46, 16, 1, 47, 17],
+
+      // 35
+      [12, 151, 121, 7, 152, 122],
+      [12, 75, 47, 26, 76, 48],
+      [39, 54, 24, 14, 55, 25],
+      [22, 45, 15, 41, 46, 16],
+
+      // 36
+      [6, 151, 121, 14, 152, 122],
+      [6, 75, 47, 34, 76, 48],
+      [46, 54, 24, 10, 55, 25],
+      [2, 45, 15, 64, 46, 16],
+
+      // 37
+      [17, 152, 122, 4, 153, 123],
+      [29, 74, 46, 14, 75, 47],
+      [49, 54, 24, 10, 55, 25],
+      [24, 45, 15, 46, 46, 16],
+
+      // 38
+      [4, 152, 122, 18, 153, 123],
+      [13, 74, 46, 32, 75, 47],
+      [48, 54, 24, 14, 55, 25],
+      [42, 45, 15, 32, 46, 16],
+
+      // 39
+      [20, 147, 117, 4, 148, 118],
+      [40, 75, 47, 7, 76, 48],
+      [43, 54, 24, 22, 55, 25],
+      [10, 45, 15, 67, 46, 16],
+
+      // 40
+      [19, 148, 118, 6, 149, 119],
+      [18, 75, 47, 31, 76, 48],
+      [34, 54, 24, 34, 55, 25],
+      [20, 45, 15, 61, 46, 16]
+    ];
+
+    var qrRSBlock = function(totalCount, dataCount) {
+      var _this = {};
+      _this.totalCount = totalCount;
+      _this.dataCount = dataCount;
+      return _this;
+    };
+
+    var _this = {};
+
+    var getRsBlockTable = function(typeNumber, errorCorrectionLevel) {
+
+      switch(errorCorrectionLevel) {
+      case QRErrorCorrectionLevel.L :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+      case QRErrorCorrectionLevel.M :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+      case QRErrorCorrectionLevel.Q :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+      case QRErrorCorrectionLevel.H :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+      default :
+        return undefined;
+      }
+    };
+
+    _this.getRSBlocks = function(typeNumber, errorCorrectionLevel) {
+
+      var rsBlock = getRsBlockTable(typeNumber, errorCorrectionLevel);
+
+      if (typeof rsBlock == 'undefined') {
+        throw 'bad rs block @ typeNumber:' + typeNumber +
+            '/errorCorrectionLevel:' + errorCorrectionLevel;
+      }
+
+      var length = rsBlock.length / 3;
+
+      var list = [];
+
+      for (var i = 0; i < length; i += 1) {
+
+        var count = rsBlock[i * 3 + 0];
+        var totalCount = rsBlock[i * 3 + 1];
+        var dataCount = rsBlock[i * 3 + 2];
+
+        for (var j = 0; j < count; j += 1) {
+          list.push(qrRSBlock(totalCount, dataCount) );
+        }
+      }
+
+      return list;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrBitBuffer
+  //---------------------------------------------------------------------
+
+  var qrBitBuffer = function() {
+
+    var _buffer = [];
+    var _length = 0;
+
+    var _this = {};
+
+    _this.getBuffer = function() {
+      return _buffer;
+    };
+
+    _this.getAt = function(index) {
+      var bufIndex = Math.floor(index / 8);
+      return ( (_buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
+    };
+
+    _this.put = function(num, length) {
+      for (var i = 0; i < length; i += 1) {
+        _this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
+      }
+    };
+
+    _this.getLengthInBits = function() {
+      return _length;
+    };
+
+    _this.putBit = function(bit) {
+
+      var bufIndex = Math.floor(_length / 8);
+      if (_buffer.length <= bufIndex) {
+        _buffer.push(0);
+      }
+
+      if (bit) {
+        _buffer[bufIndex] |= (0x80 >>> (_length % 8) );
+      }
+
+      _length += 1;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrNumber
+  //---------------------------------------------------------------------
+
+  var qrNumber = function(data) {
+
+    var _mode = QRMode.MODE_NUMBER;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _data;
+
+      var i = 0;
+
+      while (i + 2 < data.length) {
+        buffer.put(strToNum(data.substring(i, i + 3) ), 10);
+        i += 3;
+      }
+
+      if (i < data.length) {
+        if (data.length - i == 1) {
+          buffer.put(strToNum(data.substring(i, i + 1) ), 4);
+        } else if (data.length - i == 2) {
+          buffer.put(strToNum(data.substring(i, i + 2) ), 7);
+        }
+      }
+    };
+
+    var strToNum = function(s) {
+      var num = 0;
+      for (var i = 0; i < s.length; i += 1) {
+        num = num * 10 + chatToNum(s.charAt(i) );
+      }
+      return num;
+    };
+
+    var chatToNum = function(c) {
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      }
+      throw 'illegal char :' + c;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrAlphaNum
+  //---------------------------------------------------------------------
+
+  var qrAlphaNum = function(data) {
+
+    var _mode = QRMode.MODE_ALPHA_NUM;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var s = _data;
+
+      var i = 0;
+
+      while (i + 1 < s.length) {
+        buffer.put(
+          getCode(s.charAt(i) ) * 45 +
+          getCode(s.charAt(i + 1) ), 11);
+        i += 2;
+      }
+
+      if (i < s.length) {
+        buffer.put(getCode(s.charAt(i) ), 6);
+      }
+    };
+
+    var getCode = function(c) {
+
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      } else if ('A' <= c && c <= 'Z') {
+        return c.charCodeAt(0) - 'A'.charCodeAt(0) + 10;
+      } else {
+        switch (c) {
+        case ' ' : return 36;
+        case '$' : return 37;
+        case '%' : return 38;
+        case '*' : return 39;
+        case '+' : return 40;
+        case '-' : return 41;
+        case '.' : return 42;
+        case '/' : return 43;
+        case ':' : return 44;
+        default :
+          throw 'illegal char :' + c;
+        }
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qr8BitByte
+  //---------------------------------------------------------------------
+
+  var qr8BitByte = function(data) {
+
+    var _mode = QRMode.MODE_8BIT_BYTE;
+    var _data = data;
+    var _bytes = qrcode.stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _bytes.length;
+    };
+
+    _this.write = function(buffer) {
+      for (var i = 0; i < _bytes.length; i += 1) {
+        buffer.put(_bytes[i], 8);
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrKanji
+  //---------------------------------------------------------------------
+
+  var qrKanji = function(data) {
+
+    var _mode = QRMode.MODE_KANJI;
+    var _data = data;
+
+    var stringToBytes = qrcode.stringToBytesFuncs['SJIS'];
+    if (!stringToBytes) {
+      throw 'sjis not supported.';
+    }
+    !function(c, code) {
+      // self test for sjis support.
+      var test = stringToBytes(c);
+      if (test.length != 2 || ( (test[0] << 8) | test[1]) != code) {
+        throw 'sjis not supported.';
+      }
+    }('\u53cb', 0x9746);
+
+    var _bytes = stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return ~~(_bytes.length / 2);
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _bytes;
+
+      var i = 0;
+
+      while (i + 1 < data.length) {
+
+        var c = ( (0xff & data[i]) << 8) | (0xff & data[i + 1]);
+
+        if (0x8140 <= c && c <= 0x9FFC) {
+          c -= 0x8140;
+        } else if (0xE040 <= c && c <= 0xEBBF) {
+          c -= 0xC140;
+        } else {
+          throw 'illegal char at ' + (i + 1) + '/' + c;
+        }
+
+        c = ( (c >>> 8) & 0xff) * 0xC0 + (c & 0xff);
+
+        buffer.put(c, 13);
+
+        i += 2;
+      }
+
+      if (i < data.length) {
+        throw 'illegal char at ' + (i + 1);
+      }
+    };
+
+    return _this;
+  };
+
+  //=====================================================================
+  // GIF Support etc.
+  //
+
+  //---------------------------------------------------------------------
+  // byteArrayOutputStream
+  //---------------------------------------------------------------------
+
+  var byteArrayOutputStream = function() {
+
+    var _bytes = [];
+
+    var _this = {};
+
+    _this.writeByte = function(b) {
+      _bytes.push(b & 0xff);
+    };
+
+    _this.writeShort = function(i) {
+      _this.writeByte(i);
+      _this.writeByte(i >>> 8);
+    };
+
+    _this.writeBytes = function(b, off, len) {
+      off = off || 0;
+      len = len || b.length;
+      for (var i = 0; i < len; i += 1) {
+        _this.writeByte(b[i + off]);
+      }
+    };
+
+    _this.writeString = function(s) {
+      for (var i = 0; i < s.length; i += 1) {
+        _this.writeByte(s.charCodeAt(i) );
+      }
+    };
+
+    _this.toByteArray = function() {
+      return _bytes;
+    };
+
+    _this.toString = function() {
+      var s = '';
+      s += '[';
+      for (var i = 0; i < _bytes.length; i += 1) {
+        if (i > 0) {
+          s += ',';
+        }
+        s += _bytes[i];
+      }
+      s += ']';
+      return s;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64EncodeOutputStream
+  //---------------------------------------------------------------------
+
+  var base64EncodeOutputStream = function() {
+
+    var _buffer = 0;
+    var _buflen = 0;
+    var _length = 0;
+    var _base64 = '';
+
+    var _this = {};
+
+    var writeEncoded = function(b) {
+      _base64 += String.fromCharCode(encode(b & 0x3f) );
+    };
+
+    var encode = function(n) {
+      if (n < 0) {
+        // error.
+      } else if (n < 26) {
+        return 0x41 + n;
+      } else if (n < 52) {
+        return 0x61 + (n - 26);
+      } else if (n < 62) {
+        return 0x30 + (n - 52);
+      } else if (n == 62) {
+        return 0x2b;
+      } else if (n == 63) {
+        return 0x2f;
+      }
+      throw 'n:' + n;
+    };
+
+    _this.writeByte = function(n) {
+
+      _buffer = (_buffer << 8) | (n & 0xff);
+      _buflen += 8;
+      _length += 1;
+
+      while (_buflen >= 6) {
+        writeEncoded(_buffer >>> (_buflen - 6) );
+        _buflen -= 6;
+      }
+    };
+
+    _this.flush = function() {
+
+      if (_buflen > 0) {
+        writeEncoded(_buffer << (6 - _buflen) );
+        _buffer = 0;
+        _buflen = 0;
+      }
+
+      if (_length % 3 != 0) {
+        // padding
+        var padlen = 3 - _length % 3;
+        for (var i = 0; i < padlen; i += 1) {
+          _base64 += '=';
+        }
+      }
+    };
+
+    _this.toString = function() {
+      return _base64;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64DecodeInputStream
+  //---------------------------------------------------------------------
+
+  var base64DecodeInputStream = function(str) {
+
+    var _str = str;
+    var _pos = 0;
+    var _buffer = 0;
+    var _buflen = 0;
+
+    var _this = {};
+
+    _this.read = function() {
+
+      while (_buflen < 8) {
+
+        if (_pos >= _str.length) {
+          if (_buflen == 0) {
+            return -1;
+          }
+          throw 'unexpected end of file./' + _buflen;
+        }
+
+        var c = _str.charAt(_pos);
+        _pos += 1;
+
+        if (c == '=') {
+          _buflen = 0;
+          return -1;
+        } else if (c.match(/^\s$/) ) {
+          // ignore if whitespace.
+          continue;
+        }
+
+        _buffer = (_buffer << 6) | decode(c.charCodeAt(0) );
+        _buflen += 6;
+      }
+
+      var n = (_buffer >>> (_buflen - 8) ) & 0xff;
+      _buflen -= 8;
+      return n;
+    };
+
+    var decode = function(c) {
+      if (0x41 <= c && c <= 0x5a) {
+        return c - 0x41;
+      } else if (0x61 <= c && c <= 0x7a) {
+        return c - 0x61 + 26;
+      } else if (0x30 <= c && c <= 0x39) {
+        return c - 0x30 + 52;
+      } else if (c == 0x2b) {
+        return 62;
+      } else if (c == 0x2f) {
+        return 63;
+      } else {
+        throw 'c:' + c;
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // gifImage (B/W)
+  //---------------------------------------------------------------------
+
+  var gifImage = function(width, height) {
+
+    var _width = width;
+    var _height = height;
+    var _data = new Array(width * height);
+
+    var _this = {};
+
+    _this.setPixel = function(x, y, pixel) {
+      _data[y * _width + x] = pixel;
+    };
+
+    _this.write = function(out) {
+
+      //---------------------------------
+      // GIF Signature
+
+      out.writeString('GIF87a');
+
+      //---------------------------------
+      // Screen Descriptor
+
+      out.writeShort(_width);
+      out.writeShort(_height);
+
+      out.writeByte(0x80); // 2bit
+      out.writeByte(0);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Global Color Map
+
+      // black
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+
+      // white
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+
+      //---------------------------------
+      // Image Descriptor
+
+      out.writeString(',');
+      out.writeShort(0);
+      out.writeShort(0);
+      out.writeShort(_width);
+      out.writeShort(_height);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Local Color Map
+
+      //---------------------------------
+      // Raster Data
+
+      var lzwMinCodeSize = 2;
+      var raster = getLZWRaster(lzwMinCodeSize);
+
+      out.writeByte(lzwMinCodeSize);
+
+      var offset = 0;
+
+      while (raster.length - offset > 255) {
+        out.writeByte(255);
+        out.writeBytes(raster, offset, 255);
+        offset += 255;
+      }
+
+      out.writeByte(raster.length - offset);
+      out.writeBytes(raster, offset, raster.length - offset);
+      out.writeByte(0x00);
+
+      //---------------------------------
+      // GIF Terminator
+      out.writeString(';');
+    };
+
+    var bitOutputStream = function(out) {
+
+      var _out = out;
+      var _bitLength = 0;
+      var _bitBuffer = 0;
+
+      var _this = {};
+
+      _this.write = function(data, length) {
+
+        if ( (data >>> length) != 0) {
+          throw 'length over';
+        }
+
+        while (_bitLength + length >= 8) {
+          _out.writeByte(0xff & ( (data << _bitLength) | _bitBuffer) );
+          length -= (8 - _bitLength);
+          data >>>= (8 - _bitLength);
+          _bitBuffer = 0;
+          _bitLength = 0;
+        }
+
+        _bitBuffer = (data << _bitLength) | _bitBuffer;
+        _bitLength = _bitLength + length;
+      };
+
+      _this.flush = function() {
+        if (_bitLength > 0) {
+          _out.writeByte(_bitBuffer);
+        }
+      };
+
+      return _this;
+    };
+
+    var getLZWRaster = function(lzwMinCodeSize) {
+
+      var clearCode = 1 << lzwMinCodeSize;
+      var endCode = (1 << lzwMinCodeSize) + 1;
+      var bitLength = lzwMinCodeSize + 1;
+
+      // Setup LZWTable
+      var table = lzwTable();
+
+      for (var i = 0; i < clearCode; i += 1) {
+        table.add(String.fromCharCode(i) );
+      }
+      table.add(String.fromCharCode(clearCode) );
+      table.add(String.fromCharCode(endCode) );
+
+      var byteOut = byteArrayOutputStream();
+      var bitOut = bitOutputStream(byteOut);
+
+      // clear code
+      bitOut.write(clearCode, bitLength);
+
+      var dataIndex = 0;
+
+      var s = String.fromCharCode(_data[dataIndex]);
+      dataIndex += 1;
+
+      while (dataIndex < _data.length) {
+
+        var c = String.fromCharCode(_data[dataIndex]);
+        dataIndex += 1;
+
+        if (table.contains(s + c) ) {
+
+          s = s + c;
+
+        } else {
+
+          bitOut.write(table.indexOf(s), bitLength);
+
+          if (table.size() < 0xfff) {
+
+            if (table.size() == (1 << bitLength) ) {
+              bitLength += 1;
+            }
+
+            table.add(s + c);
+          }
+
+          s = c;
+        }
+      }
+
+      bitOut.write(table.indexOf(s), bitLength);
+
+      // end code
+      bitOut.write(endCode, bitLength);
+
+      bitOut.flush();
+
+      return byteOut.toByteArray();
+    };
+
+    var lzwTable = function() {
+
+      var _map = {};
+      var _size = 0;
+
+      var _this = {};
+
+      _this.add = function(key) {
+        if (_this.contains(key) ) {
+          throw 'dup key:' + key;
+        }
+        _map[key] = _size;
+        _size += 1;
+      };
+
+      _this.size = function() {
+        return _size;
+      };
+
+      _this.indexOf = function(key) {
+        return _map[key];
+      };
+
+      _this.contains = function(key) {
+        return typeof _map[key] != 'undefined';
+      };
+
+      return _this;
+    };
+
+    return _this;
+  };
+
+  var createDataURL = function(width, height, getPixel) {
+    var gif = gifImage(width, height);
+    for (var y = 0; y < height; y += 1) {
+      for (var x = 0; x < width; x += 1) {
+        gif.setPixel(x, y, getPixel(x, y) );
+      }
+    }
+
+    var b = byteArrayOutputStream();
+    gif.write(b);
+
+    var base64 = base64EncodeOutputStream();
+    var bytes = b.toByteArray();
+    for (var i = 0; i < bytes.length; i += 1) {
+      base64.writeByte(bytes[i]);
+    }
+    base64.flush();
+
+    return 'data:image/gif;base64,' + base64;
+  };
+
+  //---------------------------------------------------------------------
+  // returns qrcode function.
+
+  return qrcode;
+}();
+
+// multibyte support
+!function() {
+
+  qrcode.stringToBytesFuncs['UTF-8'] = function(s) {
+    // http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
+    function toUTF8Array(str) {
+      var utf8 = [];
+      for (var i=0; i < str.length; i++) {
+        var charcode = str.charCodeAt(i);
+        if (charcode < 0x80) utf8.push(charcode);
+        else if (charcode < 0x800) {
+          utf8.push(0xc0 | (charcode >> 6),
+              0x80 | (charcode & 0x3f));
+        }
+        else if (charcode < 0xd800 || charcode >= 0xe000) {
+          utf8.push(0xe0 | (charcode >> 12),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+        // surrogate pair
+        else {
+          i++;
+          // UTF-16 encodes 0x10000-0x10FFFF by
+          // subtracting 0x10000 and splitting the
+          // 20 bits of 0x0-0xFFFFF into two halves
+          charcode = 0x10000 + (((charcode & 0x3ff)<<10)
+            | (str.charCodeAt(i) & 0x3ff));
+          utf8.push(0xf0 | (charcode >>18),
+              0x80 | ((charcode>>12) & 0x3f),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+      }
+      return utf8;
+    }
+    return toUTF8Array(s);
+  };
+
+}();
+
+(function (factory) {
+  if (typeof define === 'function' && define.amd) {
+      define([], factory);
+  } else if (typeof exports === 'object') {
+      module.exports = factory();
+  }
+}(function () {
+    return qrcode;
+}));
+
+</script>
+<script>
+const SAMPLES=[{"title": "Primary Sale 1: [Product without discount]", "req": {"basicInformation": {"invoiceNo": "2543000475332", "issuedDate": "2026-08-06 13:05:35", "invoiceType": "1", "refrencedInvoiceNumber": "", "invoiceKind": "1", "sourceId": "USDM"}, "buyerDetails": {"buyerTin": ""}, "goodsDetails": [{"item": "4G LTE 128K PrePaid Native S@t Half Multisim (2FF/3FF/4FF)- Promo", "itemCode": "", "qty": "1", "unitPrice": "0.862069", "total": "1", "taxRate": "0.16", "tax": "0.14", "transactionType": "1", "deemedFlag": "2"}, {"item": "Tozed M30S Pro Mifi", "itemCode": "", "qty": "1", "unitPrice": "2155.172414", "total": "2500", "taxRate": "0.16", "tax": "344.83", "transactionType": "1", "deemedFlag": "2"}], "summary": {"netAmount": "2156.03", "taxAmount": "344.97", "grossAmount": "2501", "exemptionNumber": "", "discountTotal": "0"}, "extend": {"reason": "", "reasonCode": "", "attributes1": "", "attributes2": "", "attributes3": "", "attributes4": "", "attributes5": "", "attributes6": ""}, "sourceId": "USDM"}, "res": {"status": "200", "message": "success", "response": {"buyerDetails": {"buyerTin": ""}, "goodsDetails": [{"item": "4G LTE 128K PrePaid Native S@t Half Multisim (2FF/3FF/4FF)- Promo", "itemCode": "", "qty": "1", "unitPrice": "0.862069", "total": "1", "taxRate": "0.16", "tax": "0.14", "deemedFlag": "2", "transactionType": "1"}, {"item": "Tozed M30S Pro Mifi", "itemCode": "", "qty": "1", "unitPrice": "2155.172414", "total": "2500", "taxRate": "0.16", "tax": "344.83", "deemedFlag": "2", "transactionType": "1"}], "basicInformation": {"invoiceNo": "2543000475332", "antifakeCode": "9990000010000000244", "issuedDate": "2026-08-06 13:05:35", "invoiceType": "1", "invoiceKind": "1", "refrencedInvoiceNumber": "", "sourceId": "USDM"}, "summary": {"netAmount": "2156.03", "taxAmount": "344.97", "grossAmount": "2501", "discountTotal": "0", "exemptionNumber": "", "referencedTxnId": "244", "qrCode": "https://itax.kra.go.ke/KRA-Portal/invoiceChk.htm?actionCode=loadPage&invoiceNo=9990000010000000244", "additionalParams": {"param": [{"paramName": "DEVICE_NUMBER", "paramValue": "KRAMW999202111000001"}]}}, "extend": {"reason": "", "reasonCode": ""}}}}, {"title": "Primary Sale 2: [Product with discount]", "req": {"basicInformation": {"invoiceNo": "2543000475333", "issuedDate": "2026-08-06 13:11:12", "invoiceType": "1", "refrencedInvoiceNumber": "", "invoiceKind": "1", "sourceId": "USDM"}, "buyerDetails": {"buyerTin": ""}, "goodsDetails": [{"item": "Scratch Cards 20", "itemCode": "", "qty": "2000", "unitPrice": "17.24137931", "total": "40000", "taxRate": "0.16", "tax": "5517.24", "transactionType": "1", "deemedFlag": "2"}, {"item": "Scratch Card 50", "itemCode": "", "qty": "200", "unitPrice": "43.10344828", "total": "10000", "taxRate": "0.16", "tax": "1379.31", "transactionType": "1", "deemedFlag": "2"}], "summary": {"netAmount": "43103.45", "taxAmount": "6896.55", "grossAmount": "50000", "exemptionNumber": "", "discountTotal": "3250"}, "extend": {"reason": "", "reasonCode": "", "attributes1": "", "attributes2": "", "attributes3": "", "attributes4": "", "attributes5": "", "attributes6": ""}, "sourceId": "USDM"}, "res": {"status": "200", "message": "success", "response": {"buyerDetails": {"buyerTin": ""}, "goodsDetails": [{"item": "Scratch Cards 20", "itemCode": "", "qty": "2000", "unitPrice": "17.24137931", "total": "40000", "taxRate": "0.16", "tax": "5517.24", "deemedFlag": "2", "transactionType": "1"}, {"item": "Scratch Card 50", "itemCode": "", "qty": "200", "unitPrice": "43.10344828", "total": "10000", "taxRate": "0.16", "tax": "1379.31", "deemedFlag": "2", "transactionType": "1"}], "basicInformation": {"invoiceNo": "2543000475333", "antifakeCode": "9990000070000000208", "issuedDate": "2026-08-06 13:11:12", "invoiceType": "1", "invoiceKind": "1", "refrencedInvoiceNumber": "", "sourceId": "USDM"}, "summary": {"netAmount": "43103.45", "taxAmount": "6896.55", "grossAmount": "50000", "discountTotal": "3250", "exemptionNumber": "", "referencedTxnId": "208", "qrCode": "https://itax.kra.go.ke/KRA-Portal/invoiceChk.htm?actionCode=loadPage&invoiceNo=9990000070000000208", "additionalParams": {"param": [{"paramName": "DEVICE_NUMBER", "paramValue": "KRAMW999202111000007"}]}}, "extend": {"reason": "", "reasonCode": ""}}}}, {"title": "Primary Sale Return 1: [Product with discount]", "req": {"basicInformation": {"invoiceNo": "2543000475338", "issuedDate": "2026-08-06 18:37:11", "invoiceType": "1", "refrencedInvoiceNumber": "", "invoiceKind": "1", "sourceId": "USDM"}, "buyerDetails": {"buyerTin": ""}, "goodsDetails": [{"item": "Electronic Airtime PINs 100", "itemCode": "", "qty": "2", "unitPrice": "86.20689655", "total": "200", "taxRate": "0.16", "tax": "27.59", "transactionType": "1", "deemedFlag": "2"}], "summary": {"netAmount": "172.41", "taxAmount": "27.58", "grossAmount": "200", "exemptionNumber": "", "discountTotal": "6"}, "extend": {"reason": "", "reasonCode": "", "attributes1": "", "attributes2": "", "attributes3": "", "attributes4": "", "attributes5": "", "attributes6": ""}, "sourceId": "USDM"}, "res": {"status": "200", "message": "success", "response": {"buyerDetails": {"buyerTin": ""}, "goodsDetails": [{"item": "Electronic Airtime PINs 100", "itemCode": "", "qty": "2", "unitPrice": "86.20689655", "total": "200", "taxRate": "0.16", "tax": "27.59", "deemedFlag": "2", "transactionType": "1"}], "basicInformation": {"invoiceNo": "2543000475338", "antifakeCode": "9990000010000000247", "issuedDate": "2026-08-06 18:37:11", "invoiceType": "1", "invoiceKind": "1", "refrencedInvoiceNumber": "", "sourceId": "USDM"}, "summary": {"netAmount": "172.41", "taxAmount": "27.58", "grossAmount": "200", "discountTotal": "6", "exemptionNumber": "", "referencedTxnId": "247", "qrCode": "https://itax.kra.go.ke/KRA-Portal/invoiceChk.htm?actionCode=loadPage&invoiceNo=9990000010000000247", "additionalParams": {"param": [{"paramName": "DEVICE_NUMBER", "paramValue": "KRAMW999202111000001"}]}}, "extend": {"reason": "", "reasonCode": ""}}}}, {"title": "Primary Sale Return 2: [Product without discount]", "req": {"sourceId": "USDM", "oriInvoiceNo": "2543000475332", "basicInformation": {"invoiceNo": "2543000475339", "issuedDate": "2026-08-06 18:40:09", "invoiceType": "2", "invoiceKind": "1", "refrencedInvoiceNumber": "9990000010000000244"}, "buyerDetails": {"buyerTin": ""}, "goodsDetails": [{"item": "Tozed M30S Pro Mifi", "itemCode": "", "qty": "1", "unitPrice": "2155.172414", "total": "2500", "taxRate": "0.16", "tax": "344.83", "transactionType": "1", "deemedFlag": "2"}], "summary": {"netAmount": "2155.17", "taxAmount": "344.83", "grossAmount": "2500", "exemptionNumber": "", "discountTotal": "0"}}, "res": {"status": "200", "message": "success", "response": {"buyerDetails": {"buyerTin": ""}, "goodsDetails": [{"item": "Tozed M30S Pro Mifi", "itemCode": "", "qty": "1", "unitPrice": "2155.172414", "total": "2500", "taxRate": "0.16", "tax": "344.83", "deemedFlag": "2", "transactionType": "1"}], "basicInformation": {"invoiceNo": "2543000475339", "antifakeCode": "9990000010000000248", "issuedDate": "2026-08-06 18:40:09", "invoiceType": "2", "invoiceKind": "1", "refrencedInvoiceNumber": "9990000010000000244"}, "summary": {"netAmount": "2155.17", "taxAmount": "344.83", "grossAmount": "2500", "discountTotal": "0", "exemptionNumber": "", "referencedTxnId": "248", "qrCode": "https://itax.kra.go.ke/KRA-Portal/invoiceChk.htm?actionCode=loadPage&invoiceNo=9990000010000000248", "additionalParams": {"param": [{"paramName": "DEVICE_NUMBER", "paramValue": "KRAMW999202111000001"}]}}}}}, {"title": "POS Sale 1:", "req": {"basicInformation": {"invoiceNo": "2543000475334", "issuedDate": "2026-08-06 14:15:04", "invoiceType": "1", "refrencedInvoiceNumber": "", "invoiceKind": "1", "sourceId": "USDM"}, "buyerDetails": {"buyerTin": ""}, "goodsDetails": [{"item": "Scratch Card 50", "itemCode": "", "qty": "1", "unitPrice": "43.10344828", "total": "50", "taxRate": "0.16", "tax": "6.9", "transactionType": "1", "deemedFlag": "2"}, {"item": "Tozed M30S Pro Mifi", "itemCode": "", "qty": "1", "unitPrice": "2585.344828", "total": "2999.00000048", "taxRate": "0.16", "tax": "413.66", "transactionType": "1", "deemedFlag": "2"}], "summary": {"netAmount": "2628.45", "taxAmount": "420.55", "grossAmount": "3049", "exemptionNumber": "", "discountTotal": "0"}, "extend": {"reason": "", "reasonCode": "", "attributes1": "", "attributes2": "", "attributes3": "", "attributes4": "", "attributes5": "", "attributes6": ""}, "sourceId": "USDM"}, "res": {"status": "200", "message": "success", "response": {"buyerDetails": {"buyerTin": ""}, "goodsDetails": [{"item": "Scratch Card 50", "itemCode": "", "qty": "1", "unitPrice": "43.10344828", "total": "50", "taxRate": "0.16", "tax": "6.9", "deemedFlag": "2", "transactionType": "1"}, {"item": "Tozed M30S Pro Mifi", "itemCode": "", "qty": "1", "unitPrice": "2585.344828", "total": "2999.00000048", "taxRate": "0.16", "tax": "413.66", "deemedFlag": "2", "transactionType": "1"}], "basicInformation": {"invoiceNo": "2543000475334", "antifakeCode": "9990000010000000245", "issuedDate": "2026-08-06 14:15:04", "invoiceType": "1", "invoiceKind": "1", "refrencedInvoiceNumber": "", "sourceId": "USDM"}, "summary": {"netAmount": "2628.45", "taxAmount": "420.55", "grossAmount": "3049", "discountTotal": "0", "exemptionNumber": "", "referencedTxnId": "245", "qrCode": "https://itax.kra.go.ke/KRA-Portal/invoiceChk.htm?actionCode=loadPage&invoiceNo=9990000010000000245", "additionalParams": {"param": [{"paramName": "DEVICE_NUMBER", "paramValue": "KRAMW999202111000001"}]}}, "extend": {"reason": "", "reasonCode": ""}}}}, {"title": "POS Multile Payment Mode RA", "req": {"basicInformation": {"invoiceNo": "2543000476079", "issuedDate": "2026-08-14 15:06:10", "invoiceType": "1", "refrencedInvoiceNumber": "", "invoiceKind": "1", "sourceId": "USDM"}, "buyerDetails": {"buyerTin": ""}, "goodsDetails": [{"item": "M-Commerce Paid Kit", "itemCode": "", "qty": "2", "unitPrice": "17.241379", "total": "39.99999928", "taxRate": "0.16", "tax": "5.52", "transactionType": "1", "deemedFlag": "2"}, {"item": "Tozed M30S Pro Mifi", "itemCode": "", "qty": "2", "unitPrice": "2585.344828", "total": "5998.00000096", "taxRate": "0.16", "tax": "827.31", "transactionType": "1", "deemedFlag": "2"}], "summary": {"netAmount": "5205.17", "taxAmount": "832.83", "grossAmount": "6038", "exemptionNumber": "", "discountTotal": "0"}, "extend": {"reason": "", "reasonCode": "", "attributes1": "", "attributes2": "", "attributes3": "", "attributes4": "", "attributes5": "", "attributes6": ""}, "sourceId": "USDM"}, "res": {"status": "200", "message": "success", "response": {"buyerDetails": {"buyerTin": ""}, "goodsDetails": [{"item": "M-Commerce Paid Kit", "itemCode": "", "qty": "2", "unitPrice": "17.241379", "total": "39.99999928", "taxRate": "0.16", "tax": "5.52", "deemedFlag": "2", "transactionType": "1"}, {"item": "Tozed M30S Pro Mifi", "itemCode": "", "qty": "2", "unitPrice": "2585.344828", "total": "5998.00000096", "taxRate": "0.16", "tax": "827.31", "deemedFlag": "2", "transactionType": "1"}], "basicInformation": {"invoiceNo": "2543000476079", "antifakeCode": "9990000010000000356", "issuedDate": "2026-08-14 15:06:10", "invoiceType": "1", "invoiceKind": "1", "refrencedInvoiceNumber": "", "sourceId": "USDM"}, "summary": {"netAmount": "5205.17", "taxAmount": "832.83", "grossAmount": "6038", "discountTotal": "0", "exemptionNumber": "", "referencedTxnId": "356", "qrCode": "https://itax.kra.go.ke/KRA-Portal/invoiceChk.htm?actionCode=loadPage&invoiceNo=9990000010000000356", "additionalParams": {"param": [{"paramName": "DEVICE_NUMBER", "paramValue": "KRAMW999202111000001"}]}}, "extend": {"reason": "", "reasonCode": ""}}}}];
+const NAV=[
+ {g:"Start here",items:[["overview","Overview",""],["samples","Sample records","var(--orange)"]]},
+ {g:"Flows",items:[["flow","Integration flow","var(--blue)"],["routing","Device routing","var(--blue)"],["sequences","Invoice, retry and credit note","var(--blue)"]]},
+ {g:"API",items:[["api","Invoice upload API","var(--orange)"],["fields","Field reference","var(--orange)"],["errors","Error codes","var(--orange)"]]},
+ {g:"Rules",items:[["rules","Business rules",""],["discount","Discount calculator",""],["printing","Invoice printing",""],["verify","Points to verify",""]]}
+];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ul=a=>`<ul>${a.map(x=>`<li>${x}</li>`).join("")}</ul>`;
+const fmt=(n,d=2)=>Number(n).toLocaleString("en-KE",{minimumFractionDigits:d,maximumFractionDigits:d});
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const tbl=(head,rows,cls="")=>`<div class="tbl card"><table class="${cls}"><tr>${head.map(h=>`<th>${h}</th>`).join("")}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</table></div>`;
+const TYPE={"1":"Tax invoice","2":"Credit note","3":"Debit note"};
+const V={};
+
+/* ---------- reusable: process strip ---------- */
+const strip=(steps,outLast=true)=>`<div class="card detail"><div class="life">${steps.map((s,i)=>`<div class="st ${outLast&&i===steps.length-1?"out":""}"><span class="ic">${i+1}</span><span class="nm">${s[0]}</span><span class="ds">${s[1]}</span></div>`).join("")}</div></div>`;
+
+/* ---------- reusable: sequence diagram ---------- */
+function seq(host,parts,msgs){
+ const W=760,top=56,row=50,colW=(W-40)/parts.length,H=top+msgs.length*row+30;
+ const cx=i=>20+colW*i+colW/2;
+ let on=0;
+ function draw(){
+  const lifelines=parts.map((p,i)=>`<g><rect x="${cx(i)-62}" y="10" width="124" height="32" rx="7" fill="var(--navy)"/><text x="${cx(i)}" y="31" text-anchor="middle" font-size="12.5" font-weight="700" fill="#fff">${esc(p)}</text><line x1="${cx(i)}" y1="42" x2="${cx(i)}" y2="${H-10}" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="4 4"/></g>`).join("");
+  const ms=msgs.map((m,i)=>{const y=top+i*row+row/2,a=cx(m[0]),b=cx(m[1]),self=m[0]===m[1];
+   const dash=m[4]?'stroke-dasharray="5 4"':"";
+   const path=self?`M${a} ${y-8}h46v16h-42`:`M${a} ${y}H${b+(b>a?-6:6)}`;
+   const lx=self?a+52:(a+b)/2,anchor=self?"start":"middle";
+   return `<g class="msg ${i===on?"on":""}" data-i="${i}" tabindex="0" role="button" aria-label="${esc(m[2])}"><rect x="20" y="${y-row/2}" width="${W-40}" height="${row}" fill="transparent"/>
+    <path class="ln" d="${path}" fill="none" stroke="var(--blue)" stroke-width="1.6" ${dash} marker-end="url(#ah)"/>
+    <circle cx="${self?a:Math.min(a,b)-0}" cy="${self?y-8:y}" r="0"/>
+    <text class="lbl" x="${lx}" y="${self?y-14:y-8}" text-anchor="${anchor}" font-size="12.5" fill="var(--ink)">${i+1}. ${esc(m[2])}</text></g>`}).join("");
+  host.innerHTML=`<div class="seqwrap card detail seq"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Sequence diagram"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--blue)"/></marker></defs>${lifelines}${ms}</svg>
+  <div class="seqdetail" aria-live="polite"><strong>Step ${on+1}: ${esc(msgs[on][2])}</strong><br>${msgs[on][3]}</div>
+  <div class="navrow" style="border:0;padding-top:10px;margin-top:6px"><button class="btn" data-mv="-1" ${on===0?"disabled":""}>Previous step</button><button class="btn primary" data-mv="1" ${on===msgs.length-1?"disabled":""}>Next step</button></div></div>`;
+  host.querySelectorAll(".msg").forEach(g=>{g.onclick=()=>{on=+g.dataset.i;draw()};g.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();on=+g.dataset.i;draw()}}});
+  host.querySelectorAll("[data-mv]").forEach(b=>b.onclick=()=>{on=Math.max(0,Math.min(msgs.length-1,on+ +b.dataset.mv));draw()});
+ }
+ draw();
+}
+
+/* ---------- overview ---------- */
+V.overview=()=>{
+ $("#view").innerHTML=`<h2 class="view-title">Every invoice, validated by KRA</h2>
+ <p class="lead">KRA (Kenya Revenue Authority) requires every invoice to pass through its TIMS tax platform. USDM sends each invoice, credit note and debit note through the Airtel ESB to a KRA-approved middleware device. The device validates the tax and returns a QR code that is printed on the invoice; it reports to KRA at the end of the day.</p>
+ <div class="kpis">
+  <div class="card kpi accent-o"><div class="v">5</div><div class="k">TIMS middleware devices in use</div></div>
+  <div class="card kpi accent-b"><div class="v">16%</div><div class="k">VAT rate in all sample records</div></div>
+  <div class="card kpi accent-o"><div class="v">6</div><div class="k">real request/response pairs to explore</div></div>
+  <div class="card kpi accent-b"><div class="v">7 mo</div><div class="k">device mapping kept before purge</div></div>
+ </div>
+ ${strip([["USDM sends invoice","JSON API via ESB"],["ESB routes","to a TIMS device"],["Device validates","tax information"],["QR returned","printed on the invoice"],["End-of-day report","device → KRA TIMS"]])}
+ <div class="products" style="grid-template-columns:repeat(3,minmax(0,1fr));margin-top:22px">
+  <button class="card prod accent-o" data-go="samples"><h2>Sample records</h2><p>Six real USDM postings: primary sales, returns and POS. See the request, KRA's answer and the QR.</p><span class="go">Open samples</span></button>
+  <button class="card prod accent-b" data-go="routing"><h2>Device routing</h2><p>Why ESB remembers which device validated each invoice, and how retries and credit notes use it.</p><span class="go">See the routing</span></button>
+  <button class="card prod accent-o" data-go="discount"><h2>Discount calculator</h2><p>KRA only accepts invoice-level discount. Try how item discounts are spread into unit prices.</p><span class="go">Try it</span></button>
+ </div>`;
+ document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>show(b.dataset.go));
+};
+
+/* ---------- integration flow ---------- */
+V.flow=()=>{
+ $("#view").innerHTML=`<h2 class="view-title">Integration flow</h2><p class="lead">USDM never talks to KRA directly. It calls the Airtel ESB, which forwards the invoice to a TIMS middleware device; the device answers immediately and reports to KRA later.</p>
+ ${strip([["Connect","USDM, SV and ERP call the TIMS middleware through a JSON API"],["Validate","Middleware checks the tax information on the invoice"],["Respond","OK or Reject; on OK it returns a QR code URL"],["Print","USDM includes the QR code on the printed invoice"],["Report","Middleware sends an end-of-day report to KRA TIMS"]])}
+ <section class="block"><h2>Systems involved</h2>${tbl(["System","Role"],[["<strong>USDM</strong>","Source system. Builds the invoice, stores the KRA reply and prints the QR. Uses sourceId <code>USDM</code>"],["<strong>SV, ERP, ERP-AM</strong>","Other Airtel source systems using the same API"],["<strong>Airtel ESB</strong>","Single entry point. Routes each invoice to a TIMS device and keeps the invoice-to-device mapping"],["<strong>TIMS middleware (Type C)</strong>","KRA-approved device that validates the invoice and generates the QR. Type C serves SV and USDM"],["<strong>KRA TIMS</strong>","KRA's Tax Information Management System; receives the end-of-day report"]])}</section>
+ <section class="block"><h2>What comes back</h2><div class="cols">
+  <div class="card detail accent-o"><h3>Middleware invoice number</h3><p>Returned as <code>antifakeCode</code>, e.g. <code>9990000010000000244</code>. Printed under the QR as <em>M/w No.</em> and used as <code>refrencedInvoiceNumber</code> on a later credit note.</p></div>
+  <div class="card detail accent-b"><h3>QR code URL</h3><p>Returned as <code>qrCode</code>; it opens the invoice check page on the KRA iTax portal. USDM converts the URL into the printed QR code.</p></div>
+  <div class="card detail accent-o"><h3>Device number</h3><p>Returned in <code>additionalParams</code> as <code>DEVICE_NUMBER</code> (middleware serial number). Printed as <em>M/w SN</em>.</p></div>
+ </div></section>`;
+};
+
+/* ---------- device routing ---------- */
+V.routing=()=>{
+ $("#view").innerHTML=`<h2 class="view-title">Device routing</h2><p class="lead">Five TIMS devices are in use. Without knowing which device validated an invoice, a failed or retried posting could be sent to another device and validated twice. The approved fix: ESB records the device for every invoice and reuses it.</p>
+ <div class="vs2">
+  <div class="card detail accent-b"><h3>Solution 1 – store the device in each source system</h3>${ul(["ESB routes new invoices round-robin and returns the device to the source","SV, ERP and USDM each store it and send it back for retries, credit and debit notes","Replacing a device means updating every source system's data"])}</div>
+  <div class="card detail accent-o"><h3>Solution 2 – store the device in ESB <span class="badge-ok">Approved</span></h3>${ul(["ESB routes round-robin and stores invoice number, server, created date, source system and status","Retries and credit/debit notes go to the same device automatically","ESB also returns the device; a source that sends it back skips the lookup","Records older than 7 months are purged; credit/debit notes need at least 6 months"])}</div>
+ </div>
+ <section class="block"><h2>Route a request</h2><p>Pick the request and see which way ESB sends it.</p>
+ <div class="sim"><form class="card controls accent-o" id="rf" onsubmit="return false">
+  ${seg("kind","Request",[["new","New invoice"],["retry","Retry"],["cn","Credit note"],["dn","Debit note"]],"new")}
+  ${seg("dev","Device sent in the request?",[["no","No"],["yes","Yes"]],"no")}
+  ${seg("found","Invoice already in the ESB table?",[["no","No"],["yes","Yes"]],"no")}
+  ${seg("up","Original device available?",[["yes","Yes"],["no","No"]],"yes")}
+ </form><div class="card journey accent-b"><div class="dtree" id="dt" aria-live="polite"></div></div></div></section>`;
+ const f=$("#rf");
+ const run=()=>{const v=Object.fromEntries(new FormData(f));const note=v.kind==="cn"||v.kind==="dn";
+  const N=[];let end;
+  N.push(["1","Request reaches ESB",`${({new:"New tax invoice",retry:"Retry of an invoice",cn:"Credit note",dn:"Debit note"})[v.kind]} from USDM`,"hit"]);
+  if(v.dev==="yes"){N.push(["2","Device in the request?","Yes – ESB skips its own lookup","hit"]);end=["✓","Send to the device in the request","The source system stored the device and sent it back.",""];}
+  else{N.push(["2","Device in the request?","No – ESB looks it up","hit"]);
+   if(note){N.push(["3","Find the original invoice's device","Credit and debit notes must go to the device that validated the original invoice","hit"]);
+    end=v.up==="yes"?["✓","Send to the original device","The note is validated on the same device as the invoice.",""]:["!","Error: original server is not available","ESB does not send the note to another device.","err"];}
+   else{N.push(["3","Invoice found in the ESB table?",v.found==="yes"?"Yes – it was posted before":"No – first time ESB sees it","hit"]);
+    end=v.found==="yes"?["✓","Send to the same device","Prevents the invoice being validated twice on two devices.",""]:["✓","Round-robin to the next device","ESB stores invoice number, device, date, source and status.",""];}}
+  $("#f-found").classList.toggle("off",note||v.dev==="yes");$("#f-up").classList.toggle("off",!note||v.dev==="yes");
+  $("#dt").innerHTML=N.map(n=>`<div class="dnode ${n[3]}"><span class="q">${n[0]}</span><div><h4>${n[1]}</h4><p>${n[2]}</p></div></div>`).join("")+`<div class="dnode end ${end[3]}"><span class="q">${end[0]}</span><div><h4>${end[1]}</h4><p>${end[2]}</p></div></div>`;};
+ f.onchange=run;run();
+};
+function seg(name,label,opts,sel){return `<fieldset class="ctl" id="f-${name}"><legend>${label}</legend><div class="seg">${opts.map(o=>`<label><input type="radio" name="${name}" value="${o[0]}" ${o[0]===sel?"checked":""}><span>${o[1]}</span></label>`).join("")}</div></fieldset>`}
+
+/* ---------- sequences ---------- */
+const P=["USDM","Airtel ESB","ESB device table","TIMS device","KRA TIMS"];
+const SEQ={
+ inv:{t:"New tax invoice",m:[[0,1,"POST invoice-upload","USDM sends <code>invoiceType 1</code>, <code>invoiceKind 1</code>, <code>sourceId USDM</code>, the goods lines and the summary."],[1,2,"Look up invoice number","Not found, so this is a new invoice."],[1,3,"Route round-robin","ESB picks the next of the TIMS devices."],[3,1,"Validated","The device returns antifakeCode, qrCode, referencedTxnId and DEVICE_NUMBER."],[1,2,"Store invoice → device","Invoice number, device, created date, source system and status are saved."],[1,0,"200 success","USDM receives the full response including the device number."],[0,0,"Store and print","USDM stores the relevant invoice number and prints the QR, M/w No. and M/w SN on the invoice."],[3,4,"End-of-day report","The middleware reports the day's invoices to KRA TIMS on its own.",1]]},
+ retry:{t:"Retry of the same invoice",m:[[0,1,"POST same invoiceNo","USDM resends an invoice whose first attempt failed or timed out."],[1,2,"Look up invoice number","Found – ESB knows which device handled it."],[1,3,"Send to the same device","Never to another device, so the invoice can't be validated twice."],[3,1,"200 or 201","<code>201 already processed</code> if the device had validated it; the original QR comes back."],[1,0,"Response","USDM stores the QR as usual."]]},
+ cn:{t:"Credit note (sales return)",m:[[0,1,"POST invoiceType 2","Credit note with <code>oriInvoiceNo</code> (USDM's original invoice) and <code>refrencedInvoiceNumber</code> = the original antifakeCode."],[1,2,"Find original device","ESB reads the device that validated the original invoice."],[1,3,"Send to the original device","If that device is not available, ESB returns an error instead of using another one."],[3,1,"Validated","New antifakeCode and QR for the credit note."],[1,0,"200 success","USDM prints the credit note with its own QR."]]}
+};
+V.sequences=()=>{
+ let cur=store.get("kra-seq")||"inv";
+ $("#view").innerHTML=`<h2 class="view-title">Invoice, retry and credit note</h2><p class="lead">The three calls USDM makes, step by step. Click any arrow, or use Next step.</p>
+ <div class="tabs" role="tablist">${Object.keys(SEQ).map(k=>`<button class="tab" role="tab" data-k="${k}">${SEQ[k].t}</button>`).join("")}</div><div id="sq"></div><p class="note">Dashed arrow: happens later, outside the API call.</p>`;
+ const draw=()=>{document.querySelectorAll("[data-k]").forEach(b=>b.setAttribute("aria-selected",b.dataset.k===cur));seq($("#sq"),P,SEQ[cur].m)};
+ document.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{cur=b.dataset.k;store.set("kra-seq",cur);draw()});draw();
+};
+
+/* ---------- samples ---------- */
+function hlJSON(o,mark){
+ const s=JSON.stringify(o,null,2);
+ return esc(s).replace(/(&quot;)([^&]*?)(&quot;)(\s*:)?/g,(m,a,b,c,d)=>{const cls=d?"k":"s";const hl=!d&&mark&&mark.includes(b)?" hl":"";return `<span class="${cls}${hl}">${a}${b}${c}</span>${d||""}`});
+}
+function checks(s){
+ const r=s.req,g=r.goodsDetails,su=r.summary,out=[];const n=x=>parseFloat(x||0);
+ const st=g.reduce((a,x)=>a+n(x.total),0);out.push([Math.abs(st-n(su.grossAmount))<0.05,`Sum of line totals ${fmt(st)} = grossAmount ${fmt(n(su.grossAmount))}`]);
+ const tx=g.reduce((a,x)=>a+n(x.tax),0);out.push([Math.abs(tx-n(su.taxAmount))<0.015,`Sum of line tax ${fmt(tx)} vs taxAmount ${fmt(n(su.taxAmount))}${Math.abs(tx-n(su.taxAmount))>=0.005?" (rounding difference)":""}`]);
+ const nt=n(su.grossAmount)-n(su.taxAmount);out.push([Math.abs(nt-n(su.netAmount))<0.015,`grossAmount − taxAmount ${fmt(nt)} vs netAmount ${fmt(n(su.netAmount))}`]);
+ g.forEach(x=>{const inc=n(x.qty)*n(x.unitPrice)*(1+n(x.taxRate));out.push([Math.abs(inc-n(x.total))<0.05,`${esc(x.item)}: qty × unitPrice × 1.16 = ${fmt(inc)} matches total`])});
+ out.push([s.res.status==="200","KRA status "+s.res.status+" "+s.res.message]);
+ return out;
+}
+V.samples=()=>{
+ let cur=+(store.get("kra-s")||0),tab=store.get("kra-tab")||"sum";if(cur>=SAMPLES.length)cur=0;
+ $("#view").innerHTML=`<h2 class="view-title">Sample records</h2><p class="lead">Six real postings from USDM 2.0 with KRA's replies. Pick one to see the invoice, what was sent, what came back and the QR that gets printed.</p>
+ <div class="samples"><div class="slist" id="sl"></div><div id="sd"></div></div>`;
+ $("#sl").innerHTML=SAMPLES.map((s,i)=>{const b=s.req.basicInformation;return `<button class="sbtn" data-i="${i}" aria-pressed="false"><span class="t">${esc(s.title.replace(/[:\[\]]/g," ").replace(/\s+/g," ").trim())}</span><span class="m"><span class="typetag tt${b.invoiceType}">${TYPE[b.invoiceType]}</span>KES ${fmt(s.req.summary.grossAmount)}</span></button>`}).join("");
+ const draw=()=>{
+  document.querySelectorAll(".sbtn").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.i===cur));
+  const s=SAMPLES[cur],b=s.req.basicInformation,su=s.req.summary,rb=s.res.response.basicInformation,rs=s.res.response.summary;
+  const dev=((rs.additionalParams||{}).param||[]).find(p=>p.paramName==="DEVICE_NUMBER")||{};
+  const mark=[rb.antifakeCode,rs.qrCode,rs.referencedTxnId,dev.paramValue];
+  const ck=checks(s);
+  $("#sd").innerHTML=`<div class="card detail accent-o">
+   <div class="detail-head"><h2>${esc(s.title)}</h2><span class="pill status">${TYPE[b.invoiceType]}</span><span class="pill who">${s.req.goodsDetails.length} line${s.req.goodsDetails.length>1?"s":""}</span></div>
+   <div class="tabs" role="tablist"><button class="tab" data-t="sum">Summary</button><button class="tab" data-t="req">Request</button><button class="tab" data-t="res">Response</button></div>
+   <div id="tb"></div></div>`;
+  const body={
+   sum:()=>`<div class="facts"><div><strong>${esc(b.invoiceNo)}</strong><span>USDM invoice number</span></div><div><strong>${esc(rb.antifakeCode)}</strong><span>middleware invoice no. (antifakeCode)</span></div><div><strong>${esc(dev.paramValue||"–")}</strong><span>TIMS device</span></div><div><strong>${esc(b.issuedDate)}</strong><span>issued</span></div></div>
+    ${b.refrencedInvoiceNumber?`<p class="note">References original invoice <code>${esc(s.req.oriInvoiceNo||"")}</code> (middleware no. <code>${esc(b.refrencedInvoiceNumber)}</code>).</p>`:""}
+    <div class="tbl" style="margin:14px 0"><table><tr><th>Item</th><th style="text-align:right">Qty</th><th style="text-align:right">Unit price (excl. VAT)</th><th style="text-align:right">VAT</th><th style="text-align:right">Total (incl. VAT)</th></tr>
+    ${s.req.goodsDetails.map(x=>`<tr><td>${esc(x.item)}</td><td style="text-align:right">${fmt(x.qty,0)}</td><td style="text-align:right">${fmt(x.unitPrice,2)}</td><td style="text-align:right">${fmt(x.tax)}</td><td style="text-align:right">${fmt(x.total)}</td></tr>`).join("")}
+    <tr><td colspan="3"><strong>Net ${fmt(su.netAmount)} · VAT ${fmt(su.taxAmount)} · Discount ${fmt(su.discountTotal)}</strong></td><td></td><td style="text-align:right"><strong>${fmt(su.grossAmount)}</strong></td></tr></table></div>
+    <div class="cols"><div><h3 style="font-size:14px;margin-bottom:8px">Checks</h3><ul class="checks">${ck.map(c=>`<li class="${c[0]?"":"w"}"><span class="i">${c[0]?"✓":"!"}</span><span>${c[1]}</span></li>`).join("")}</ul></div>
+    <div><h3 style="font-size:14px;margin-bottom:8px">Printed on the invoice</h3><div class="qrbox"><div class="qr" id="qr"></div><div class="qrtext">M/w No.: ${esc(rb.antifakeCode)}<br>M/w SN: ${esc(dev.paramValue||"")}<br><a href="${esc(rs.qrCode)}" target="_blank" rel="noopener">Open KRA check page</a></div></div></div></div>`,
+   req:()=>`<div class="navrow" style="border:0;margin:0 0 8px;padding:0"><span class="note" style="margin:0">POST /api/regulatory-service/v1/efris/invoice-upload</span><button class="btn" data-copy="req">Copy JSON</button></div><pre class="json">${hlJSON(s.req)}</pre>`,
+   res:()=>`<div class="navrow" style="border:0;margin:0 0 8px;padding:0"><span class="note" style="margin:0">Highlighted: values USDM must store or print</span><button class="btn" data-copy="res">Copy JSON</button></div><pre class="json">${hlJSON(s.res,mark)}</pre>`
+  };
+  const drawTab=()=>{document.querySelectorAll("#sd [data-t]").forEach(x=>x.setAttribute("aria-selected",x.dataset.t===tab));$("#tb").innerHTML=body[tab]();
+   if(tab==="sum")drawQR($("#qr"),rs.qrCode);
+   document.querySelectorAll("[data-copy]").forEach(c=>c.onclick=()=>{const t=JSON.stringify(c.dataset.copy==="req"?s.req:s.res,null,2);(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{c.textContent="Copied";setTimeout(()=>c.textContent="Copy JSON",1400)},()=>{})});};
+  document.querySelectorAll("#sd [data-t]").forEach(x=>x.onclick=()=>{tab=x.dataset.t;store.set("kra-tab",tab);drawTab()});drawTab();
+ };
+ document.querySelectorAll(".sbtn").forEach(b=>b.onclick=()=>{cur=+b.dataset.i;store.set("kra-s",cur);draw()});draw();
+};
+
+/* ---------- API ---------- */
+V.api=()=>{
+ $("#view").innerHTML=`<h2 class="view-title">Invoice upload API</h2><p class="lead">One endpoint uploads tax invoices, credit notes and debit notes. REST (JSON) and SOAP (XML) carry the same fields.</p>
+ ${tbl(["Item","Value"],[["Ingress (UAT)","<code>https://apps.ke.uat.esb.k8s.africa.airtel.itm</code>"],["REST path","<code>/api/regulatory-service/v1/efris/invoice-upload</code>"],["SOAP path","<code>/api/regulatory-profile/ws</code> (curl sample uses <code>/kong/api/regulatory-service/ws</code>)"],["Downstream API","<code>/api/invoice</code>"],["Method","HTTP POST"],["SOAP operation","<code>T109_InvoiceUploadRequest</code>"]])}
+ <section class="block"><h2>Headers</h2>${tbl(["Header","Value"],[["<code>ASP-API-Key</code>","API key (masked in the spec)"],["<code>ASP-Consumer-Id</code>","Consumer ID (masked)"],["<code>ASP-Consumer-Txn-Id</code>","Unique transaction ID (UUID) per call"],["<code>ASP-Locale</code>","<code>en-US</code>"],["<code>ASP-OPCO</code>","<code>KE</code>"],["<code>ASP-Req-Timestamp</code>","Epoch seconds (REST sample)"],["<code>Content-Type</code>","<code>application/json</code> (REST) or <code>text/xml</code> (SOAP)"]])}</section>
+ <section class="block"><h2>Codes</h2><div class="cols">
+  <div class="card detail accent-o"><h3>invoiceType</h3>${ul(["<code>1</code> Tax invoice","<code>2</code> Credit note","<code>3</code> Debit note"])}</div>
+  <div class="card detail accent-b"><h3>invoiceKind</h3>${ul(["<code>1</code> Original","<code>2</code> Copy"])}</div>
+  <div class="card detail accent-o"><h3>sourceId</h3>${ul(["<code>SV</code>","<code>USDM</code>","<code>ERP</code>","<code>ERP-AM</code>"])}</div>
+  <div class="card detail accent-b"><h3>Response status</h3>${ul(["<code>200</code> success","<code>201</code> already processed – the invoice was validated before; the original result is returned"])}</div>
+ </div></section>`;
+};
+const F={
+ req:{basicInformation:[["invoiceNo","Invoice number","Y",""],["issuedDate","Invoice issued date","Y","yyyy-MM-dd HH24:mm:ss"],["invoiceType","Invoice type","Y","1 Tax invoice, 2 Credit note, 3 Debit note"],["refrencedInvoiceNumber","Referenced invoice number","N","For a credit or debit note (the original's antifakeCode)"],["invoiceKind","Invoice kind","Y","1 Original, 2 Copy"],["sourceId","Source ID","Y","SV, USDM, ERP, ERP-AM"],["additonalParams","Additional parameters","N","List of paramName / paramValue"]],
+  buyerDetails:[["buyerTin","Buyer TIN (PIN)","N",""],["additonalParams","Additional parameters","N",""]],
+  goodsDetails:[["item","Item name","Y",""],["itemCode","Item code","N","HS code; needed for 8%, exempt or 0% VAT items"],["qty","Quantity","Y","Greater than zero"],["unitPrice","Unit price","Y","Greater than zero"],["taxRate","Tax rate","Y","Decimal, e.g. 16% = 0.16"],["tax","Tax","Y",""],["total","Total","Y","qty × unitPrice (spec)"],["transactionType","Transaction type","Y","1"],["additonalParams","Additional parameters","N",""]],
+  summary:[["netAmount","Net amount","Y","Positive or 0"],["taxAmount","Tax amount","Y","Positive or 0"],["grossAmount","Gross amount","Y","Positive"],["exemptionNumber","Exemption number","N","ESB sends an empty string if null"],["discountTotal","Discount total","Y","Invoice-level discount"],["additonalParams","Additional parameters","N",""]]},
+ res:{basicInformation:[["invoiceNo","Invoice number","Y",""],["issuedDate","Issued date","Y",""],["invoiceType","Invoice type","Y",""],["refrencedInvoiceNumber","Referenced invoice number","N",""],["invoiceKind","Invoice kind","Y",""],["antifakeCode","Control code","Y","Middleware invoice number – print as M/w No."]],
+  goodsDetails:[["item","Item name","Y",""],["itemCode","Item code","N",""],["qty","Quantity","Y",""],["unitPrice","Unit price","Y",""],["total","Total","Y",""],["taxRate","Tax rate","Y",""],["tax","Tax","Y","Positive or zero"],["categoryName","Category name","","Required the first time for each invoice"],["transactionType","Transaction type","Y","1"]],
+  summary:[["netAmount","Net amount","Y",""],["taxAmount","Tax amount","Y",""],["grossAmount","Gross amount","Y",""],["exemptionNumber","Exemption number","N",""],["qrCode","QR code URL","Y","Convert to the printed QR"],["referencedTxnId","Middleware invoice number mapping","Y",""],["discountTotal","Total discount","Y",""],["additionalParams → DEVICE_NUMBER","Middleware serial number","Y","Print as M/w SN"]]}
+};
+V.fields=()=>{
+ let side=store.get("kra-fs")||"req",q="";
+ $("#view").innerHTML=`<h2 class="view-title">Field reference</h2><p class="lead">Every field in the request and response, grouped by block. All values are sent as strings.</p>
+ <div class="tabs" role="tablist"><button class="tab" data-s="req">Request</button><button class="tab" data-s="res">Response</button></div>
+ <div class="search"><input id="fq" type="search" placeholder="Search a field, e.g. antifakeCode" aria-label="Search fields"></div><div id="fb"></div>`;
+ const draw=()=>{document.querySelectorAll("[data-s]").forEach(b=>b.setAttribute("aria-selected",b.dataset.s===side));
+  const blocks=F[side];let html="";
+  Object.keys(blocks).forEach(k=>{const r=blocks[k].filter(x=>!q||x.join(" ").toLowerCase().includes(q));if(!r.length)return;
+   html+=`<section class="block" style="margin-top:18px"><h2><code>${k}</code></h2>${tbl(["Field","Name","Required","Notes"],r.map(x=>[`<code>${x[0]}</code>`,esc(x[1]),x[2]==="Y"?'<span class="req">Yes</span>':(x[2]==="N"?"No":"–"),esc(x[3]||"–")]))}</section>`});
+  $("#fb").innerHTML=html||'<p class="empty">No field matches.</p>';};
+ $("#fq").oninput=e=>{q=e.target.value.trim().toLowerCase();draw()};
+ document.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{side=b.dataset.s;store.set("kra-fs",side);draw()});draw();
+};
+const ERR=[["SENDER_AUTHENTICATION_ERROR","Sender Id is not valid",""],["INVALID_BUYER_PIN","Buyer PIN is not valid",""],["HSCODE_NOT_FOUND","ItemCode not found",""],["TAXRATE_NOT_FOUND","Item tax rate not found",""],["NOT_MATCHING_TAXRATE","Item tax rate not matching",""],["NOT_MATCHING_HSDESC","Item is not matching",""],["NO_HSCODE","no itemcode",""],["DEVICE_NOT_PAIRED","unable to connect with TIMS server",""],["UNKNOWN_KRA_DOWNSTREAM_ERROR","System error","Downstream error other than the ones above"],["INTERNAL_SERVER_ERROR","Something Went Wrong","Downstream unable to connect"]];
+V.errors=()=>{
+ $("#view").innerHTML=`<h2 class="view-title">Error codes</h2><p class="lead">Errors ESB can return from the invoice upload. HS code errors usually mean an 8%, exempt or 0% VAT item was sent without its KRA HS code.</p>
+ <div class="search"><input id="eq" type="search" placeholder="Search code or message" aria-label="Search error codes"></div>
+ <div class="tbl card"><table><thead><tr><th>Code</th><th>Message</th><th>Meaning</th></tr></thead><tbody id="eb"></tbody></table><p class="empty" id="ee" hidden>No error matches.</p></div>`;
+ const d=()=>{const q=$("#eq").value.trim().toLowerCase();const r=ERR.filter(e=>!q||e.join(" ").toLowerCase().includes(q));
+  $("#eb").innerHTML=r.map(e=>`<tr><td><code>${e[0]}</code></td><td>${esc(e[1])}</td><td>${esc(e[2]||"–")}</td></tr>`).join("");$("#ee").hidden=r.length>0};
+ $("#eq").oninput=d;d();
+};
+
+/* ---------- rules ---------- */
+V.rules=()=>{
+ $("#view").innerHTML=`<h2 class="view-title">Business rules</h2><p class="lead">What USDM must do for KRA, from change request 2022-01-1457/KE/USDM.</p>
+ <div class="cols">
+  <div class="card detail accent-o"><h3>Integration</h3>${ul(["USDM and other billing systems call TIMS Type C middleware by API to validate invoices before printing","Airtel shop receipts are validated with a TIMS Type B device","USDM stores the relevant invoice number from the TIMS response"])}</div>
+  <div class="card detail accent-b"><h3>Tax content</h3>${ul(["Base amount sent to KRA = base amount + excise duty","VAT is shown as a separate line","Commission discount on eRCV products is not reported"])}</div>
+  <div class="card detail accent-o"><h3>HS codes</h3>${ul(["Required for items with 8%, exempt or 0% VAT","Maintained by Finance in ERP; USDM, SV and ERP read them from ERP","Sent in the request for 0% and 8% VAT items"])}</div>
+  <div class="card detail accent-b"><h3>Prices and discounts</h3>${ul(["No product may have a zero unit price: such products are set to KES 1 with a 100% discount","KRA allows only invoice-level discount, not item-level","Item discounts are converted into reduced unit prices (see Discount calculator)"])}</div>
+  <div class="card detail accent-o"><h3>Buyer PIN</h3>${ul(["USDM must hold the buyer PIN in the partner profile","Existing for distributors; shop sales via CR#2022-02-1473","The buyer PIN is printed on the invoice"])}</div>
+  <div class="card detail accent-b"><h3>Device mapping (ESB)</h3>${ul(["ESB stores invoice number, device, created date, source and status","Credit and debit notes go to the original device, or fail","Records older than 7 months are purged; replacing a device means updating its mapped invoices"])}</div>
+ </div>`;
+};
+V.discount=()=>{
+ let rows=[{n:"Item 1",p:100,q:10,d:0,ed:1},{n:"Item 2",p:20,q:5,d:0,ed:1},{n:"Item 3",p:1,q:10,d:100,ed:0}];
+ $("#view").innerHTML=`<h2 class="view-title">Discount calculator</h2><p class="lead">KRA accepts only an invoice-level discount. The total item discount is spread across all lines as one percentage, which lowers every reported unit price. The example is the one in the requirement: a free item priced at KES 1 with 100% discount.</p>
+ <div class="card detail accent-o calc"><div class="tbl"><table id="ct"></table></div>
+  <div class="navrow" style="border:0;margin-top:8px;padding-top:0"><span><label for="edr" style="font-weight:600">Excise duty %</label> <input id="edr" type="number" value="12" step="0.5" style="width:80px;display:inline-block"> &nbsp; <label for="vr" style="font-weight:600">VAT %</label> <input id="vr" type="number" value="16" step="0.5" style="width:80px;display:inline-block"></span><button class="btn" id="add">Add line</button></div></div>
+ <div id="cr"></div>
+ <p class="note">Discount % = total item discount ÷ Σ (unit price × (1 + excise %) × qty). Reported unit price = unit price × (1 + excise %) × (1 − discount %).</p>`;
+ const draw=()=>{const ed=+$("#edr").value/100,vr=+$("#vr").value/100;
+  $("#ct").innerHTML=`<tr><th>Item</th><th>Unit price</th><th>Qty</th><th>Discount %</th><th>Excise applies</th><th></th></tr>`+rows.map((r,i)=>`<tr><td><input data-i="${i}" data-f="n" value="${esc(r.n)}" aria-label="Item name"></td><td><input data-i="${i}" data-f="p" type="number" value="${r.p}" step="0.01" aria-label="Unit price"></td><td><input data-i="${i}" data-f="q" type="number" value="${r.q}" aria-label="Quantity"></td><td><input data-i="${i}" data-f="d" type="number" value="${r.d}" min="0" max="100" aria-label="Discount percent"></td><td><input data-i="${i}" data-f="ed" type="checkbox" ${r.ed?"checked":""} style="width:auto" aria-label="Excise applies"></td><td><button class="btn" data-del="${i}" aria-label="Remove line">×</button></td></tr>`).join("");
+  const base=rows.map(r=>r.p*(1+(r.ed?ed:0))*r.q),disc=rows.reduce((a,r)=>a+r.p*r.q*r.d/100,0),sumB=base.reduce((a,b)=>a+b,0),dp=sumB?disc/sumB:0;
+  const rep=rows.map((r,i)=>{const up=r.p*(1+(r.ed?ed:0))*(1-dp),amt=up*r.q,v=amt*vr;return {n:r.n,up,q:r.q,amt,v,t:amt+v}});
+  const tot=rep.reduce((a,x)=>({amt:a.amt+x.amt,v:a.v+x.v,t:a.t+x.t}),{amt:0,v:0,t:0});
+  $("#cr").innerHTML=`<div class="facts"><div><strong>${fmt(disc)}</strong><span>total item discount (KES)</span></div><div><strong>${(dp*100).toFixed(3)}%</strong><span>invoice discount % applied to every line</span></div><div><strong>${fmt(tot.t)}</strong><span>reported total incl. VAT</span></div></div>
+  <section class="block" style="margin-top:14px"><h2>Reported to KRA</h2>${tbl(["Item","Reported unit price","Qty","Amount","VAT","Total"],rep.map(x=>[esc(x.n),`<span class="num">${x.up.toFixed(4)}</span>`,x.q,fmt(x.amt),fmt(x.v),fmt(x.t)]).concat([["<strong>Total</strong>","","",`<strong>${fmt(tot.amt)}</strong>`,`<strong>${fmt(tot.v)}</strong>`,`<strong>${fmt(tot.t)}</strong>`]]))}</section>`;
+  document.querySelectorAll("#ct input").forEach(inp=>inp.onchange=inp.oninput=()=>{const r=rows[+inp.dataset.i],f=inp.dataset.f;r[f]=f==="n"?inp.value:f==="ed"?(inp.checked?1:0):+inp.value;clearTimeout(draw.t);draw.t=setTimeout(()=>{const a=document.activeElement&&document.activeElement.dataset;const k=a?[a.i,a.f]:null;draw();if(k){const el=document.querySelector(`#ct input[data-i="${k[0]}"][data-f="${k[1]}"]`);if(el)el.focus()}},350)});
+  document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{rows.splice(+b.dataset.del,1);draw()});
+ };
+ $("#add").onclick=()=>{rows.push({n:"Item "+(rows.length+1),p:10,q:1,d:0,ed:1});draw()};
+ $("#edr").oninput=draw;$("#vr").oninput=draw;draw();
+};
+V.printing=()=>{
+ const s=SAMPLES[0],rb=s.res.response.basicInformation,rs=s.res.response.summary,dev=rs.additionalParams.param[0].paramValue;
+ $("#view").innerHTML=`<h2 class="view-title">Invoice printing</h2><p class="lead">Three changes to every printed invoice: the buyer's PIN, the KRA QR code with the middleware numbers under it, and a note for invoices printed before the QR is available.</p>
+ <div class="vs2"><div>${ul(["Print the <strong>buyer PIN</strong> on the invoice","Convert the <code>qrCode</code> URL into a QR image","Under the QR, print <strong>M/w No.</strong> (antifakeCode) and <strong>M/w SN</strong> (DEVICE_NUMBER)","If the QR is not back yet, print \u201cQR code information available after sometime\u201d"])}</div>
+ <div class="inv"><div class="row"><strong>Tax invoice ${esc(rb.invoiceNo)}</strong><span>${esc(rb.issuedDate)}</span></div><div class="row"><span>Buyer PIN</span><span>${esc(s.req.buyerDetails.buyerTin||"(not captured in sample)")}</span></div><hr>
+ ${s.req.goodsDetails.map(x=>`<div class="row"><span>${esc(x.item)} × ${x.qty}</span><span>${fmt(x.total)}</span></div>`).join("")}<hr>
+ <div class="row"><span>VAT 16%</span><span>${fmt(rs.taxAmount)}</span></div><div class="row"><strong>Total</strong><strong>KES ${fmt(rs.grossAmount)}</strong></div><hr>
+ <div class="qrbox"><div class="qr" id="qr"></div><div class="qrtext">M/w No.: ${esc(rb.antifakeCode)}<br>M/w SN: ${esc(dev)}</div></div></div></div>
+ <p class="note">Preview built from sample record \u201c${esc(s.title)}\u201d.</p>`;
+ drawQR($("#qr"),rs.qrCode);
+};
+V.verify=()=>{
+ const items=[["<code>total</code> is VAT-inclusive in USDM","In every sample, total = qty × unitPrice × 1.16 (e.g. 1 × 2155.17 → 2500). The API spec describes total as qty × unitPrice."],
+  ["Primary Sale Return 1 is sent as a tax invoice","It uses invoiceType 1 with no referenced invoice, while Primary Sale Return 2 is a credit note (type 2) referencing the original. Confirm which is intended for returns."],
+  ["Discount samples keep full unit prices","Primary Sale 2 and Return 1 send discountTotal (3,250 and 6) but unit prices are not reduced as the discount-conversion rule describes."],
+  ["Rounding","Primary Sale Return 1: net 172.41 + tax 27.58 = 199.99 vs gross 200. POS Sale 1: line tax adds to 420.56 vs taxAmount 420.55."],
+  ["Spec header sample","The REST curl example in the API spec sends ASP-OPCO: UG; Kenya calls use KE."],
+  ["Sample file","The Primary Sale 2 response was missing a closing brace and the POS Sale 1 response had line-wrap gaps; both are cleaned in this explorer."]];
+ const done=new Set(JSON.parse(store.get("kra-open")||"[]"));
+ $("#view").innerHTML=`<h2 class="view-title">Points to verify</h2><p class="lead">Differences between the sample records and the specification. Ticks are saved in this browser only.</p>
+ <div class="card detail"><ul class="check">${items.map((t,i)=>`<li><input type="checkbox" id="v${i}" ${done.has(i)?"checked":""}><label for="v${i}"><strong>${t[0]}</strong><br><span style="color:var(--muted)">${t[1]}</span></label></li>`).join("")}</ul></div>
+ <p class="note">Device numbers in the samples alternate between ...000001 and ...000007, which matches round-robin routing.</p>`;
+ document.querySelectorAll(".check input").forEach((c,i)=>c.onchange=()=>{c.checked?done.add(i):done.delete(i);store.set("kra-open",JSON.stringify([...done]))});
+};
+
+function drawQR(el,text){try{const q=qrcode(0,"M");q.addData(text);q.make();el.innerHTML=q.createSvgTag({cellSize:3,margin:0,scalable:true});const s=el.querySelector("svg");if(s){s.setAttribute("width","116");s.setAttribute("height","116")}}catch(e){el.textContent="QR"}}
+/* ---------- nav + theme ---------- */
+function buildNav(){
+ $("#sideNav").innerHTML=NAV.map(g=>`<div class="navgroup"><h3>${g.g}</h3>${g.items.map(i=>`<button class="navbtn" data-v="${i[0]}"><span class="dot" ${i[2]?`style="background:${i[2]}"`:""}></span>${i[1]}</button>`).join("")}</div>`).join("");
+ $("#mSel").innerHTML=NAV.map(g=>`<optgroup label="${g.g}">${g.items.map(i=>`<option value="${i[0]}">${i[1]}</option>`).join("")}</optgroup>`).join("");
+ document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>show(b.dataset.v));$("#mSel").onchange=e=>show(e.target.value);
+}
+function show(v){if(!V[v])v="overview";document.querySelectorAll(".navbtn").forEach(b=>{if(b.dataset.v===v)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
+ $("#mSel").value=v;V[v]();store.set("kra-view",v);window.scrollTo({top:0,behavior:"auto"})}
+$("#themeBtn").onclick=()=>{if(window.kvToggleTheme)kvToggleTheme();else{const d=document.documentElement;d.dataset.theme=d.dataset.theme==="dark"?"light":"dark"}};
+buildNav();show(store.get("kra-view")||"overview");
+</script>
+</body>
+</html>

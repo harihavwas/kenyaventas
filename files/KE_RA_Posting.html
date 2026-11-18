@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KE invoice posting request builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ---------- themes ---------- */
+:root{
+  --bg:#F3F5F9;--surface:#FFFFFF;--surface-2:#F7F9FC;--ink:#1F2937;--muted:#6B7280;--line:#E5E7EB;--title:#0A2A57;
+  --accent:#F47B20;--accent-hover:#DD6A12;--on-accent:#FFFFFF;--accent-soft:#FCE4CC;--accent-text:#C25E10;
+  --brand:#2563AB;--brand-soft:#DCE9F7;--sel:#0A2A57;--sel-ink:#FFFFFF;
+  --banner:linear-gradient(90deg,#06224A 0%,#0A2A57 35%,#2563AB 100%);
+  --ok:#15803D;--ok-soft:#DCFCE7;--warn:#B45309;--warn-soft:#FEF3C7;--err:#B91C1C;--err-soft:#FEE2E2;
+  --code-bg:#0F1E36;--code-ink:#D6E2F5;--k:#8CC4FF;--s:#FFB77A;--n:#9BE3B1;--p:#7D8FAD;--tag:#F9A8D4;--errline:rgba(248,113,113,.22);
+  --shadow:0 1px 2px rgba(10,42,87,.06),0 6px 20px rgba(10,42,87,.06);
+  color-scheme:light;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme]){
+  --bg:#0A1424;--surface:#101E33;--surface-2:#0D1A2D;--ink:#E3E9F2;--muted:#94A3B8;--line:#22324B;--title:#E8EEF7;
+  --accent:#F47B20;--accent-hover:#FF8B33;--on-accent:#FFFFFF;--accent-soft:#3A2414;--accent-text:#FDBA74;
+  --brand:#6EA8FF;--brand-soft:#13304F;--sel:#2563AB;--sel-ink:#FFFFFF;
+  --banner:linear-gradient(90deg,#06224A 0%,#0A2A57 35%,#2563AB 100%);
+  --ok:#4ADE80;--ok-soft:#0F2E1E;--warn:#FBBF24;--warn-soft:#33270B;--err:#F87171;--err-soft:#3A1414;
+  --code-bg:#08111F;--shadow:0 1px 2px rgba(0,0,0,.3);color-scheme:dark;}}
+:root[data-theme="light"]{color-scheme:light}
+:root[data-theme="dark"]{
+  --bg:#0A1424;--surface:#101E33;--surface-2:#0D1A2D;--ink:#E3E9F2;--muted:#94A3B8;--line:#22324B;--title:#E8EEF7;
+  --accent:#F47B20;--accent-hover:#FF8B33;--on-accent:#FFFFFF;--accent-soft:#3A2414;--accent-text:#FDBA74;
+  --brand:#6EA8FF;--brand-soft:#13304F;--sel:#2563AB;--sel-ink:#FFFFFF;
+  --ok:#4ADE80;--ok-soft:#0F2E1E;--warn:#FBBF24;--warn-soft:#33270B;--err:#F87171;--err-soft:#3A1414;
+  --code-bg:#08111F;--shadow:0 1px 2px rgba(0,0,0,.3);color-scheme:dark;}
+:root[data-theme="graphite"]{
+  --bg:#141517;--surface:#1C1D21;--surface-2:#17181B;--ink:#E7E7EA;--muted:#9A9BA3;--line:#2E3036;--title:#F4F4F6;
+  --accent:#2DD4BF;--accent-hover:#5EEAD4;--on-accent:#06302A;--accent-soft:#0F2E2B;--accent-text:#5EEAD4;
+  --brand:#93C5FD;--brand-soft:#1E2A3B;--sel:#2DD4BF;--sel-ink:#06302A;
+  --banner:linear-gradient(90deg,#111214 0%,#1F2226 55%,#24403D 100%);
+  --ok:#4ADE80;--ok-soft:#10291B;--warn:#FBBF24;--warn-soft:#2E250D;--err:#F87171;--err-soft:#341616;
+  --code-bg:#0E0F11;--code-ink:#D8DAE0;--k:#93C5FD;--s:#FCD34D;--n:#5EEAD4;--p:#6B7280;--tag:#F0ABFC;
+  --shadow:0 1px 2px rgba(0,0,0,.35);color-scheme:dark;}
+:root[data-theme="mint"]{
+  --bg:#EEF5F2;--surface:#FFFFFF;--surface-2:#F5FAF8;--ink:#1C2B26;--muted:#5F7069;--line:#DAE6E0;--title:#0B3B2E;
+  --accent:#0F9D76;--accent-hover:#0C8463;--on-accent:#FFFFFF;--accent-soft:#D3EFE5;--accent-text:#0B7A5C;
+  --brand:#0E7490;--brand-soft:#D5EEF3;--sel:#0B3B2E;--sel-ink:#FFFFFF;
+  --banner:linear-gradient(90deg,#0A3328 0%,#0F6B57 55%,#14A37F 100%);
+  --code-bg:#0D2620;--code-ink:#D5EDE5;--k:#7DD3FC;--s:#FDE68A;--n:#86EFAC;--p:#6B8F84;--tag:#F9A8D4;
+  --shadow:0 1px 2px rgba(11,59,46,.06),0 6px 20px rgba(11,59,46,.06);color-scheme:light;}
+:root[data-theme="airtel"]{
+  --bg:#F7F3F3;--surface:#FFFFFF;--surface-2:#FBF8F8;--ink:#2A1F1F;--muted:#6F6363;--line:#ECE0E0;--title:#6E0B0B;
+  --accent:#E40000;--accent-hover:#C20000;--on-accent:#FFFFFF;--accent-soft:#FBDCDC;--accent-text:#B00000;
+  --brand:#475569;--brand-soft:#E8ECF1;--sel:#6E0B0B;--sel-ink:#FFFFFF;
+  --banner:linear-gradient(90deg,#4A0000 0%,#930000 50%,#E40000 100%);
+  --code-bg:#241212;--code-ink:#F1E1E1;--k:#93C5FD;--s:#FDBA74;--n:#86EFAC;--p:#9C7F7F;--tag:#F9A8D4;
+  --shadow:0 1px 2px rgba(110,11,11,.06),0 6px 20px rgba(110,11,11,.05);color-scheme:light;}
+:root[data-theme="contrast"]{
+  --bg:#000000;--surface:#000000;--surface-2:#0B0B0B;--ink:#FFFFFF;--muted:#D4D4D4;--line:#7A7A7A;--title:#FFFFFF;
+  --accent:#FFD400;--accent-hover:#FFE14D;--on-accent:#000000;--accent-soft:#2A2400;--accent-text:#FFD400;
+  --brand:#7CC4FF;--brand-soft:#0A2238;--sel:#FFD400;--sel-ink:#000000;
+  --banner:#000000;
+  --ok:#5CFF8A;--ok-soft:#06260F;--warn:#FFD400;--warn-soft:#2A2400;--err:#FF6B6B;--err-soft:#330B0B;
+  --code-bg:#000000;--code-ink:#FFFFFF;--k:#7CC4FF;--s:#FFD400;--n:#5CFF8A;--p:#BDBDBD;--tag:#FF8AD8;--errline:rgba(255,107,107,.35);
+  --shadow:none;color-scheme:dark;}
+:root[data-theme="contrast"] .banner{border-bottom:1px solid #7A7A7A}
+
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 "Open Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+/* ---------- banner ---------- */
+header.banner{background:var(--banner);color:#fff}
+.banner-in{max-width:1440px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.banner h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
+.banner p{margin:0 0 2px;font-size:13px;opacity:.85}
+.banner .right{margin-left:auto;display:flex;align-items:center;gap:18px}
+.banner .logo{height:38px;width:auto;display:block}
+.themes{display:flex;gap:6px;padding:4px;border-radius:99px;background:rgba(255,255,255,.1)}
+.sw{width:22px;height:22px;border-radius:50%;border:0;padding:0;cursor:pointer;position:relative;overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.35);display:block}
+.sw .a,.sw .b{position:absolute;inset:0}
+.sw .b{clip-path:polygon(100% 0,100% 100%,0 100%)}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 2px #fff,0 0 0 4px rgba(255,255,255,.25)}
+.sw svg{position:absolute;inset:4px;width:14px;height:14px;color:#fff}
+.sw:hover{transform:scale(1.08)}
+@media (prefers-reduced-motion:no-preference){.sw{transition:transform .12s}}
+
+main{max-width:1440px;margin:0 auto;padding:18px 24px 40px}
+
+/* ---------- use cases + template ---------- */
+.cases{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.case{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 14px;font-weight:600;font-size:13.5px;color:var(--muted);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.case:hover{color:var(--title);border-color:var(--brand)}
+.case[aria-selected="true"]{background:var(--sel);border-color:var(--sel);color:var(--sel-ink)}
+.case .st{width:7px;height:7px;border-radius:50%;background:var(--ok);flex:none}
+.case .st.none{background:transparent;box-shadow:inset 0 0 0 1.5px currentColor;opacity:.7}
+.case.add{border-style:dashed;font-weight:600}
+.addform{display:inline-flex;gap:6px}
+.addform input{border:1px solid var(--brand);border-radius:99px;padding:5px 12px;background:var(--surface);width:220px;font-size:13.5px}
+
+.tplbar{background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px;padding:10px 14px;margin-bottom:14px;flex-wrap:wrap}
+.tplbar.missing{background:var(--accent-soft);border-color:transparent}
+.tplico{width:34px;height:34px;border-radius:8px;background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;flex:none}
+.tplbar.missing .tplico{background:var(--surface);color:var(--accent-text)}
+.tplico svg{width:18px;height:18px}
+.tplname{font-weight:700;color:var(--title);word-break:break-all}
+.tplmeta{font-size:12.5px;color:var(--muted)}
+.tplbar.missing .tplmeta{color:var(--accent-text)}
+.pill{font-size:11.5px;font-weight:700;border-radius:5px;padding:1px 6px;margin-left:6px;vertical-align:1px}
+.pill.builtin{background:var(--brand-soft);color:var(--brand)}
+.pill.up{background:var(--ok-soft);color:var(--ok)}
+.pill.bad{background:var(--err-soft);color:var(--err)}
+
+.strip{background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);display:flex;flex-wrap:wrap;align-items:stretch;overflow:hidden;margin-bottom:18px}
+.strip .cell{padding:11px 18px;border-right:1px solid var(--line);min-width:0}
+.strip .cell:last-child{border-right:0}
+.strip .lbl{font-size:12px;color:var(--muted)}
+.strip .val{font-weight:600;color:var(--title);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.strip .buyer{flex:1 1 220px}
+.strip .gross{background:var(--accent-soft);margin-left:auto}
+.strip .gross .val{color:var(--accent-text);font-size:22px;font-weight:700;line-height:1.2}
+.strip .gross .val small{font-size:13px;font-weight:600;margin-right:4px}
+.strip.empty{padding:13px 18px;color:var(--muted)}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:18px;align-items:start}
+@media (max-width:980px){.grid{grid-template-columns:1fr}.strip .gross{margin-left:0;flex:1 1 100%}}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;position:relative}
+.card.warm{border-top:4px solid var(--accent)}
+.card.cool{border-top:4px solid var(--brand)}
+.card-head{display:flex;align-items:center;gap:10px;padding:14px 16px 10px;flex-wrap:wrap}
+.card-head h2{margin:0;font-size:16px;font-weight:700;color:var(--title)}
+.tools{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:6px 11px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;color:var(--title);white-space:nowrap}
+.btn:hover{background:var(--surface-2);border-color:var(--brand)}
+.btn svg{width:15px;height:15px;flex:none}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.btn.danger{color:var(--err)}
+.btn.danger.arm{background:var(--err);border-color:var(--err);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:disabled:hover{background:var(--surface);border-color:var(--line)}
+
+.editor{position:relative;margin:0 16px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);display:flex;min-height:0;height:520px;overflow:hidden}
+.gutter{padding:12px 8px 12px 10px;text-align:right;color:var(--muted);font-size:12px;line-height:1.6;user-select:none;border-right:1px solid var(--line);overflow:hidden;min-width:42px;white-space:pre}
+#input{flex:1;min-width:0;border:0;background:transparent;resize:none;padding:12px;font-size:12.5px;line-height:1.6;height:100%;outline:none;white-space:pre;overflow:auto;tab-size:2}
+.editor:focus-within{border-color:var(--brand)}
+
+.status{margin:10px 16px 16px;padding:9px 12px;border-radius:8px;font-size:13px;display:flex;align-items:center;gap:8px}
+.status.ok{background:var(--ok-soft);color:var(--ok)}
+.status.err{background:var(--err-soft);color:var(--err)}
+.status.idle{background:var(--surface-2);color:var(--muted)}
+.status .btn{margin-left:auto;padding:3px 9px;font-size:12px}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}
+
+.tabs{display:flex;gap:2px;padding:0 16px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{border:0;background:none;padding:10px 12px;font-weight:600;font-size:13.5px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--title);border-bottom-color:var(--accent)}
+.badge{font-size:11.5px;font-weight:700;border-radius:99px;padding:1px 7px;background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.badge.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.badge.err{background:var(--err-soft);color:var(--err);border-color:transparent}
+.badge.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+
+.opts{display:flex;align-items:center;gap:12px;padding:10px 16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:5px 10px;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--sel);color:var(--sel-ink)}
+
+.panel{padding:0 16px 16px}
+pre.code{margin:0;background:var(--code-bg);color:var(--code-ink);border-radius:8px;padding:14px 16px;font-size:12.5px;line-height:1.6;overflow:auto;height:520px;white-space:pre}
+pre.code.compact{white-space:pre-wrap;word-break:break-all}
+.code .k{color:var(--k)}.code .s{color:var(--s)}.code .n{color:var(--n)}.code .p{color:var(--p)}.code .e{color:var(--p);font-style:italic}.code .tg{color:var(--tag)}.code .cm{color:var(--p);font-style:italic}
+.code .bad{background:var(--errline);border-radius:3px;outline:1px solid var(--err)}
+.empty-out{height:520px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);text-align:center;border:1px dashed var(--line);border-radius:8px;padding:20px}
+.empty-out b{color:var(--title);font-size:15px}
+.errbox{background:var(--err-soft);color:var(--err);border-radius:8px;padding:12px 14px;margin-bottom:10px;font-size:13px}
+.errbox b{display:block;margin-bottom:2px}
+.errbox .btn{margin-top:8px}
+.raw{height:430px}
+
+.tplview{padding:10px 0}
+.tplview .ln{display:flex;padding:0 14px 0 0}
+.tplview .ln .no{width:46px;flex:none;text-align:right;padding-right:12px;color:var(--p);user-select:none}
+.tplview .ln.hit{background:var(--errline)}
+.tplview .ln.flash{background:color-mix(in srgb,var(--accent) 22%,transparent)}
+.tplhead{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.tplhead .tools{margin-left:auto}
+
+.filter{width:100%;border:1px solid var(--line);border-radius:7px;padding:7px 10px;background:var(--surface-2);margin-bottom:10px}
+.tablewrap{overflow:auto;height:476px;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:12.5px}
+td.v{min-width:110px}
+th{position:sticky;top:0;background:var(--surface-2);text-align:left;font-weight:600;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line);z-index:1}
+td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.t{color:var(--title);font-weight:600;white-space:nowrap}
+td.v{max-width:220px;word-break:break-word}
+td.v button{border:0;background:none;padding:0;cursor:copy;text-align:left;color:inherit}
+td.v button:hover{color:var(--brand);text-decoration:underline}
+td .src{color:var(--muted);word-break:break-word;display:block}
+.lnk{border:0;background:none;padding:0;color:var(--brand);cursor:pointer;font-size:12px}
+.lnk:hover{text-decoration:underline}
+.how{font-size:11px;font-weight:700;border-radius:5px;padding:2px 6px;white-space:nowrap}
+.how.direct{background:var(--brand-soft);color:var(--brand)}
+.how.derived{background:var(--accent-soft);color:var(--accent-text)}
+.how.default,.how.fixed{background:var(--surface-2);color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
+.how.blank{color:var(--muted);box-shadow:inset 0 0 0 1px var(--line);background:none}
+.blankv{color:var(--muted);font-style:italic}
+
+.checks{display:flex;flex-direction:column;gap:8px;height:520px;overflow:auto}
+.check{display:flex;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface)}
+.check .ic{width:20px;height:20px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;margin-top:1px}
+.check.pass .ic{background:var(--ok-soft);color:var(--ok)}
+.check.info .ic{background:var(--brand-soft);color:var(--brand)}
+.check.warn .ic{background:var(--warn-soft);color:var(--warn)}
+.check.error .ic{background:var(--err-soft);color:var(--err)}
+.check.error{border-color:var(--err)}
+.check b{display:block;color:var(--title);font-size:13px}
+.check span{color:var(--muted);font-size:12.5px}
+.check code{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12px;color:var(--ink)}
+.grouph{font-size:12.5px;font-weight:700;color:var(--muted);margin:6px 2px 0}
+
+.dropmask{position:fixed;inset:0;z-index:30;background:color-mix(in srgb,var(--bg) 82%,transparent);display:none;align-items:center;justify-content:center;padding:24px}
+.dropmask.on{display:flex}
+.dropmask div{border:2px dashed var(--accent);border-radius:14px;padding:32px 40px;background:var(--surface);text-align:center;color:var(--title);max-width:440px}
+.dropmask b{display:block;font-size:17px;margin-bottom:6px}
+.dropmask span{color:var(--muted);font-size:13.5px}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--sel);color:var(--sel-ink);padding:9px 16px;border-radius:8px;font-weight:600;font-size:13px;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:40}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.foot{margin-top:18px;font-size:12px;color:var(--muted)}
+@media (max-width:640px){
+  main{padding:14px 12px 30px}.banner-in{padding:12px 14px;gap:10px}.banner h1{font-size:17px}.banner .logo{height:26px}
+  .banner .right{width:100%;justify-content:space-between}
+  .editor,pre.code,.empty-out,.checks{height:380px}.tablewrap{height:340px}.raw{height:300px}
+  .strip .cell{flex:1 1 45%;border-bottom:1px solid var(--line)}
+  .tplbar .tools{margin-left:0;width:100%}
+}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<header class="banner"><div class="banner-in">
+  <div><p>Airtel Kenya: Ventas to USDM posting requests</p><h1>Invoice posting request builder</h1></div>
+  <div class="right">
+    <div class="themes" id="themes" role="group" aria-label="Theme"></div>
+    <img class="logo" alt="6D Technologies" src="data:image/png;base64,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">
+  </div>
+</div></header>
+
+<main>
+  <nav class="cases" id="cases" role="tablist" aria-label="Use case"></nav>
+  <section class="tplbar" id="tplbar"></section>
+  <section id="strip" class="strip empty" aria-live="polite">Paste an incoming request to see the invoice summary.</section>
+
+  <div class="grid">
+    <section class="card warm">
+      <div class="card-head">
+        <h2>Incoming request</h2>
+        <div class="tools">
+          <button class="btn" id="bSample">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h12l4 4v12H4z"/><path d="M8 13h8M8 17h5"/></svg>Sample</button>
+          <button class="btn" id="bUpload" title="Open a .json or .txt file">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>Open file</button>
+          <button class="btn" id="bFormat" title="Pretty-print the JSON (Ctrl+Enter)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M8 12h12M8 18h12"/></svg>Format</button>
+          <button class="btn" id="bClear">Clear</button>
+        </div>
+      </div>
+      <div class="editor">
+        <div class="gutter mono" id="gutter" aria-hidden="true">1</div>
+        <textarea id="input" class="mono" spellcheck="false" autocomplete="off" aria-label="Incoming request JSON"
+          placeholder="Paste the incoming request JSON here, or drop a .json / .txt file anywhere on the page."></textarea>
+      </div>
+      <div class="status idle" id="status"><span class="dot"></span><span>Waiting for input</span></div>
+    </section>
+
+    <section class="card cool">
+      <div class="card-head">
+        <h2 id="outTitle">Posting request</h2>
+        <div class="tools">
+          <button class="btn" id="bCopy" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/></svg>Copy</button>
+          <button class="btn primary" id="bDownload" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v12M7 11l5 5 5-5M4 20h16"/></svg>Download</button>
+        </div>
+      </div>
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" aria-selected="true" data-tab="json">Request JSON</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="map">Field mapping <span class="badge" id="mapCount">0</span></button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="checks">Checks <span class="badge" id="checkBadge">0</span></button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="tpl">Template</button>
+      </div>
+
+      <div class="panel" data-panel="json">
+        <div class="opts" style="padding:10px 0">
+          <span>Layout</span>
+          <div class="seg" id="segFmt"><button aria-pressed="true" data-v="pretty">Pretty</button><button aria-pressed="false" data-v="compact">Single line</button></div>
+        </div>
+        <div id="jsonBody"></div>
+      </div>
+      <div class="panel" data-panel="map" hidden style="padding-top:12px">
+        <input class="filter" id="filter" type="search" placeholder="Filter by field, value or source">
+        <div class="tablewrap"><table>
+          <thead><tr><th>Posting field</th><th>Value</th><th>Taken from</th><th>How</th></tr></thead>
+          <tbody id="mapBody"></tbody>
+        </table></div>
+      </div>
+      <div class="panel" data-panel="checks" hidden style="padding-top:12px"><div class="checks" id="checks"></div></div>
+      <div class="panel" data-panel="tpl" hidden style="padding-top:12px"><div id="tplBody"></div></div>
+    </section>
+  </div>
+  <p class="foot">Templates are rendered in your browser with a FreeMarker-compatible engine that uses exact decimal arithmetic. Requests and templates are saved in this browser only, and nothing is sent anywhere.</p>
+</main>
+<input type="file" id="fileIn" accept=".json,.txt,application/json,text/plain" hidden>
+<input type="file" id="fileTpl" accept=".ftl,.ftlh,.ftlx,.txt" hidden>
+<div class="dropmask" id="dropmask"><div><b>Drop to load</b><span>A .ftl file becomes the template for <span id="dropCase"></span>. A .json or .txt file loads as the incoming request.</span></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* Mini FreeMarker engine — covers the FTL subset used by integration templates */
+const FTL=(()=>{
+class FtlError extends Error{constructor(msg,line){super(msg);this.ftlLine=line;}}
+class Missing{constructor(path){this.path=path;}}
+class Dec{constructor(n,scale){this.n=n;this.scale=scale;}}
+class FDate{constructor(p){Object.assign(this,p);}}
+class Lambda{constructor(param,body){this.param=param;this.body=body;}}
+class Macro{constructor(o){Object.assign(this,o);}}
+const isMissing=v=>v===undefined||v===null||v instanceof Missing;
+
+// ---------- decimals ----------
+function parseDec(s,strict){
+  s=String(s).trim();
+  if(!/^[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(s)) return null;
+  let exp=0;const m=s.match(/[eE]([-+]?\d+)$/);if(m){exp=+m[1];s=s.slice(0,m.index);}
+  let neg=false;if(s[0]==='-'||s[0]==='+'){neg=s[0]==='-';s=s.slice(1);}
+  let [i,f='']=s.split('.');let scale=f.length-exp;let digits=(i+f)||'0';
+  if(scale<0){digits+='0'.repeat(-scale);scale=0;}
+  let n=BigInt(digits);if(neg)n=-n;return new Dec(n,scale);
+}
+const decOf=x=>x instanceof Dec?x:parseDec(String(x));
+function align(a,b){const s=Math.max(a.scale,b.scale);return [a.n*10n**BigInt(s-a.scale),b.n*10n**BigInt(s-b.scale),s];}
+const dAdd=(a,b)=>{const [x,y,s]=align(a,b);return new Dec(x+y,s);};
+const dSub=(a,b)=>{const [x,y,s]=align(a,b);return new Dec(x-y,s);};
+const dMul=(a,b)=>new Dec(a.n*b.n,a.scale+b.scale);
+function roundTo(d,places,mode='halfEven'){
+  if(d.scale<=places) return d;
+  const k=10n**BigInt(d.scale-places);let n=d.n;const neg=n<0n;if(neg)n=-n;
+  let q=n/k,r=n%k;const h=k/2n;
+  if(mode==='halfEven'){if(r>h||(r===h&&q%2n===1n))q+=1n;}
+  else if(mode==='halfUp'){if(r>=h)q+=1n;}
+  else if(mode==='floor'){if(neg&&r>0n)q+=1n;}
+  else if(mode==='ceiling'){if(!neg&&r>0n)q+=1n;}
+  return new Dec(neg?-q:q,places);
+}
+function dDiv(a,b){if(b.n===0n)throw new Error('Division by zero');
+  const scale=Math.max(12,a.scale,b.scale);const [x,y]=align(a,b);
+  const num=x*10n**BigInt(scale+2),q=num/y;return roundTo(new Dec(q,scale+2),scale);}
+function dMod(a,b){const [x,y,s]=align(a,b);if(y===0n)throw new Error('Division by zero');return new Dec(x%y,s);}
+const dCmp=(a,b)=>{const [x,y]=align(a,b);return x<y?-1:x>y?1:0;};
+const dAbs=d=>new Dec(d.n<0n?-d.n:d.n,d.scale);
+function fmtPattern(d,pat){
+  pat=String(pat).split(';')[0];
+  let mode='halfEven';
+  const mm=pat.match(/roundingMode\s*=\s*(\w+)/);if(mm){mode=mm[1];pat=pat.replace(/;.*$/,'');}
+  const pre=(pat.match(/^[^#0,.]*/)||[''])[0],suf=(pat.match(/[^#0,.]*$/)||[''])[0];
+  let core=pat.slice(pre.length,pat.length-suf.length);
+  const dot=core.indexOf('.');const ip=dot<0?core:core.slice(0,dot),fp=dot<0?'':core.slice(dot+1);
+  const minInt=(ip.match(/0/g)||[]).length,grp=ip.lastIndexOf(',')>=0?ip.length-ip.lastIndexOf(',')-1:0;
+  const minF=(fp.match(/0/g)||[]).length,maxF=fp.length;
+  let v=d;if(suf.includes('%'))v=dMul(v,new Dec(100n,0));
+  v=roundTo(v,maxF,mode);
+  const neg=v.n<0n;let t=(neg?-v.n:v.n).toString().padStart(v.scale+1,'0');
+  let I=t.slice(0,t.length-v.scale),F=v.scale?t.slice(t.length-v.scale):'';
+  while(F.length>minF&&F.endsWith('0'))F=F.slice(0,-1);while(F.length<minF)F+='0';
+  I=I.replace(/^0+/,'');while(I.length<minInt)I='0'+I;
+  if(grp>0)I=I.replace(new RegExp('\\B(?=(\\d{'+grp+'})+(?!\\d))','g'),',');
+  const isZero=!/[1-9]/.test(I+F);
+  return (neg&&!isZero?'-':'')+pre+I+(F?'.'+F:'')+suf;
+}
+const fmtDefault=d=>fmtPattern(d,'#,##0.###');
+const fmtC=d=>fmtPattern(d,'0.################');
+
+// ---------- dates (Java SimpleDateFormat subset, no timezone shifting) ----------
+function patTokens(p){const out=[];let i=0;while(i<p.length){const c=p[i];
+  if(c==="'"){let j=i+1,s='';while(j<p.length){if(p[j]==="'"){if(p[j+1]==="'"){s+="'";j+=2;continue;}break;}s+=p[j++];}if(i+1===j&&p[j]==="'"){out.push({lit:"'"});i=j+1;continue;}out.push({lit:s});i=j+1;}
+  else if(/[a-zA-Z]/.test(c)){let j=i;while(p[j]===c)j++;out.push({f:c,n:j-i});i=j;}
+  else{out.push({lit:c});i++;}}return out;}
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONL=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function parseDate(str,pat){
+  const t=patTokens(pat);let i=0;const d={y:1970,M:1,d:1,H:0,m:0,s:0,S:0};let pm=null;
+  for(let k=0;k<t.length;k++){const tk=t[k];
+    if(tk.lit!==undefined){if(str.substr(i,tk.lit.length)!==tk.lit)return null;i+=tk.lit.length;continue;}
+    if(tk.f==='M'&&tk.n>=3){const list=tk.n>3?MONL:MON;const idx=list.findIndex(x=>str.substr(i,x.length).toLowerCase()===x.toLowerCase());if(idx<0)return null;d.M=idx+1;i+=list[idx].length;continue;}
+    if(tk.f==='a'){const a=str.substr(i,2).toUpperCase();if(a!=='AM'&&a!=='PM')return null;pm=a==='PM';i+=2;continue;}
+    if(tk.f==='X'||tk.f==='Z'||tk.f==='z'){const m=str.slice(i).match(/^(Z|[+-]\d{2}:?\d{2}|[+-]\d{2}|[A-Z]{3})/);if(!m)return null;i+=m[0].length;continue;}
+    const next=t[k+1];const maxLen=(next&&next.f)?tk.n:20;
+    const m=str.slice(i).match(new RegExp('^-?\\d{1,'+maxLen+'}'));if(!m)return null;const v=parseInt(m[0],10);i+=m[0].length;
+    ({y:()=>d.y=tk.n===2?2000+v:v,M:()=>d.M=v,d:()=>d.d=v,H:()=>d.H=v,h:()=>d.H=v%12,k:()=>d.H=v%24,m:()=>d.m=v,s:()=>d.s=v,S:()=>d.S=v}[tk.f]||(()=>{}))();
+  }
+  if(pm!==null&&pm)d.H+=12;
+  if(i!==str.length&&!/^\s*$/.test(str.slice(i)))return null;
+  return new FDate(d);
+}
+function formatDate(d,pat){const pad=(v,n)=>String(v).padStart(n,'0');
+  return patTokens(pat).map(tk=>{if(tk.lit!==undefined)return tk.lit;const n=tk.n;
+    switch(tk.f){case'y':return n===2?pad(d.y%100,2):pad(d.y,n);case'M':return n>=4?MONL[d.M-1]:n===3?MON[d.M-1]:pad(d.M,n);
+      case'd':return pad(d.d,n);case'H':return pad(d.H,n);case'h':return pad(d.H%12||12,n);case'm':return pad(d.m,n);case's':return pad(d.s,n);
+      case'S':return pad(d.S,n);case'a':return d.H<12?'AM':'PM';case'X':case'Z':return n>=3?'+00:00':'+0000';default:return '';}}).join('');}
+const ISO='yyyy-MM-dd\'T\'HH:mm:ss';
+
+// ---------- expression lexer ----------
+const KW=new Set(['gt','lt','gte','lte','as','true','false','in','using']);
+function lex(src,baseLine){
+  const toks=[];let i=0;
+  while(i<src.length){const c=src[i];
+    if(/\s/.test(c)){i++;continue;}
+    if(c==='"'||c==="'"||((c==='r')&&(src[i+1]==='"'||src[i+1]==="'"))){
+      const raw=c==='r';if(raw)i++;const q=src[i];let j=i+1,s='';
+      while(j<src.length&&src[j]!==q){if(!raw&&src[j]==='\\'){const e=src[j+1];s+=({n:'\n',t:'\t',r:'\r','"':'"',"'":"'",'\\':'\\','$':'$','{':'{','<':'<','>':'>'})[e]??e;j+=2;continue;}s+=src[j++];}
+      if(j>=src.length)throw new FtlError('Unclosed string literal',baseLine);
+      toks.push({t:'str',v:s,raw});i=j+1;continue;}
+    if(/\d/.test(c)){let j=i;while(/\d/.test(src[j]))j++;if(src[j]==='.'&&/\d/.test(src[j+1])){j++;while(/\d/.test(src[j]))j++;}toks.push({t:'num',v:src.slice(i,j)});i=j;continue;}
+    if(/[A-Za-z_$@]/.test(c)){let j=i;while(j<src.length&&/[\w$@]/.test(src[j]))j++;const w=src.slice(i,j);toks.push({t:KW.has(w)?'kw':'id',v:w});i=j;continue;}
+    const three=src.substr(i,3),two=src.substr(i,2);
+    if(['...','..<','..!','..*'].includes(three)){toks.push({t:'op',v:'..'});i+=3;continue;}
+    if(['??','==','!=','&&','||','->','<=','>=','..','+=','-=','*=','/=','%=','++','--'].includes(two)){toks.push({t:'op',v:two});i+=2;continue;}
+    if('?!=+-*/%()[]{},.:<>;'.includes(c)){toks.push({t:'op',v:c});i++;continue;}
+    throw new FtlError('Unexpected character "'+c+'" in expression',baseLine);
+  }
+  return toks;
+}
+
+// ---------- expression parser ----------
+function Parser(toks,line){this.t=toks;this.i=0;this.line=line;}
+Parser.prototype={
+  peek(o=0){return this.t[this.i+o];},
+  is(v,o=0){const k=this.t[this.i+o];return k&&(k.t==='op'||k.t==='kw')&&k.v===v;},
+  eat(v){if(!this.is(v))throw new FtlError('Expected "'+v+'"'+(this.peek()?' but found "'+this.peek().v+'"':' at end of expression'),this.line);return this.t[this.i++];},
+  done(){return this.i>=this.t.length;},
+  expr(){return this.or();},
+  or(){let l=this.and();while(this.is('||')){this.i++;l={k:'or',l,r:this.and()};}return l;},
+  and(){let l=this.eq();while(this.is('&&')){this.i++;l={k:'and',l,r:this.eq()};}return l;},
+  eq(){let l=this.rel();while(this.is('==')||this.is('!=')||this.is('=')){const op=this.t[this.i++].v;l={k:'cmp',op:op==='='?'==':op,l,r:this.rel()};}return l;},
+  rel(){let l=this.add();const m={gt:'>',lt:'<',gte:'>=',lte:'<=','<':'<','>':'>','<=':'<=','>=':'>='};
+    while(this.peek()&&m[this.peek().v]&&(this.peek().t==='kw'||this.peek().t==='op')){const op=m[this.t[this.i++].v];l={k:'cmp',op,l,r:this.add()};}return l;},
+  add(){let l=this.mul();while((this.is('+')||this.is('-'))){const op=this.t[this.i++].v;l={k:'arith',op,l,r:this.mul()};}return l;},
+  mul(){let l=this.unary();while(this.is('*')||this.is('/')||this.is('%')){const op=this.t[this.i++].v;l={k:'arith',op,l,r:this.unary()};}return l;},
+  unary(){if(this.is('!')){this.i++;return {k:'not',e:this.unary()};}if(this.is('-')){this.i++;return {k:'neg',e:this.unary()};}if(this.is('+')){this.i++;return this.unary();}return this.postfix();},
+  postfix(){let e=this.primary();
+    for(;;){
+      if(this.is('.')&&this.peek(1)&&(this.peek(1).t==='id'||this.peek(1).t==='kw')){this.i++;e={k:'dot',o:e,name:this.t[this.i++].v};continue;}
+      if(this.is('[')){this.i++;const ix=this.expr();this.eat(']');e={k:'idx',o:e,ix};continue;}
+      if(this.is('(')){this.i++;const args=this.args(')');e={k:'call',f:e,args};continue;}
+      if(this.is('??')){this.i++;e={k:'exists',e};continue;}
+      if(this.is('?')&&this.peek(1)&&(this.peek(1).t==='id'||this.peek(1).t==='kw')){this.i+=2;let name=this.t[this.i-1].v;
+        if(this.is('.')&&this.peek(1)&&this.peek(1).t==='id'&&['iso','iso_utc','iso_local','iso_nz','xs','computer'].includes(this.peek(1).v)){this.i++;name+='.'+this.t[this.i++].v;}
+        let args=null;
+        if(this.is('(')){this.i++;args=this.args(')');}
+        else if(name==='string'&&this.is('[')){this.i++;args=[this.expr()];this.eat(']');}
+        e={k:'bi',e,name,args};continue;}
+      if(this.is('!')){this.i++;
+        const n=this.peek();const canStart=n&&!(n.t==='op'&&[')',']','}',',',':','==','!=','&&','||','>','<','>=','<=','=','?','??'].includes(n.v))&&!(n.t==='kw'&&['gt','lt','gte','lte','as'].includes(n.v));
+        // default operand binds like a primary+postfix (not binary ops)
+        e={k:'def',e,d:canStart?this.unaryNoDef():null};continue;}
+      break;}
+    return e;},
+  unaryNoDef(){if(this.is('-')){this.i++;return {k:'neg',e:this.postfixNoDef()};}return this.postfixNoDef();},
+  postfixNoDef(){const save=this.postfix.bind(this);let e=this.primary();
+    for(;;){if(this.is('.')&&this.peek(1)&&this.peek(1).t==='id'){this.i++;e={k:'dot',o:e,name:this.t[this.i++].v};continue;}
+      if(this.is('[')){this.i++;const ix=this.expr();this.eat(']');e={k:'idx',o:e,ix};continue;}
+      if(this.is('?')&&this.peek(1)&&this.peek(1).t==='id'){this.i+=2;const name=this.t[this.i-1].v;let args=null;if(this.is('(')){this.i++;args=this.args(')');}e={k:'bi',e,name,args};continue;}
+      break;}return e;},
+  args(close){const a=[];if(this.is(close)){this.i++;return a;}
+    for(;;){
+      if(this.peek()&&this.peek().t==='id'&&this.is('->',1)){const p=this.t[this.i].v;this.i+=2;a.push({k:'lambda',p,body:this.expr()});}
+      else a.push(this.expr());
+      if(this.is(',')){this.i++;continue;}this.eat(close);return a;}},
+  primary(){const k=this.peek();if(!k)throw new FtlError('Unexpected end of expression',this.line);
+    if(k.t==='str'){this.i++;return {k:'str',v:k.v,raw:k.raw};}
+    if(k.t==='num'){this.i++;let e={k:'num',v:parseDec(k.v)};if(this.is('..')){this.i++;const hi=(this.peek()&&!(this.peek().t==='op'&&[')',']'].includes(this.peek().v)))?this.add():null;e={k:'range',lo:e,hi};}return e;}
+    if(k.t==='kw'&&(k.v==='true'||k.v==='false')){this.i++;return {k:'bool',v:k.v==='true'};}
+    if(k.t==='id'){this.i++;return {k:'id',name:k.v};}
+    if(k.v==='('){this.i++;const e=this.expr();this.eat(')');return {k:'paren',e};}
+    if(k.v==='['){this.i++;const items=this.args(']');return {k:'seq',items};}
+    if(k.v==='{'){this.i++;const ent=[];if(!this.is('}')){for(;;){const key=this.expr();this.eat(':');ent.push([key,this.expr()]);if(this.is(',')){this.i++;continue;}break;}}this.eat('}');return {k:'hash',ent};}
+    throw new FtlError('Unexpected "'+k.v+'" in expression',this.line);}
+};
+function parseExpr(src,line){const p=new Parser(lex(src,line),line);const e=p.expr();if(!p.done())throw new FtlError('Unexpected "'+p.peek().v+'" after expression',line);e.src=src.trim();return e;}
+
+// ---------- template scanner ----------
+function lineAt(text,pos){let n=1;for(let i=0;i<pos;i++)if(text.charCodeAt(i)===10)n++;return n;}
+function findTagEnd(s,i){let d=0,q=null;for(;i<s.length;i++){const c=s[i];
+  if(q){if(c==='\\'){i++;continue;}if(c===q)q=null;continue;}
+  if(c==='"'||c==="'"){q=c;continue;}
+  if('([{'.includes(c))d++;else if(')]}'.includes(c))d--;
+  else if(c==='>'&&d<=0)return i;}return -1;}
+function findInterpEnd(s,i){let d=0,q=null;for(;i<s.length;i++){const c=s[i];
+  if(q){if(c==='\\'){i++;continue;}if(c===q)q=null;continue;}
+  if(c==='"'||c==="'"){q=c;continue;}
+  if(c==='{')d++;else if(c==='}'){if(d===0)return i;d--;}}return -1;}
+function scan(text){
+  const toks=[];let i=0,buf='',bufStart=0;
+  const flush=()=>{if(buf)toks.push({type:'text',v:buf,line:lineAt(text,bufStart)});buf='';};
+  while(i<text.length){
+    if(text.startsWith('<#--',i)){const e=text.indexOf('-->',i);if(e<0)throw new FtlError('Unclosed comment',lineAt(text,i));flush();i=e+3;bufStart=i;continue;}
+    if(text.startsWith('${',i)){const e=findInterpEnd(text,i+2);if(e<0)throw new FtlError('Unclosed ${',lineAt(text,i));flush();toks.push({type:'interp',src:text.slice(i+2,e),line:lineAt(text,i)});i=e+1;bufStart=i;continue;}
+    const m=text.slice(i,i+40).match(/^<(\/?)([#@])([\w.]*)/);
+    if(m&&(m[3]||m[2]==='@')){flush();const line=lineAt(text,i);
+      if(m[1]){const e=text.indexOf('>',i);if(e<0)throw new FtlError('Unclosed end tag',line);toks.push({type:'end',name:(m[2]==='@'?'@':'')+m[3],line});i=e+1;bufStart=i;continue;}
+      const start=i+m[0].length;const e=findTagEnd(text,start);if(e<0)throw new FtlError('Tag <'+m[2]+m[3]+' is not closed with >',line);
+      let params=text.slice(start,e),self=false;if(params.endsWith('/')){params=params.slice(0,-1);self=true;}
+      if(m[2]==='#'&&m[3]==='noparse'){const ce=text.indexOf('</#noparse>',e);if(ce<0)throw new FtlError('Unclosed #noparse',line);toks.push({type:'text',v:text.slice(e+1,ce),line});i=ce+11;bufStart=i;continue;}
+      toks.push({type:m[2]==='@'?'call':'dir',name:m[3],params,self,line});i=e+1;bufStart=i;continue;}
+    if(!buf)bufStart=i;buf+=text[i++];
+  }
+  flush();return toks;
+}
+const BLOCK=new Set(['if','list','items','macro','function','switch','attempt','compress','sep','escape','noescape','autoesc','noautoesc','outputformat']);
+function build(toks){
+  let p=0;
+  function nodes(stops){const out=[];
+    while(p<toks.length){const t=toks[p];
+      if(t.type==='end')return {out,stop:t};
+      if(t.type==='dir'&&stops.includes(t.name))return {out,stop:t};
+      p++;
+      if(t.type==='text')out.push({type:'text',v:t.v,line:t.line});
+      else if(t.type==='interp')out.push({type:'interp',e:parseExpr(t.src,t.line),line:t.line});
+      else if(t.type==='call'){const n={type:'call',name:t.name,params:t.params,line:t.line,body:null};
+        if(!t.self){const r=nodes([]);if(!r.stop||r.stop.name!=='@'+t.name&&r.stop.name!=='@')throw new FtlError('<@'+t.name+'> is not closed',t.line);p++;n.body=r.out;}
+        out.push(n);}
+      else out.push(directive(t));
+    }
+    return {out,stop:null};}
+  function expectEnd(name,t){const k=toks[p];if(!k||k.type!=='end'||k.name!==name)throw new FtlError('<#'+name+'> opened on line '+t.line+' is not closed with </#'+name+'>',t.line);p++;}
+  function directive(t){const n={type:'dir',name:t.name,params:t.params,line:t.line};
+    switch(t.name){
+      case 'if':{n.branches=[];let cond=parseExpr(t.params,t.line);
+        for(;;){const r=nodes(['elseif','else']);n.branches.push({cond,body:r.out});
+          if(r.stop&&r.stop.type==='dir'&&r.stop.name==='elseif'){p++;cond=parseExpr(r.stop.params,r.stop.line);continue;}
+          if(r.stop&&r.stop.type==='dir'&&r.stop.name==='else'){p++;const r2=nodes([]);n.branches.push({cond:null,body:r2.out});}
+          break;}
+        expectEnd('if',t);return n;}
+      case 'list':case 'items':{const m=t.params.match(/^([\s\S]*?)\s+as\s+([\w$]+)(?:\s*,\s*([\w$]+))?\s*$/);
+        if(m){n.seq=t.name==='list'?parseExpr(m[1],t.line):null;n.v1=m[2];n.v2=m[3]||null;}else{if(t.name==='items')throw new FtlError('#items needs "as name"',t.line);n.seq=parseExpr(t.params,t.line);n.v1=null;}
+        const r=nodes(['else']);n.body=r.out;
+        if(r.stop&&r.stop.type==='dir'&&r.stop.name==='else'){p++;n.elseBody=nodes([]).out;}
+        expectEnd(t.name,t);return n;}
+      case 'sep':{const r=nodes([]);n.body=r.out;if(r.stop&&r.stop.name==='sep')p++;return n;}
+      case 'switch':{n.e=parseExpr(t.params,t.line);n.cases=[];nodes(['case','default']);
+        while(toks[p]&&toks[p].type==='dir'&&(toks[p].name==='case'||toks[p].name==='default')){const c=toks[p++];const r=nodes(['case','default']);
+          n.cases.push({vals:c.name==='case'?new Parser(lex(c.params,c.line),c.line).args2():null,isDefault:c.name==='default',body:r.out});}
+        expectEnd('switch',t);return n;}
+      case 'attempt':{const r=nodes(['recover']);n.body=r.out;if(r.stop&&r.stop.name==='recover'){p++;n.rec=nodes([]).out;}expectEnd('attempt',t);return n;}
+      case 'macro':case 'function':{const pt=lex(t.params,t.line);const pr=new Parser(pt,t.line);
+        const nm=pr.t[pr.i++];if(!nm)throw new FtlError('#'+t.name+' needs a name',t.line);n.mname=nm.v;n.mparams=[];
+        if(pr.is('('))pr.i++;
+        while(!pr.done()&&!pr.is(')')){const id=pr.t[pr.i++];if(id.t==='op'&&id.v===',')continue;let def;if(pr.is('=')){pr.i++;def=pr.unaryNoDef();}
+          let rest=false;if(pr.is('...')){pr.i++;rest=true;}n.mparams.push({name:id.v,def,rest});}
+        n.body=nodes([]).out;expectEnd(t.name,t);return n;}
+      case 'assign':case 'local':case 'global':{const tk=lex(t.params,t.line);const pr=new Parser(tk,t.line);n.ops=[];
+        if(tk.length===1){n.capture=tk[0].v;n.body=nodes([]).out;expectEnd(t.name,t);return n;}
+        while(!pr.done()){const id=pr.t[pr.i++];if(id.t==='op'&&id.v===',')continue;const op=pr.t[pr.i++];if(!op)throw new FtlError('Expected = after '+id.v,t.line);
+          if(op.v==='++'||op.v==='--'){n.ops.push({name:id.v,op:op.v});continue;}
+          if(!['=','+=','-=','*=','/=','%='].includes(op.v))throw new FtlError('Expected = after '+id.v,t.line);
+          const e=pr.expr();n.ops.push({name:id.v,op:op.v,e});}
+        return n;}
+      case 'return':n.e=t.params.trim()?parseExpr(t.params,t.line):null;return n;
+      case 'compress':case 'escape':case 'noescape':case 'autoesc':case 'noautoesc':case 'outputformat':n.body=nodes([]).out;expectEnd(t.name,t);return n;
+      case 'break':case 'continue':case 'nested':case 'stop':case 'flush':case 't':case 'lt':case 'rt':case 'nt':case 'ftl':case 'setting':case 'import':case 'include':return n;
+      case 'elseif':case 'else':case 'case':case 'default':case 'recover':throw new FtlError('<#'+t.name+'> is not inside a matching block',t.line);
+      default:throw new FtlError('Unknown directive <#'+t.name+'>',t.line);}
+  }
+  const r=nodes([]);if(r.stop)throw new FtlError('Unexpected </'+(r.stop.name[0]==='@'?'':'#')+r.stop.name+'>',r.stop.line);
+  return r.out;
+}
+Parser.prototype.args2=function(){const a=[];while(!this.done()){a.push(this.expr());if(this.is(','))this.i++;}return a;};
+
+// ---------- evaluation ----------
+class Ctl{constructor(kind,val){this.kind=kind;this.val=val;}}
+function typeName(v){if(isMissing(v))return 'missing';if(v instanceof Dec)return 'number';if(typeof v==='string')return 'string';if(typeof v==='boolean')return 'boolean';if(Array.isArray(v))return 'sequence';if(v instanceof FDate)return 'date';if(v instanceof Macro)return 'macro';return 'hash';}
+
+function render(templateText,data){
+  const ast=build(scan(templateText));
+  const pathOf=new WeakMap();
+  const out=[];let len=0;const chunks=[];const missingRefs=[];
+  const ns=new Map();const varReads=new Map();const varCalc=new Set();
+  let frames=[];// {vars:Map, reads:Map, loop?}
+  let readSet=null;let calc=false;const condStack=[];
+  const rd=p=>{if(readSet&&p)readSet.add(p);};
+  // convert data: wrap numbers
+  const model={};for(const k of Object.keys(data||{})){model[k]=data[k];}
+  const tagPaths=(v,p)=>{if(v&&typeof v==='object'){pathOf.set(v,p);if(Array.isArray(v))v.forEach((x,i)=>tagPaths(x,p+'['+i+']'));else for(const k of Object.keys(v))tagPaths(v[k],p+'.'+k);}};
+  for(const k of Object.keys(model))tagPaths(model[k],k);
+  const norm=v=>{if(v===null||v===undefined)return v;if(typeof v==='number')return parseDec(String(v));return v;};
+  function emit(s,isInterp,reads,line){chunks.push({start:len,end:len+s.length,interp:isInterp,reads:reads?[...reads]:[],cond:condStack.flatMap(c=>[...c]),calc:isInterp&&calc,line});out.push(s);len+=s.length;}
+  function lookup(name,line){
+    for(let i=frames.length-1;i>=0;i--){const f=frames[i];if(f.vars.has(name)){(f.reads.get(name)||[]).forEach(rd);return f.vars.get(name);}if(f.barrier)break;}
+    if(ns.has(name)){(varReads.get(name)||[]).forEach(rd);if(varCalc.has(name)&&readSet)calc=true;return ns.get(name);}
+    if(Object.prototype.hasOwnProperty.call(model,name)){rd(name);const v=norm(model[name]);return v===null?new Missing(name):v;}
+    rd(name);return new Missing(name);
+  }
+  function loopInfo(name){for(let i=frames.length-1;i>=0;i--){const f=frames[i];if(f.loop&&f.loop.name===name)return f.loop;if(f.barrier)break;}return null;}
+  const describe=e=>e&&e.src?e.src:exprStr(e);
+  function exprStr(e){if(!e)return '';switch(e.k){case'id':return e.name;case'dot':return exprStr(e.o)+'.'+e.name;case'idx':return exprStr(e.o)+'[…]';case'bi':return exprStr(e.e)+'?'+e.name;case'paren':return '('+exprStr(e.e)+')';case'str':return JSON.stringify(e.v);case'num':return fmtC(e.v);default:return '…';}}
+  const need=(v,e,line,what)=>{if(isMissing(v))throw new FtlError('"'+exprStr(e)+'" is missing or null'+(what?' ('+what+')':''),line);return v;};
+  function toStr(v,e,line){need(v,e,line);if(typeof v==='string')return v;if(v instanceof Dec)return fmtDefault(v);
+    if(typeof v==='boolean')throw new FtlError('Can\'t print boolean "'+exprStr(e)+'"; use ?c or ?string("yes","no")',line);
+    if(v instanceof FDate)return formatDate(v,'yyyy-MM-dd HH:mm:ss');
+    throw new FtlError('"'+exprStr(e)+'" is a '+typeName(v)+', not a string or number',line);}
+  function toNum(v,e,line){need(v,e,line);if(v instanceof Dec)return v;throw new FtlError('"'+exprStr(e)+'" is a '+typeName(v)+', expected a number (try ?number)',line);}
+  function toBool(v,e,line){need(v,e,line);if(typeof v==='boolean')return v;throw new FtlError('"'+exprStr(e)+'" is a '+typeName(v)+', expected a boolean',line);}
+  function strLit(e,line){if(e.raw||!e.v.includes('${'))return e.v;let s=e.v,o='',i=0;while(i<s.length){if(s.startsWith('${',i)){const j=findInterpEnd(s,i+2);o+=toStr(ev(parseExpr(s.slice(i+2,j),line),line),null,line);i=j+1;}else o+=s[i++];}return o;}
+  function ev(e,line){
+    switch(e.k){
+      case 'str':return strLit(e,line);
+      case 'num':return e.v;
+      case 'bool':return e.v;
+      case 'paren':return ev(e.e,line);
+      case 'id':return lookup(e.name,line);
+      case 'seq':return e.items.map(x=>ev(x,line));
+      case 'hash':{const o={};for(const [k,v] of e.ent)o[toStr(ev(k,line),k,line)]=ev(v,line);return o;}
+      case 'range':{const lo=Number(fmtC(ev(e.lo,line))),hi=e.hi?Number(fmtC(toNum(ev(e.hi,line),e.hi,line))):lo+1000;const a=[];for(let i=lo;i<=hi;i++)a.push(new Dec(BigInt(i),0));return a;}
+      case 'dot':case 'idx':{const o=ev(e.o,line);
+        if(isMissing(o))return new Missing((o&&o.path||exprStr(e.o))+'.'+(e.name||'?'));
+        let key=e.k==='dot'?e.name:ev(e.ix,line);
+        if(Array.isArray(o)||typeof o==='string'){if(!(key instanceof Dec))throw new FtlError('Can\'t index a '+typeName(o)+' with '+typeName(key),line);const i=Number(fmtC(key));
+          const v=o[i];const p=pathOf.get(o);if(p)rd(p+'['+i+']');return isMissing(v)?new Missing(exprStr(e)):norm(v);}
+        if(typeof o!=='object'||o instanceof Dec||o instanceof FDate)throw new FtlError('"'+exprStr(e.o)+'" is a '+typeName(o)+', it has no "'+key+'"',line);
+        key=key instanceof Dec?fmtC(key):String(key);
+        const p=pathOf.get(o);if(p)rd(p+'.'+key);
+        const v=o[key];
+        if(isMissing(v)){if(p)missingRefs.push({path:p+'.'+key,parent:o,key,isNull:v===null});return new Missing(exprStr(e));}
+        return norm(v);}
+      case 'exists':{const v=ev(e.e,line);return !isMissing(v);}
+      case 'def':{let v;try{v=ev(e.e,line);}catch(err){if(err instanceof FtlError&&/missing/.test(err.message))v=undefined;else throw err;}
+        if(!isMissing(v))return v;return e.d?ev(e.d,line):'';}
+      case 'not':return !toBool(ev(e.e,line),e.e,line);
+      case 'neg':calc=true;{const v=toNum(ev(e.e,line),e.e,line);return new Dec(-v.n,v.scale);}
+      case 'and':return toBool(ev(e.l,line),e.l,line)&&toBool(ev(e.r,line),e.r,line);
+      case 'or':return toBool(ev(e.l,line),e.l,line)||toBool(ev(e.r,line),e.r,line);
+      case 'cmp':{const a=ev(e.l,line),b=ev(e.r,line);need(a,e.l,line);need(b,e.r,line);
+        if(e.op==='=='||e.op==='!='){let eq;
+          if(a instanceof Dec&&b instanceof Dec)eq=dCmp(a,b)===0;
+          else if(typeof a==='string'&&typeof b==='string')eq=a===b;
+          else if(typeof a==='boolean'&&typeof b==='boolean')eq=a===b;
+          else if(a instanceof FDate&&b instanceof FDate)eq=formatDate(a,ISO+'.SSS')===formatDate(b,ISO+'.SSS');
+          else throw new FtlError('Can\'t compare a '+typeName(a)+' ("'+exprStr(e.l)+'") with a '+typeName(b)+' ("'+exprStr(e.r)+'")',line);
+          return e.op==='=='?eq:!eq;}
+        let c;if(a instanceof Dec&&b instanceof Dec)c=dCmp(a,b);
+        else if(a instanceof FDate&&b instanceof FDate){const x=formatDate(a,'yyyyMMddHHmmssSSS'),y=formatDate(b,'yyyyMMddHHmmssSSS');c=x<y?-1:x>y?1:0;}
+        else throw new FtlError('"'+e.op+'" needs two numbers or two dates, got '+typeName(a)+' and '+typeName(b),line);
+        return {'<':c<0,'>':c>0,'<=':c<=0,'>=':c>=0}[e.op];}
+      case 'arith':{const a=ev(e.l,line),b=ev(e.r,line);need(a,e.l,line);need(b,e.r,line);
+        if(e.op==='+'){if(typeof a==='string'||typeof b==='string')return toStr(a,e.l,line)+toStr(b,e.r,line);
+          if(Array.isArray(a)&&Array.isArray(b))return a.concat(b);
+          if(typeName(a)==='hash'&&typeName(b)==='hash')return Object.assign({},a,b);}
+        calc=true;const x=toNum(a,e.l,line),y=toNum(b,e.r,line);
+        try{return {'+':dAdd,'-':dSub,'*':dMul,'/':dDiv,'%':dMod}[e.op](x,y);}catch(err){throw new FtlError(err.message,line);}}
+      case 'call':{const f=ev(e.f,line);
+        if(f instanceof Macro&&f.kind==='function'){const args=e.args.map(a=>ev(a,line));return callFn(f,args,line);}
+        if(f instanceof Lambda)return f;
+        throw new FtlError('"'+exprStr(e.f)+'" is not a function',line);}
+      case 'bi':return builtin(e,line);
+    }
+    throw new FtlError('Unsupported expression',line);
+  }
+  function lam(a,line){if(!a||a.k!=='lambda')throw new FtlError('Expected a lambda like x -> x.name',line);return a;}
+  function applyLam(l,item,line){frames.push({vars:new Map([[l.p,item]]),reads:new Map()});try{return ev(l.body,line);}finally{frames.pop();}}
+  function builtin(e,line){
+    const n=e.name,A=e.args||[];
+    // loop variable built-ins
+    if(e.e.k==='id'&&['has_next','index','counter','is_first','is_last','item_parity','item_cycle','is_odd_item','is_even_item'].includes(n)){
+      const L=loopInfo(e.e.name);if(!L)throw new FtlError('"'+e.e.name+'?'+n+'" only works on a #list loop variable',line);
+      return ({has_next:L.i<L.size-1,index:new Dec(BigInt(L.i),0),counter:new Dec(BigInt(L.i+1),0),is_first:L.i===0,is_last:L.i===L.size-1,item_parity:L.i%2?'even':'odd',is_odd_item:L.i%2===0,is_even_item:L.i%2===1})[n];}
+    if(n==='exists'||n==='if_exists'){let v;try{v=ev(e.e,line);}catch(_){v=undefined;}return n==='exists'?!isMissing(v):(isMissing(v)?'':v);}
+    if(n==='has_content'){let v;try{v=ev(e.e,line);}catch(err){if(err instanceof FtlError&&/missing/.test(err.message))return false;throw err;}
+      if(isMissing(v))return false;if(typeof v==='string')return v.length>0;if(Array.isArray(v))return v.length>0;if(typeName(v)==='hash')return Object.keys(v).length>0;return true;}
+    let v=ev(e.e,line);
+    const arg=i=>{if(!A[i])throw new FtlError('?'+n+' needs an argument',line);return ev(A[i],line);};
+    const sarg=i=>toStr(arg(i),A[i],line);
+    need(v,e.e,line,'used with ?'+n);
+    const S=()=>toStr(v,e.e,line);
+    switch(n){
+      case 'is_string':return typeof v==='string';case 'is_number':return v instanceof Dec;case 'is_boolean':return typeof v==='boolean';
+      case 'is_sequence':case 'is_enumerable':return Array.isArray(v);case 'is_hash':return typeName(v)==='hash';case 'is_date':case 'is_datetime':return v instanceof FDate;
+      case 'number':{if(v instanceof Dec)return v;const d=parseDec(S().trim()===''?'x':S().trim());if(!d)throw new FtlError('Can\'t convert '+JSON.stringify(S())+' to a number in '+exprStr(e.e)+'?number',line);return d;}
+      case 'abs':return dAbs(toNum(v,e.e,line));
+      case 'round':return roundTo(toNum(v,e.e,line),0,'halfUp');case 'floor':return roundTo(toNum(v,e.e,line),0,'floor');case 'ceiling':return roundTo(toNum(v,e.e,line),0,'ceiling');
+      case 'int':return roundTo(toNum(v,e.e,line),0,toNum(v,e.e,line).n<0n?'ceiling':'floor');
+      case 'c':case 'cn':if(v instanceof Dec)return fmtC(v);if(typeof v==='boolean')return v?'true':'false';if(typeof v==='string')return v;throw new FtlError('?c needs a number, boolean or string',line);
+      case 'string':
+        if(v instanceof Dec){if(!A.length)return fmtDefault(v);const p=sarg(0);if(p==='computer')return fmtC(v);if(p==='number')return fmtDefault(v);if(p==='currency')return fmtPattern(v,'#,##0.00');if(p==='percent')return fmtPattern(v,'#,##0%');return fmtPattern(v,p);}
+        if(v instanceof FDate){calc=true;if(!A.length)return formatDate(v,'yyyy-MM-dd HH:mm:ss');return formatDate(v,sarg(0));}
+        if(typeof v==='boolean')return A.length>=2?(v?sarg(0):sarg(1)):(v?'true':'false');
+        return S();
+      case 'then':return toBool(v,e.e,line)?arg(0):arg(1);
+      case 'datetime':case 'date':case 'time':case 'datetime.iso':case 'date.iso':case 'time.iso':{calc=true;if(v instanceof FDate)return v;const s=S();
+        let d;if(n.endsWith('.iso')||!A.length){const m=s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,9}))?)?)?/);d=m?new FDate({y:+m[1],M:+m[2],d:+m[3],H:+(m[4]||0),m:+(m[5]||0),s:+(m[6]||0),S:+((m[7]||'0').slice(0,3).padEnd(3,'0'))}):null;}
+        else d=parseDate(s,sarg(0));
+        if(!d)throw new FtlError('Can\'t parse '+JSON.stringify(s)+' as a '+n.replace('.iso','')+(A.length?' with pattern '+JSON.stringify(sarg(0)):'')+' in '+exprStr(e.e),line);return d;}
+      case 'json_string':case 'js_string':return S().replace(/[\\"]/g,m=>'\\'+m).replace(/\n/g,'\\n').replace(/\r/g,'\\r').replace(/\t/g,'\\t').replace(/[\u0000-\u001f]/g,c=>'\\u'+c.charCodeAt(0).toString(16).padStart(4,'0'));
+      case 'html':case 'xhtml':case 'xml':return S().replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      case 'url':return encodeURIComponent(S());
+      case 'no_esc':return v;
+      case 'trim':return S().trim();case 'length':return new Dec(BigInt(S().length),0);
+      case 'upper_case':return S().toUpperCase();case 'lower_case':return S().toLowerCase();
+      case 'cap_first':{const s=S();return s.charAt(0).toUpperCase()+s.slice(1);}case 'uncap_first':{const s=S();return s.charAt(0).toLowerCase()+s.slice(1);}
+      case 'capitalize':return S().replace(/\b\w/g,c=>c.toUpperCase());
+      case 'contains':return S().includes(sarg(0));case 'starts_with':return S().startsWith(sarg(0));case 'ends_with':return S().endsWith(sarg(0));
+      case 'index_of':return new Dec(BigInt(S().indexOf(sarg(0))),0);case 'last_index_of':return new Dec(BigInt(S().lastIndexOf(sarg(0))),0);
+      case 'keep_after':{const s=S(),k=sarg(0),i=s.indexOf(k);return i<0?'':s.slice(i+k.length);}
+      case 'keep_before':{const s=S(),k=sarg(0),i=s.indexOf(k);return i<0?s:s.slice(0,i);}
+      case 'keep_after_last':{const s=S(),k=sarg(0),i=s.lastIndexOf(k);return i<0?'':s.slice(i+k.length);}
+      case 'keep_before_last':{const s=S(),k=sarg(0),i=s.lastIndexOf(k);return i<0?s:s.slice(0,i);}
+      case 'remove_beginning':{const s=S(),k=sarg(0);return s.startsWith(k)?s.slice(k.length):s;}
+      case 'remove_ending':{const s=S(),k=sarg(0);return k&&s.endsWith(k)?s.slice(0,-k.length):s;}
+      case 'ensure_starts_with':{const s=S(),k=sarg(0);return s.startsWith(k)?s:k+s;}
+      case 'ensure_ends_with':{const s=S(),k=sarg(0);return s.endsWith(k)?s:s+k;}
+      case 'substring':{const s=S();return s.substring(Number(fmtC(toNum(arg(0),A[0],line))),A[1]?Number(fmtC(toNum(arg(1),A[1],line))):undefined);}
+      case 'left_pad':case 'right_pad':{const s=S(),w=Number(fmtC(toNum(arg(0),A[0],line))),c=A[1]?sarg(1):' ';return n==='left_pad'?s.padStart(w,c):s.padEnd(w,c);}
+      case 'replace':{const s=S(),a=sarg(0),b=sarg(1),fl=A[2]?sarg(2):'';
+        if(fl.includes('r')){const re=new RegExp(a,(fl.includes('f')?'':'g')+(fl.includes('i')?'i':''));return s.replace(re,b);}
+        if(fl.includes('i')){const re=new RegExp(a.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),(fl.includes('f')?'':'g')+'i');return s.replace(re,()=>b);}
+        return fl.includes('f')?s.replace(a,()=>b):s.split(a).join(b);}
+      case 'split':return S().split(sarg(0));
+      case 'matches':{try{return new RegExp('^(?:'+sarg(0)+')$').test(S());}catch(_){throw new FtlError('Bad regex in ?matches',line);}}
+      case 'boolean':{const s=S();if(s==='true')return true;if(s==='false')return false;throw new FtlError('Can\'t convert '+JSON.stringify(s)+' to boolean',line);}
+      case 'chop_linebreak':return S().replace(/\r?\n$/,'');
+      case 'eval':return ev(parseExpr(S(),line),line);
+    }
+    if(Array.isArray(v)){switch(n){
+      case 'size':return new Dec(BigInt(v.length),0);
+      case 'first':return v.length?norm(v[0]):new Missing(exprStr(e.e)+'?first');
+      case 'last':return v.length?norm(v[v.length-1]):new Missing(exprStr(e.e)+'?last');
+      case 'reverse':return v.slice().reverse();
+      case 'join':return v.filter(x=>!isMissing(x)).map(x=>toStr(norm(x),null,line)).join(sarg(0));
+      case 'seq_contains':{const t=arg(0);return v.some(x=>{x=norm(x);return (x instanceof Dec&&t instanceof Dec)?dCmp(x,t)===0:x===t;});}
+      case 'seq_index_of':{const t=arg(0);return new Dec(BigInt(v.findIndex(x=>{x=norm(x);return (x instanceof Dec&&t instanceof Dec)?dCmp(x,t)===0:x===t;})),0);}
+      case 'filter':{const l=lam(A[0],line);const r=v.filter(x=>toBool(applyLam(l,norm(x),line),l.body,line));pathKeep(v,r);return r;}
+      case 'map':{const l=lam(A[0],line);return v.map(x=>applyLam(l,norm(x),line));}
+      case 'take_while':case 'drop_while':{const l=lam(A[0],line);let i=0;while(i<v.length&&toBool(applyLam(l,norm(v[i]),line),l.body,line))i++;return n==='take_while'?v.slice(0,i):v.slice(i);}
+      case 'sort':return v.slice().sort((a,b)=>{a=norm(a);b=norm(b);return a instanceof Dec?dCmp(a,b):String(a).localeCompare(String(b));});
+      case 'sort_by':{const k=sarg(0);return v.slice().sort((a,b)=>{a=norm(a[k]);b=norm(b[k]);return a instanceof Dec?dCmp(a,b):String(a).localeCompare(String(b));});}
+      case 'min':case 'max':{const xs=v.map(norm).filter(x=>x instanceof Dec);if(!xs.length)return new Missing('');return xs.reduce((a,b)=>(dCmp(a,b)<0)===(n==='min')?a:b);}
+      case 'chunk':{const s=Number(fmtC(toNum(arg(0),A[0],line)));const r=[];for(let i=0;i<v.length;i+=s)r.push(v.slice(i,i+s));return r;}
+    }}
+    if(typeName(v)==='hash'){switch(n){case 'keys':return Object.keys(v);case 'values':return Object.values(v).map(norm);case 'size':return new Dec(BigInt(Object.keys(v).length),0);}}
+    throw new FtlError('?'+n+' can\'t be used on a '+typeName(v)+' ("'+exprStr(e.e)+'")',line);
+  }
+  function pathKeep(src,res){/* filtered items keep their own paths already */}
+  function setVar(scope,name,val,reads,line){
+    if(scope==='local'){const f=[...frames].reverse().find(f=>f.macro);if(!f)throw new FtlError('#local is only allowed inside a macro or function',line);f.vars.set(name,val);f.reads.set(name,reads);return;}
+    ns.set(name,val);varReads.set(name,reads);if(calc||reads.calc)varCalc.add(name);else varCalc.delete(name);}
+  function callFn(m,args,line,named,body,callerFrames){
+    const f={vars:new Map(),reads:new Map(),macro:true,barrier:true,body,callerFrames};
+    m.mparams.forEach((p,i)=>{let val,reads=[];
+      if(named){if(named.has(p.name)){val=named.get(p.name).v;reads=named.get(p.name).r;}}else if(p.rest){val=args.slice(i);}else if(i<args.length)val=args[i];
+      if(val===undefined&&p.def){frames.push(f);val=ev(p.def,line);frames.pop();}
+      if(val===undefined)throw new FtlError((m.kind==='macro'?'Macro':'Function')+' "'+m.mname+'" needs parameter "'+p.name+'"',line);
+      f.vars.set(p.name,val);f.reads.set(p.name,reads);});
+    const saved=frames;frames=[...frames.filter(x=>!x.macro&&false),f];
+    try{renderNodes(m.body);}catch(c){if(c instanceof Ctl&&c.kind==='return'){return c.val;}throw c;}finally{frames=saved;}
+    return m.kind==='function'?new Missing(m.mname+'()'):undefined;
+  }
+  function renderNodes(nodes){for(const n of nodes)renderNode(n);}
+  function withReads(fn){const prev=readSet,prevCalc=calc;readSet=new Set();calc=false;try{const v=fn();return [v,readSet,calc];}finally{readSet=prev?new Set([...prev,...readSet]):prev;if(prev)calc=prevCalc||calc;else calc=prevCalc;}}
+  function renderNode(n){
+    if(n.type==='text'){emit(n.v,false,null,n.line);return;}
+    if(n.type==='interp'){const [v,r,c]=withReads(()=>ev(n.e,n.line));const s=toStr(v,n.e,n.line);const prev=calc;calc=c;emit(s,true,r,n.line);calc=prev;return;}
+    if(n.type==='call'){const m=lookup(n.name,n.line);if(!(m instanceof Macro)||m.kind!=='macro')throw new FtlError('"'+n.name+'" is not a macro',n.line);
+      const tk=lex(n.params,n.line);const named=new Map();const pos=[];
+      const isNamed=tk.length>1&&tk[0].t==='id'&&tk[1].v==='=';
+      if(isNamed){const pr=new Parser(tk,n.line);while(!pr.done()){const id=pr.t[pr.i++];if(id.v===',')continue;pr.eat('=');const ex=pr.expr();const [v,r]=withReads(()=>ev(ex,n.line));named.set(id.v,{v,r:[...r]});}}
+      else{const pr=new Parser(tk,n.line);while(!pr.done()){pos.push(ev(pr.expr(),n.line));if(pr.is(','))pr.i++;}}
+      callFn(m,pos,n.line,isNamed?named:null,n.body,frames);return;}
+    const L=n.line;
+    switch(n.name){
+      case 'if':{const base=condStack.length;
+        const mark=()=>chunks.push({start:len,end:len,marker:true,interp:false,reads:[],cond:condStack.flatMap(c=>[...c]),line:L});
+        try{for(const b of n.branches){if(!b.cond){mark();renderNodes(b.body);return;}
+          const [v,r]=withReads(()=>ev(b.cond,L));condStack.push(r);if(toBool(v,b.cond,L)){mark();renderNodes(b.body);return;}}}
+        finally{condStack.length=base;}
+        return;}
+      case 'list':case 'items':{
+        if(!n.v1){const seq=ev(n.seq,L);const has=Array.isArray(seq)?seq.length:typeName(seq)==='hash'?Object.keys(seq).length:0;
+          if(isMissing(seq))throw new FtlError('"'+exprStr(n.seq)+'" is missing (in #list)',L);
+          if(has){frames.push({vars:new Map(),reads:new Map(),pendingSeq:seq,pendingExpr:n.seq});try{renderNodes(n.body);}finally{frames.pop();}}else if(n.elseBody)renderNodes(n.elseBody);return;}
+        let seq,seqExpr=n.seq;
+        if(n.name==='items'){const pf=[...frames].reverse().find(f=>f.pendingSeq);if(!pf)throw new FtlError('#items must be inside #list',L);seq=pf.pendingSeq;seqExpr=pf.pendingExpr;}
+        else{seq=ev(n.seq,L);}
+        need(seq,seqExpr,L,'in #list');
+        const p=pathOf.get(seq);
+        let items;if(Array.isArray(seq))items=seq.map((x,i)=>({v:norm(x),k:null,path:p?p+'['+i+']':null}));
+        else if(typeName(seq)==='hash')items=Object.keys(seq).map(k=>({v:n.v2?norm(seq[k]):k,k,path:p?p+'.'+k:null}));
+        else throw new FtlError('"'+exprStr(seqExpr)+'" is a '+typeName(seq)+', #list needs a sequence',L);
+        if(!items.length){if(n.elseBody)renderNodes(n.elseBody);return;}
+        items.forEach((it,i)=>{const f={vars:new Map(),reads:new Map(),loop:{name:n.v1,i,size:items.length}};
+          if(n.v2){f.vars.set(n.v1,it.k);f.vars.set(n.v2,it.v);f.reads.set(n.v2,it.path?[it.path]:[]);f.loop={name:n.v2,i,size:items.length};}
+          else{f.vars.set(n.v1,isMissing(it.v)?new Missing(n.v1):it.v);f.reads.set(n.v1,it.path&&!(it.v&&typeof it.v==='object')?[it.path]:[]);}
+          f.vars.set(n.v1+'_has_next',i<items.length-1);f.vars.set(n.v1+'_index',new Dec(BigInt(i),0));
+          frames.push(f);try{renderNodes(n.body);}catch(c){if(c instanceof Ctl&&c.kind==='break'){frames.pop();throw new Ctl('stoplist');}if(c instanceof Ctl&&c.kind==='continue'){}else throw c;}finally{if(frames[frames.length-1]===f)frames.pop();}
+        });return;}
+      case 'sep':{const pf=[...frames].reverse().find(f=>f.loop);if(pf&&pf.loop.i<pf.loop.size-1)renderNodes(n.body);return;}
+      case 'assign':case 'global':case 'local':{
+        if(n.capture){const start=out.length,l0=len,c0=chunks.length;renderNodes(n.body);const s=out.splice(start).join('');len=l0;chunks.length=c0;setVar(n.name,n.capture,s,[],L);return;}
+        for(const o of n.ops){let cur,cr=[];
+          if(o.op!=='='){const [cv,r]=withReads(()=>lookup(o.name,L));cur=cv;cr=[...r];need(cur,{k:'id',name:o.name},L);}
+          if(o.op==='++'||o.op==='--'){setVar(n.name,o.name,(o.op==='++'?dAdd:dSub)(toNum(cur,{k:'id',name:o.name},L),new Dec(1n,0)),cr,L);continue;}
+          const [v,r,cc]=withReads(()=>ev(o.e,L));let val=v;const wasCalc=o.op!=='='||cc||varCalc.has(o.name)&&o.op!=='=';
+          if(o.op!=='='){const fake={k:'arith',op:o.op[0],l:{k:'lit',v:cur},r:{k:'lit',v}};
+            if(o.op==='+='&&(typeof cur==='string'||typeof v==='string'))val=toStr(cur,null,L)+toStr(v,o.e,L);
+            else{const x=toNum(cur,{k:'id',name:o.name},L),y=toNum(v,o.e,L);val={'+':dAdd,'-':dSub,'*':dMul,'/':dDiv,'%':dMod}[o.op[0]](x,y);}}
+          const rr=[...cr,...r];if(wasCalc)rr.calc=true;setVar(n.name,o.name,val,rr,L);}
+        return;}
+      case 'macro':case 'function':ns.set(n.mname,new Macro({kind:n.name,mname:n.mname,mparams:n.mparams,body:n.body}));return;
+      case 'return':throw new Ctl('return',n.e?ev(n.e,L):undefined);
+      case 'nested':{const mf=[...frames].reverse().find(f=>f.macro);if(mf&&mf.body){const saved=frames;frames=mf.callerFrames;try{renderNodes(mf.body);}finally{frames=saved;}}return;}
+      case 'break':throw new Ctl('break');case 'continue':throw new Ctl('continue');
+      case 'stop':throw new FtlError('Template stopped with #stop'+(n.params.trim()?': '+toStr(ev(parseExpr(n.params,L),L),null,L):''),L);
+      case 'switch':{const v=ev(n.e,L);need(v,n.e,L);let on=false;
+        try{for(const c of n.cases){if(!on){if(c.isDefault)on=true;else on=c.vals.some(x=>{const y=ev(x,L);return (v instanceof Dec&&y instanceof Dec)?dCmp(v,y)===0:v===y;});}if(on)renderNodes(c.body);}}
+        catch(c){if(!(c instanceof Ctl&&c.kind==='break'))throw c;}
+        return;}
+      case 'attempt':{const start=out.length,l0=len,c0=chunks.length;try{renderNodes(n.body);}catch(err){if(!(err instanceof FtlError))throw err;out.splice(start);len=l0;chunks.length=c0;if(n.rec)renderNodes(n.rec);}return;}
+      case 'compress':{const start=out.length;renderNodes(n.body);return;}
+      case 'escape':case 'noescape':case 'autoesc':case 'noautoesc':case 'outputformat':renderNodes(n.body);return;
+      default:return;
+    }
+  }
+  try{renderNodes(ast);}catch(c){if(c instanceof Ctl){if(c.kind!=='stoplist')throw new FtlError('#'+c.kind+' used outside of a loop or macro',null);}else throw c;}
+  return {text:out.join(''),chunks,missingRefs};
+}
+// patch: allow {k:'lit'} nodes
+return {render,FtlError,parseDec,fmtC,dAdd,dSub,dMul,dCmp,dAbs};
+})();
+
+
+const BUILTIN_INVOICE_TPL = "<#macro safeJson details keyName>\n    <#if details?? && details.additionalParams??>\n        <#assign filteredParams = details.additionalParams?filter(p -> p.name?? && p.name == keyName)>\n        <#if filteredParams?size gt 0>\n            \"${keyName}\": \"${filteredParams?first.value!\"\"}\"\n        <#else>\n            \"${keyName}\": \"\"\n        <\/#if>\n    <#else>\n        \"${keyName}\": \"\"\n    <\/#if>\n<\/#macro>\n\n<#macro safeJsonValue details keyName><#if details?? && details.additionalParams??><#assign filteredParams = details.additionalParams?filter(p -> p.name?? && p.name == keyName && p.value?? && p.value?trim?has_content)><#if filteredParams?has_content>${filteredParams?first.value?trim?replace(\",\", \"\")?number?abs?string[\"0.################\"]}<\/#if><\/#if><\/#macro>\n\n{\n    \"basicInformation\": {\n        \"invoiceNo\": \"<#if basicInformation?? && basicInformation.invoiceno??>${basicInformation.invoiceno}<#else><\/#if>\",\n        \"issuedDate\": \"<#if basicInformation?? && basicInformation.invoicedate??>${basicInformation.invoicedate?datetime(\"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\")?string(\"yyyy-MM-dd HH:mm:ss\")}<#else><\/#if>\",\n        \"invoiceType\": \"<#if basicInformation?? && basicInformation.invoicetype??>${basicInformation.invoicetype}<#else><\/#if>\",\n        \"refrencedInvoiceNumber\": \"<#if basicInformation?? && basicInformation.orginvoiceno??>${basicInformation.orginvoiceno}<#else><\/#if>\",\n        \"invoiceKind\": \"<#if basicInformation?? && basicInformation.invoicekind??>${basicInformation.invoicekind}<#else><\/#if>\",\n        \"sourceId\": \"<#if basicInformation?? && basicInformation.sourceid??>${basicInformation.sourceid}<#else>USDM<\/#if>\"\n    },\n    \"buyerDetails\": {\n        \"buyerTin\": \"\"\n    },\n    <#assign exciseamount = 0>\n    <#if goodsDetails??>\n    \"goodsDetails\": [\n        \n        <#list goodsDetails as good>{\n            \"item\": \"<#if good?? && good.itemname??>${good.itemname?json_string}<#else><\/#if>\",\n            \"itemCode\": \"\",\n            \"qty\": \"<#if good?? && good.quantity??>${good.quantity?number?abs?string[\"0.################\"]}<#else><\/#if>\",\n            \"unitPrice\": \"<#if good?? && good.unitprice?? && good.exciseunit??>${((good.unitprice?number) + (good.exciseunit?number))?abs?c?string}<#elseif good?? && good.unitprice??>${good.unitprice?number?abs?string[\"0.################\"]}<#else><\/#if>\",\n            <#if good?? && good.exciseamount??>\n\t\t\t\t<#assign exciseamount += good.exciseamount?number>\n\t\t\t<\/#if>\n            \"total\": \"<#if good?? && good.total??>${good.total?number?abs?string[\"0.################\"]}<#else><\/#if>\",\n            \"taxRate\": \"<#if good?? && good.vatrate??>${good.vatrate}<#else><\/#if>\",\n            \"tax\": \"<#if good?? && good.vatamount??>${good.vatamount?number?abs?string[\"0.################\"]}<#else><\/#if>\",\n            \"transactionType\": \"<#if good?? && good.transactiontype??>${good.transactiontype}<#else>1<\/#if>\",\n            \"deemedFlag\": \"<#if good?? && good.deemedflag??>${good.deemedflag}<#else>2<\/#if>\"\n        }<#if good_has_next>,<\/#if><\/#list>\n    ],\n    <\/#if>\n\t\t\"summary\": {\n        <#assign netSum = 0>\n\t\t<#-- Add taxDetails.netamount if taxcategory == \"01\" -->\n\t\t<#if taxDetails??>\n\t\t\t<#list taxDetails as tax>\n\t\t\t\t<#if tax.taxcategory?? && tax.taxcategory == \"01\" && tax.netamount??>\n\t\t\t\t\t<#assign netSum += tax.netamount?number>\n\t\t\t\t<\/#if>\n\t\t\t<\/#list>\n\t\t<\/#if>\n        \"netAmount\": \"<#if netSum??>${netSum?replace(\",\", \"\")?number?abs?string[\"0.################\"]}<#else><\/#if>\",\n        \"taxAmount\": \"<#if  summary?? && summary.taxamount?? && exciseamount??>${((summary.taxamount?number) - (exciseamount?replace(\",\", \"\")?number))?abs?c?string}<#elseif summary?? && summary.taxamount??>${summary.taxamount?number?abs?string[\"0.################\"]}<#else><\/#if>\",\n        \"grossAmount\": \"<#if summary?? && summary.grossamount??>${summary.grossamount?number?abs?string[\"0.################\"]}<#else><\/#if>\",\n        \"exemptionNumber\": \"<#if summary?? && summary.exemptionnumber??>${summary.exemptionnumber}<#else><\/#if>\",\n        \"discountTotal\": \"<#if summary?? && summary.discounttotal??>${summary.discounttotal?number?abs?string[\"0.################\"]}<#else><\/#if>\"\n    }\n    <#if otherDetails??>,\n    \"extend\": {\n        \"reason\": \"<#if otherDetails.reason??>${otherDetails.reason}<#else><\/#if>\",\n        \"reasonCode\": \"<#if otherDetails.reasoncode??>${otherDetails.reasoncode}<#else><\/#if>\",\n        \"attributes1\": \"<#if otherDetails.attributes1??>${otherDetails.attributes1}<#else><\/#if>\",\n\t\t\"attributes2\": \"<#if otherDetails.attributes2??>${otherDetails.attributes2}<#else><\/#if>\",\n\t\t\"attributes3\": \"<#if otherDetails.attributes3??>${otherDetails.attributes3}<#else><\/#if>\",\n\t\t\"attributes4\": \"<#if otherDetails.attributes4??>${otherDetails.attributes4}<#else><\/#if>\",\n\t\t\"attributes5\": \"<#if otherDetails.attributes5??>${otherDetails.attributes5}<#else><\/#if>\",\n\t\t\"attributes6\": \"<#if otherDetails.attributes6??>${otherDetails.attributes6}<#else><\/#if>\"\n    },\n    \"sourceId\": \"USDM\"\n    <#else><\/#if>\n}\n";
+const SAMPLE_INVOICE = {"basicInformation": {"invoiceno": "2453000000383", "invoicedate": "2026-11-17T10:20:07.000Z", "invoicetype": "1", "operator": "ANKL HBB Shop Channel Partner sales .", "invoicekind": "1", "sourceid": "USDM", "currency": "KES", "additionalParams": [{"name": "modifierid", "value": "498da00f-2b0e-45ae-84ab-642a90e4761e"}, {"name": null, "value": null}, {"name": null, "value": null}]}, "buyerDetails": {"buyerlegalname": "ANKL HBB Shop Mike Kipngetich Bett", "buyerauuid": null, "buyerbusinessname": "ANKL HBB Shop Mike Kipngetich Bett", "buyertype": "", "buyertin": null, "address": null, "primarycontact": "100739656", "secondarycontact": null, "emailid": "a_petermburu.njuguna@ke.airtel.com", "fax": null, "placeofbusiness": null, "buyerreferenceno": null, "buyerPostalCode": null, "buyerStreetName": null, "buyerCityName": null, "buyerCountry": null, "buyerLga": null, "buyerState": null, "additionalParams": [{"name": "buyerlinephone", "value": "100739656"}, {"name": "buyertypedesc", "value": ""}, {"name": null, "value": null}]}, "sellerDetails": {"sellername": "ANKL HBB Shop Channel Partner sales", "sellerauuid": "", "sellerbusinessname": "ANKL HBB Shop Channel Partner sales", "sellertin": null, "address": "Nairobi", "primarycontact": "786794740", "secondarycontact": null, "emailid": "moses1.mukhwana@ke.airtel.com", "fax": null, "placeofbusiness": null, "postalCode": null, "streetName": null, "cityName": null, "country": null, "lga": null, "state": null, "additionalParams": [{"name": "referenceno", "value": "2453000000383"}, {"name": "ischeckreferenceno", "value": "1"}]}, "goodsDetails": [{"ordernumber": "2454000928", "orderdate": "2026-11-17T10:20:06.880Z", "orgordernumber": "2454000928", "itemname": "5G HBB Device Connection Fee", "itemcode": "103541728", "quantity": "13", "unitprice": "749.63", "total": "13000", "unitofmeasure": "EA", "vatcode": "1", "vatrate": "0.16", "vatunit": "137.93", "vatamount": "1793.09", "exciseflag": "1", "exciseratename": "KE-EXCISE DUTY", "exciserate": "0.15", "exciseunit": "112.44", "exciseamount": "1461.72", "excisecurrency": "KES", "tax": "3254.81", "additionalParams": [{"name": "deemedflag", "value": "2"}, {"name": "discountcode", "value": null}, {"name": "discounttaxrate", "value": "0.0"}, {"name": "discounttotal", "value": "0.00"}, {"name": "discountflag", "value": "2"}, {"name": "totaltaxamt", "value": "3254.81"}, {"name": "totalinvoiceamt", "value": "13000.00"}, {"name": "goodsCategoryId", "value": null}, {"name": "goodsCategoryName", "value": null}], "product": false}], "taxDetails": [{"taxcategory": "01", "netamount": "11206.91", "taxrate": "0.16", "taxamount": "1793.09", "grossamount": "13000.00", "exciseunit": "", "excisecurrency": "KES", "taxratename": "Standard", "totalTax": null}, {"taxcategory": "05", "netamount": "9745.19", "taxrate": "0.15", "taxamount": "1461.72", "grossamount": "11206.91", "exciseunit": "", "excisecurrency": "KES", "taxratename": "Excise Duty", "totalTax": null}], "summary": {"netamount": "9745.19", "taxamount": "3254.81", "grossamount": "13000.00", "itemcount": "1", "discounttotal": "0.00", "additionalParams": [{"name": "remarks", "value": null}, {"name": "lponumber", "value": null}]}, "paymentDetails": [{"paymentmode": "5", "paymentStatus": "PAID", "paymentamount": "13000", "paymentDueDate": "2026-11-17", "ordernumber": "2454000928", "curCode": "KES", "curDate": "2026-11-17 10:20:06", "curRate": "1"}], "otherDetails": {"reason": null, "reasoncode": null, "devicenumber": null, "rctvnum": null, "attribute1": null, "attribute2": null, "attribute3": null, "attribute4": null, "attribute5": null, "attribute6": null, "attribute7": null, "attribute8": null, "attribute9": null, "attribute10": null, "attribute11": null}};
+</script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const input=$('input'),gutter=$('gutter');
+
+/* ---------- persistent store ---------- */
+const DEFAULT_CASES=[
+  {id:'invoice',name:'Invoice Posting',builtin:true,tpl:null,tplName:'',tplAt:null,input:null},
+  {id:'credit',name:'Credit Invoice Posting',builtin:true,tpl:null,tplName:'',tplAt:null,input:null}];
+const BUILTINS={invoice:{tpl:BUILTIN_INVOICE_TPL,name:'reqinvoicepostingketemplate.ftl',sample:SAMPLE_INVOICE}};
+let store={theme:'auto',active:'invoice',cases:DEFAULT_CASES};
+try{const s=JSON.parse(localStorage.getItem('ke-posting-builder-v2')||'null');if(s&&Array.isArray(s.cases)){store=s;
+  DEFAULT_CASES.forEach(d=>{if(!store.cases.some(c=>c.id===d.id))store.cases.push(d);});}}catch(e){}
+let saveT;function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem('ke-posting-builder-v2',JSON.stringify(store));}catch(e){}},250);}
+const cur=()=>store.cases.find(c=>c.id===store.active)||store.cases[0];
+const tplOf=c=>c.tpl!=null?{text:c.tpl,name:c.tplName,at:c.tplAt,builtin:false}:(BUILTINS[c.id]?{text:BUILTINS[c.id].tpl,name:BUILTINS[c.id].name,at:null,builtin:true}:null);
+const sampleOf=c=>BUILTINS[c.id]&&BUILTINS[c.id].sample;
+
+let ui={fmt:'pretty',tab:'json',res:null,errPos:null,tplLine:null,flashLine:null};
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1700);}
+
+/* ---------- themes ---------- */
+const THEMES=[
+  {id:'auto',name:'Match system',a:'#F3F5F9',b:'#0A1424',icon:true},
+  {id:'light',name:'6D light',a:'#FFFFFF',b:'#F47B20'},
+  {id:'dark',name:'6D navy',a:'#0A2A57',b:'#F47B20'},
+  {id:'graphite',name:'Graphite',a:'#1C1D21',b:'#2DD4BF'},
+  {id:'mint',name:'Mint',a:'#EEF5F2',b:'#0F9D76'},
+  {id:'airtel',name:'Airtel red',a:'#FFFFFF',b:'#E40000'},
+  {id:'contrast',name:'High contrast',a:'#000000',b:'#FFD400'}];
+function applyTheme(){const t=store.theme||'auto';if(t==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',t);
+  document.querySelectorAll('.sw').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===t));}
+$('themes').innerHTML=THEMES.map(t=>'<button class="sw" data-t="'+t.id+'" title="'+t.name+'" aria-label="'+t.name+' theme" aria-pressed="false"><span class="a" style="background:'+t.a+'"></span><span class="b" style="background:'+t.b+'"></span>'+
+  (t.icon?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="5"/></svg>':'')+'</button>').join('');
+$('themes').addEventListener('click',e=>{const b=e.target.closest('.sw');if(!b)return;store.theme=b.dataset.t;applyTheme();save();});
+applyTheme();
+
+/* ---------- use cases ---------- */
+let adding=false;
+function renderCases(){
+  const el=$('cases');
+  el.innerHTML=store.cases.map(c=>'<button class="case" role="tab" data-id="'+c.id+'" aria-selected="'+(c.id===store.active)+'"><span class="st'+(tplOf(c)?'':' none')+'" title="'+(tplOf(c)?'Template ready':'No template yet')+'"></span>'+esc(c.name)+'</button>').join('')+
+   (adding?'<span class="addform"><input id="newCase" placeholder="Use case name, e.g. Debit Note Posting" maxlength="60"><button class="btn primary" id="addOk">Add</button><button class="btn" id="addNo">Cancel</button></span>'
+          :'<button class="case add" id="addCase" title="Add another use case">+ Add use case</button>');
+  if(adding){const i=$('newCase');i.focus();i.onkeydown=e=>{if(e.key==='Enter')addCase();if(e.key==='Escape'){adding=false;renderCases();}};$('addOk').onclick=addCase;$('addNo').onclick=()=>{adding=false;renderCases();};}
+  else $('addCase').onclick=()=>{adding=true;renderCases();};
+}
+function addCase(){const name=$('newCase').value.trim();if(!name){$('newCase').focus();return;}
+  if(store.cases.some(c=>c.name.toLowerCase()===name.toLowerCase())){toast('That use case already exists');return;}
+  const id='c'+Date.now().toString(36);store.cases.push({id,name,builtin:false,tpl:null,tplName:'',tplAt:null,input:null});
+  adding=false;switchCase(id);toast(name+' added');}
+$('cases').addEventListener('click',e=>{const b=e.target.closest('.case[data-id]');if(b&&b.dataset.id!==store.active)switchCase(b.dataset.id);});
+function switchCase(id){store.active=id;save();const c=cur();input.value=c.input||'';renderAll();input.scrollTop=0;}
+
+let armT;
+function renderTplBar(){
+  const c=cur(),t=tplOf(c),el=$('tplbar');
+  const ico='<div class="tplico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg></div>';
+  const removeBtn=c.builtin?'':'<button class="btn danger" id="bRemove">Remove use case</button>';
+  if(!t){el.className='tplbar missing';
+    el.innerHTML=ico+'<div><div class="tplname">No template for '+esc(c.name)+' yet</div><div class="tplmeta">Upload the .ftl file to start building requests for this use case.</div></div><div class="tools"><button class="btn primary" id="bTpl">Upload template</button>'+removeBtn+'</div>';}
+  else{const syn=ui.res&&ui.res.stage==='template'&&ui.res.syntax;el.className='tplbar';
+    el.innerHTML=ico+'<div><div class="tplname mono">'+esc(t.name)+(t.builtin?'<span class="pill builtin">Built-in</span>':'<span class="pill up">Uploaded</span>')+(syn?'<span class="pill bad">Has errors</span>':'')+'</div>'+
+      '<div class="tplmeta">Template for '+esc(c.name)+(t.at?', uploaded '+new Date(t.at).toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'')+
+      ', '+t.text.split('\n').length+' lines</div></div>'+
+      '<div class="tools"><button class="btn" id="bViewTpl">View</button><button class="btn" id="bTpl">'+
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>Replace template</button>'+
+      (BUILTINS[c.id]&&!t.builtin?'<button class="btn" id="bRestore">Restore built-in</button>':'')+removeBtn+'</div>';}
+  $('bTpl').onclick=()=>$('fileTpl').click();
+  if($('bViewTpl'))$('bViewTpl').onclick=()=>showTab('tpl');
+  if($('bRestore'))$('bRestore').onclick=()=>{c.tpl=null;c.tplName='';c.tplAt=null;save();renderAll();toast('Built-in template restored');};
+  if($('bRemove'))$('bRemove').onclick=e=>{const b=e.currentTarget;
+    if(!b.classList.contains('arm')){b.classList.add('arm');b.textContent='Click again to remove';clearTimeout(armT);armT=setTimeout(()=>{b.classList.remove('arm');b.textContent='Remove use case';},3000);return;}
+    store.cases=store.cases.filter(x=>x.id!==c.id);toast(c.name+' removed');switchCase(store.cases[0].id);};
+}
+function setTemplate(text,name){const c=cur();c.tpl=text.replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n');c.tplName=name;c.tplAt=Date.now();save();renderAll();
+  toast(ui.res&&ui.res.stage==='template'&&ui.res.syntax?'Template saved, but it has a syntax error':'Template saved for '+c.name);}
+
+/* ---------- input ---------- */
+function updateGutter(){const n=input.value.split('\n').length;let s='';for(let i=1;i<=n;i++)s+=i+'\n';gutter.textContent=s;gutter.scrollTop=input.scrollTop;}
+input.addEventListener('scroll',()=>{gutter.scrollTop=input.scrollTop;});
+function errLocation(text,e){let m=String(e.message).match(/line (\d+) column (\d+)/i);
+  if(m){const ln=+m[1],col=+m[2];const lines=text.split('\n');let pos=0;for(let i=0;i<ln-1;i++)pos+=lines[i].length+1;return {line:ln,col,pos:pos+col-1};}
+  m=String(e.message).match(/position (\d+)/i);if(m){const pos=+m[1];const b=text.slice(0,pos).split('\n');return {line:b.length,col:b[b.length-1].length+1,pos};}return null;}
+const cleanMsg=e=>String(e.message).replace(/^JSON\.parse: /,'').replace(/ in JSON at position \d+.*$/,'').replace(/ at line \d+ column \d+ of the JSON data/,'');
+function setStatus(kind,html,jump){const s=$('status');s.className='status '+kind;s.innerHTML='<span class="dot"></span><span>'+html+'</span>'+(jump?'<button class="btn" id="bJump">'+jump.label+'</button>':'');if(jump)$('bJump').onclick=jump.fn;}
+function gotoInput(pos){input.focus();input.setSelectionRange(pos,pos+1);const lh=parseFloat(getComputedStyle(input).lineHeight);input.scrollTop=Math.max(0,(input.value.slice(0,pos).split('\n').length-4)*lh);}
+
+/* ---------- output analysis ---------- */
+function jsonSpans(s){let i=0;const out=[];const ws=()=>{while(i<s.length&&/\s/.test(s[i]))i++;};
+  function str(){i++;let r='';while(s[i]!=='"'){if(s[i]==='\\'){const u=s[i+1]==='u';r+=JSON.parse('"'+s.substr(i,u?6:2)+'"');i+=u?6:2;continue;}r+=s[i++];}i++;return r;}
+  function val(path){ws();const c=s[i];
+    if(c==='{'){i++;ws();if(s[i]==='}'){i++;return;}for(;;){ws();const k=str();ws();i++;val(path?path+'.'+k:k);ws();if(s[i]===','){i++;continue;}i++;return;}}
+    if(c==='['){i++;ws();if(s[i]===']'){i++;return;}let n=0;for(;;){val(path+'['+(n++)+']');ws();if(s[i]===','){i++;continue;}i++;return;}}
+    const st=i;let v,isStr=c==='"';if(isStr)v=str();else{const m=s.slice(i).match(/^(-?\d[\d.eE+-]*|true|false|null)/);v=m[0];i+=m[0].length;}
+    out.push({path,start:st,end:i,value:v,isStr});}
+  val('');return out;}
+function prune(paths){const u=[...new Set(paths)];return u.filter(p=>!u.some(q=>q!==p&&(q.startsWith(p+'.')||q.startsWith(p+'['))));}
+function buildMap(text,chunks,missing){
+  const missSet=new Set(missing.map(m=>m.path));
+  return jsonSpans(text).map(sp=>{
+    const a=sp.isStr?sp.start+1:sp.start,b=sp.isStr?sp.end-1:sp.end;
+    const ov=chunks.filter(c=>c.marker?(c.start>sp.start&&c.start<sp.end):(c.end>c.start&&(a===b?(c.start<sp.end&&c.end>sp.start):(c.start<b&&c.end>a))));
+    const interps=ov.filter(c=>c.interp);
+    const reads=prune(interps.flatMap(c=>c.reads));
+    const cond=prune(ov.flatMap(c=>c.cond));
+    const line=(interps[0]||ov[0]||{}).line;
+    let how,src;
+    if(sp.value===''){how='blank';src=reads.length?reads:prune(ov.filter(c=>c.marker||c.interp).flatMap(c=>c.cond));}
+    else if(interps.length){how=(interps.some(c=>c.calc)||reads.length>1)?'derived':'direct';src=reads;}
+    else if(cond.some(p=>missSet.has(p))){how='default';src=cond.filter(p=>missSet.has(p));}
+    else{how='fixed';src=[];}
+    const absent=src.filter(p=>missSet.has(p));
+    return {target:sp.path,value:sp.value,how,src,line,note:(how==='blank'||how==='default')&&absent.length?'Not in the incoming request':''};});
+}
+const lev=(a,b)=>{if(Math.abs(a.length-b.length)>1)return 9;const d=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;i++){let p=d[0];d[0]=i;for(let j=1;j<=b.length;j++){const t=d[j];d[j]=Math.min(d[j]+1,d[j-1]+1,p+(a[i-1]===b[j-1]?0:1));p=t;}}return d[b.length];};
+function analyseMissing(missing,map){map=map||[];
+  const groups=new Map();
+  for(const m of missing){const g=m.path.replace(/\[\d+\]/g,'[n]');const key=g.replace(/\d+$/,'N');if(!groups.has(key))groups.set(key,[]);groups.get(key).push(m);}
+  const issues=[],plain=[];
+  for(const [key,list] of groups){
+    const found=[];
+    for(const m of list){const P=m.parent,k=m.key,kl=k.toLowerCase();
+      const ap=Array.isArray(P.additionalParams)?P.additionalParams.find(x=>x&&typeof x.name==='string'&&x.name.toLowerCase()===kl):null;
+      if(ap){found.push({m,where:'additionalParams',alt:'additionalParams[name="'+ap.name+'"]',val:ap.value});continue;}
+      const sib=Object.keys(P).find(s=>s!==k&&(s.toLowerCase()===kl||s.replace(/_/g,'').toLowerCase()===kl.replace(/_/g,'')||(lev(s.toLowerCase(),kl)===1&&s.replace(/\D/g,'')===k.replace(/\D/g,''))));
+      if(sib!==undefined){found.push({m,where:'sibling',alt:sib,val:P[sib]});continue;}
+    }
+    if(found.length){
+      const first=found[0],tpath=key.replace(/N$/,list.length>1?'1–'+list.length:(list[0].key.match(/\d+$/)||[''])[0]);
+      const filled=found.filter(f=>f.val!==null&&f.val!==undefined&&String(f.val).trim()!=='');
+      const same=f=>{const rows=map.filter(r=>r.src.includes(f.m.path));return rows.length&&rows.every(r=>r.value===String(f.val));};
+      const withVal=filled.filter(f=>!same(f)),matched=filled.filter(same);
+      const req=first.where==='additionalParams'?'inside <code>additionalParams</code>':'as <code>'+esc(first.alt.replace(/\d+$/,found.length>1?'N':'$&'))+'</code>';
+      issues.push({level:withVal.length?'warn':'info',title:'Template reads '+key.split('.').pop().replace(/N$/,'N')+' from a place the request doesn’t use',
+        html:'The template reads <code>'+esc(tpath.replace(/N$/,''))+'</code>, but the incoming request carries it '+req+'. '+
+          (withVal.length?'These values are not posted: '+withVal.slice(0,6).map(f=>'<code>'+esc(f.alt)+' = '+esc(String(f.val))+'</code>').join(', ')+(withVal.length>6?' and more':'')+'. The template’s fallback is used instead.'
+          :matched.length?'The template’s fallback happens to post the same value here ('+matched.slice(0,3).map(f=>'<code>'+esc(String(f.val))+'</code>').join(', ')+'), so this request is correct, but a different value would be ignored.'
+          :'They are empty in this request, so nothing is lost right now, but filled values would be ignored.')});
+    } else plain.push(key.replace(/N$/,list.length>1?'1–'+list.length:(list[0].key.match(/\d+$/)||[''])[0]));
+  }
+  if(plain.length)issues.push({level:'info',title:'Fields the template looks for but the request doesn’t have',html:'The template used its fallback for: '+plain.map(p=>'<code>'+esc(p)+'</code>').join(', ')+'.'});
+  return issues;
+}
+function D(x){return FTL.parseDec(String(x==null?'':x).replace(/,/g,''));}
+const F=d=>FTL.fmtC(d);
+function reconcile(o){const iss=[];const sm=o&&o.summary;if(!sm)return iss;
+  const net=D(sm.netAmount),tax=D(sm.taxAmount),gross=D(sm.grossAmount);
+  if(net&&tax&&gross){const c=FTL.dAdd(net,tax);const ok=FTL.dCmp(c,gross)===0;
+    iss.push({level:ok?'pass':'warn',title:'Net + VAT = gross',html:esc(sm.netAmount+' + '+sm.taxAmount+' = '+F(c)+(ok?' matches gross ':' but gross is ')+sm.grossAmount)});}
+  const g=Array.isArray(o.goodsDetails)?o.goodsDetails:[];
+  const tol=FTL.parseDec('0.05');
+  g.forEach((x,i)=>{const q=D(x.qty),u=D(x.unitPrice),t=D(x.tax),tot=D(x.total);if(!(q&&u&&t&&tot))return;
+    const c=FTL.dAdd({n:q.n*u.n,scale:q.scale+u.scale},t);const diff=FTL.dAbs(FTL.dSub(c,tot));const ok=FTL.dCmp(diff,tol)<=0;
+    iss.push({level:ok?'pass':'warn',title:'Line '+(i+1)+': qty × unit price + VAT = total',html:esc(F(q)+' × '+F(u)+' + '+F(t)+' = '+F(c)+(ok?' matches total ':' but total is ')+x.total)});});
+  if(g.length&&gross){let st=FTL.parseDec('0'),sv=FTL.parseDec('0'),okAll=true;g.forEach(x=>{const a=D(x.total),b=D(x.tax);if(!a||!b){okAll=false;return;}st=FTL.dAdd(st,a);sv=FTL.dAdd(sv,b);});
+    if(okAll){const a=FTL.dCmp(st,gross)===0;iss.push({level:a?'pass':'warn',title:'Line totals = gross',html:esc('Σ total '+F(st)+(a?' matches':' vs')+' gross '+sm.grossAmount)});
+      if(tax){const b=FTL.dCmp(sv,tax)===0;iss.push({level:b?'pass':'warn',title:'Line VAT = summary VAT',html:esc('Σ tax '+F(sv)+(b?' matches':' vs')+' taxAmount '+sm.taxAmount)});}}}
+  return iss;}
+
+/* ---------- main run ---------- */
+let tmr;
+function run(){
+  updateGutter();
+  const c=cur(),t=tplOf(c),text=input.value;
+  if(c.input!==text){c.input=text;save();}
+  const res={stage:null,src:null,out:null,text:'',issues:[],map:[],excise:null};ui.res=res;ui.tplLine=null;
+  // template syntax first (independent of input)
+  if(t){try{FTL.render(t.text,{});}catch(e){if(e instanceof FTL.FtlError&&!/missing|null|Can't|needs|is a /.test(e.message)){res.stage='template';res.syntax=true;res.err=e.message;res.line=e.ftlLine;ui.tplLine=e.ftlLine;}}}
+  if(!text.trim()){res.stage=res.stage||'empty';return finish();}
+  let src;try{src=JSON.parse(text);}catch(e){const loc=errLocation(text,e);ui.errPos=loc?loc.pos:null;res.stage='input';res.err=cleanMsg(e)+(loc?' (line '+loc.line+', column '+loc.col+')':'');return finish();}
+  if(!src||typeof src!=='object'||Array.isArray(src)){res.stage='input';res.err='Expected a single JSON object with basicInformation, goodsDetails and summary';return finish();}
+  res.src=src;
+  if(!t){res.stage='notpl';return finish();}
+  if(res.stage==='template')return finish();
+  let r;try{r=FTL.render(t.text,src);}catch(e){res.stage='render';res.err=e.message;res.line=e.ftlLine;ui.tplLine=e.ftlLine;return finish();}
+  res.text=r.text;
+  try{res.out=JSON.parse(r.text);}catch(e){const loc=errLocation(r.text,e);res.stage='badjson';res.err=cleanMsg(e)+(loc?' (output line '+loc.line+', column '+loc.col+')':'');res.badPos=loc?loc.pos:null;
+    res.issues=analyseMissing(r.missingRefs);return finish();}
+  res.stage='ok';
+  try{res.map=buildMap(r.text,r.chunks,r.missingRefs);}catch(e){res.map=[];}
+  res.issues=analyseMissing(r.missingRefs,res.map).concat(reconcile(res.out));
+  return finish();
+}
+function finish(){const r=ui.res,c=cur(),t=tplOf(c);
+  const errs=r.issues.filter(i=>i.level==='error').length,warns=r.issues.filter(i=>i.level==='warn').length;
+  switch(r.stage){
+    case 'empty':setStatus('idle','Waiting for input');break;
+    case 'input':setStatus('err','Invalid JSON: '+esc(r.err),ui.errPos!=null?{label:'Go to error',fn:()=>gotoInput(ui.errPos)}:null);break;
+    case 'notpl':setStatus('idle','Request is valid JSON. Upload a template for '+esc(c.name)+' to build it.');break;
+    case 'template':setStatus('err','The template has a syntax error on line '+r.line+'.',{label:'Show in template',fn:()=>showTab('tpl')});break;
+    case 'render':setStatus('err','The template fails on line '+r.line+' with this request.',{label:'Show in template',fn:()=>showTab('tpl')});break;
+    case 'badjson':setStatus('err','The template ran, but its output is not valid JSON.',{label:'See output',fn:()=>showTab('json')});break;
+    case 'ok':setStatus('ok','Built with '+esc(t.name)+(warns?', '+warns+' item'+(warns>1?'s':'')+' to review in Checks':', all totals reconcile'));break;
+  }
+  renderTplBar();renderCases();renderStrip();renderJson();renderMap();renderChecks();renderTpl();
+  const s=sampleOf(c);$('bSample').disabled=!s;$('bSample').title=s?'Load the sample incoming request':'No sample for this use case';
+  $('outTitle').textContent=c.name+' request';
+}
+function renderAll(){run();}
+input.addEventListener('input',()=>{clearTimeout(tmr);tmr=setTimeout(run,180);});
+input.addEventListener('paste',()=>setTimeout(()=>{const v=input.value;if(v.includes('\n'))return;try{input.value=JSON.stringify(JSON.parse(v),null,2);clearTimeout(tmr);run();input.scrollTop=0;}catch(e){}},0));
+input.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();$('bFormat').click();}
+  if(e.key==='Tab'&&!e.shiftKey){e.preventDefault();input.setRangeText('  ',input.selectionStart,input.selectionEnd,'end');run();}});
+
+/* ---------- renderers ---------- */
+const fmtAmt=v=>{const n=Number(String(v).replace(/,/g,''));return v!==''&&v!=null&&isFinite(n)?n.toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';};
+function renderStrip(){const el=$('strip'),r=ui.res,src=r.src;
+  if(!src){el.className='strip empty';el.textContent=r.stage==='input'?'Fix the JSON to see the invoice summary.':'Paste an incoming request to see the invoice summary.';return;}
+  const bi=src.basicInformation||{},bd=src.buyerDetails||{},sm=(r.out&&r.out.summary)||{},ism=src.summary||{},cc=bi.currency||'KES';
+  let ex=0;(Array.isArray(src.goodsDetails)?src.goodsDetails:[]).forEach(g=>{const n=Number(g&&g.exciseamount);if(isFinite(n))ex+=n;});
+  const cells=[['Invoice',bi.invoiceno||'—','']];
+  if(bi.orginvoiceno)cells.push(['Original invoice',bi.orginvoiceno,'']);
+  cells.push(['Issued',String(bi.invoicedate||'—').replace('T',' ').replace(/\.\d+Z$/,''),''],['Buyer',bd.buyerlegalname||bd.buyerbusinessname||'—','buyer'],
+    ['Lines',String((src.goodsDetails||[]).length),''],['Net',fmtAmt(sm.netAmount!=null?sm.netAmount:ism.netamount),''],['VAT',fmtAmt(sm.taxAmount!=null?sm.taxAmount:ism.taxamount),''],['Excise',fmtAmt(ex.toFixed(2)),'']);
+  el.className='strip';
+  el.innerHTML=cells.map(([l,v,c])=>'<div class="cell '+c+'"><div class="lbl">'+l+'</div><div class="val" title="'+esc(v)+'">'+esc(v)+'</div></div>').join('')+
+    '<div class="cell gross"><div class="lbl">Gross amount</div><div class="val"><small>'+esc(cc)+'</small>'+fmtAmt(sm.grossAmount!=null?sm.grossAmount:ism.grossamount)+'</div></div>';}
+function hlJson(json){return esc(json).replace(/(&quot;(?:\\.|[^&\\]|&(?!quot;))*?&quot;)(\s*:)?|\b(-?\d+(?:\.\d+)?)\b|([{}\[\],])/g,(m,str,colon,num,p)=>{
+  if(str){if(colon)return '<span class="k">'+str+'</span><span class="p">'+colon+'</span>';return str==='&quot;&quot;'?'<span class="e">'+str+'</span>':'<span class="s">'+str+'</span>';}
+  if(num)return '<span class="n">'+num+'</span>';return '<span class="p">'+p+'</span>';});}
+const outText=()=>{const r=ui.res;return r&&r.out?(ui.fmt==='pretty'?JSON.stringify(r.out,null,4):JSON.stringify(r.out)):'';};
+function renderJson(){const r=ui.res,el=$('jsonBody'),c=cur(),ok=r.stage==='ok';
+  $('bCopy').disabled=!ok;$('bDownload').disabled=!ok;
+  if(ok){el.innerHTML='<pre class="code mono'+(ui.fmt==='compact'?' compact':'')+'">'+hlJson(outText())+'</pre>';return;}
+  const empty=(t,s,btn)=>'<div class="empty-out"><b>'+t+'</b><span>'+s+'</span>'+(btn||'')+'</div>';
+  if(r.stage==='notpl'||(!tplOf(c)&&r.stage!=='input')){el.innerHTML=empty('No template for '+esc(c.name),'Upload the .ftl file and the request is built straight away.','<button class="btn primary" onclick="document.getElementById(\'fileTpl\').click()">Upload template</button>');return;}
+  if(r.stage==='empty'){el.innerHTML=empty('Nothing to build yet',sampleOf(c)?'Paste an incoming request, or load the sample to try it.':'Paste an incoming request, or open a .json file.');return;}
+  if(r.stage==='input'){el.innerHTML=empty('Waiting for valid JSON','Fix the incoming request on the left. The error is shown under the editor.');return;}
+  if(r.stage==='template'||r.stage==='render'){el.innerHTML='<div class="errbox"><b>'+(r.stage==='template'?'Template syntax error on line '+r.line:'Template failed on line '+r.line)+'</b>'+esc(r.err)+
+      '<div><button class="btn" id="bShowLine">Show line '+r.line+' in template</button></div></div>'+empty('No output','FreeMarker stops at this error, so the real service would fail too.');
+    $('bShowLine').onclick=()=>showTab('tpl');return;}
+  if(r.stage==='badjson'){let h=esc(r.text);if(r.badPos!=null){const a=r.badPos;h=esc(r.text.slice(0,a))+'<span class="bad">'+esc(r.text.slice(a,a+1)||' ')+'</span>'+esc(r.text.slice(a+1));}
+    el.innerHTML='<div class="errbox"><b>Output is not valid JSON</b>'+esc(r.err)+'. The raw output is below with the problem highlighted.</div><pre class="code mono raw">'+h+'</pre>';
+    const b=el.querySelector('.bad');if(b)b.scrollIntoView({block:'center'});return;}
+}
+const HOW={direct:'Direct',derived:'Calculated',default:'Fallback',fixed:'Fixed',blank:'Empty'};
+function renderMap(){const body=$('mapBody'),r=ui.res;const rows=r&&r.stage==='ok'?r.map:[];
+  $('mapCount').textContent=rows.length;
+  if(!rows.length){body.innerHTML='<tr><td colspan="4" style="color:var(--muted)">The field mapping appears once a request is built.</td></tr>';return;}
+  const q=$('filter').value.trim().toLowerCase();
+  const list=rows.filter(m=>!q||[m.target,m.value,m.src.join(' '),HOW[m.how]].join(' ').toLowerCase().includes(q));
+  body.innerHTML=list.map(m=>'<tr><td class="t mono">'+esc(m.target)+'</td><td class="v mono">'+(m.value===''?'<span class="blankv">empty</span>':'<button data-copy="'+esc(m.value)+'" title="Click to copy">'+esc(m.value)+'</button>')+
+    '</td><td>'+(m.src.length?m.src.map(s=>'<span class="src mono">'+esc(s)+'</span>').join(''):'<span class="src">Set in the template</span>')+(m.note?'<span class="src">'+m.note+'</span>':'')+
+    (m.line?'<button class="lnk" data-line="'+m.line+'">Template line '+m.line+'</button>':'')+'</td><td><span class="how '+m.how+'">'+HOW[m.how]+'</span></td></tr>').join('')
+    ||'<tr><td colspan="4" style="color:var(--muted)">No fields match “'+esc(q)+'”.</td></tr>';}
+const ICON={pass:'✓',info:'i',warn:'!',error:'×'};
+function renderChecks(){const box=$('checks'),b=$('checkBadge'),r=ui.res;let iss=r.issues.slice();
+  if(r.stage==='input')iss.unshift({level:'error',title:'Incoming request is not valid JSON',html:esc(r.err)});
+  if(r.stage==='template')iss.unshift({level:'error',title:'Template syntax error on line '+r.line,html:esc(r.err)});
+  if(r.stage==='render')iss.unshift({level:'error',title:'Template fails on line '+r.line,html:esc(r.err)+'. The posting service would reject this request in the same way.'});
+  if(r.stage==='badjson')iss.unshift({level:'error',title:'Template output is not valid JSON',html:esc(r.err)});
+  if(!iss.length){box.innerHTML='<div class="empty-out" style="height:100%">Checks appear once a request is built.</div>';b.className='badge';b.textContent='0';return;}
+  const order=['error','warn','info','pass'],name={error:'Blocking',warn:'Needs attention',info:'Worth knowing',pass:'Reconciles'};
+  box.innerHTML=order.filter(l=>iss.some(i=>i.level===l)).map(l=>'<div class="grouph">'+name[l]+'</div>'+iss.filter(i=>i.level===l).map(i=>'<div class="check '+l+'"><div class="ic">'+ICON[l]+'</div><div><b>'+esc(i.title)+'</b><span>'+i.html+'</span></div></div>').join('')).join('');
+  const e=iss.filter(i=>i.level==='error').length,w=iss.filter(i=>i.level==='warn').length;
+  if(e){b.className='badge err';b.textContent=e;}else if(w){b.className='badge warn';b.textContent=w;}else if(iss.some(i=>i.level==='pass')){b.className='badge ok';b.textContent='✓';}else{b.className='badge';b.textContent=iss.length;}}
+function hlFtl(line){return esc(line)
+  .replace(/(&lt;#--.*?(--&gt;|$))/g,'<span class="cm">$1</span>')
+  .replace(/(&lt;\/?[#@][\w.]*|\/?&gt;)/g,'<span class="tg">$1</span>')
+  .replace(/(\$\{)/g,'<span class="k">$1</span>');}
+function renderTpl(){const el=$('tplBody'),c=cur(),t=tplOf(c);
+  if(!t){el.innerHTML='<div class="empty-out"><b>No template for '+esc(c.name)+'</b><span>Upload the .ftl file, or drop it anywhere on this page.</span><button class="btn primary" onclick="document.getElementById(\'fileTpl\').click()">Upload template</button></div>';return;}
+  const bad=ui.tplLine,fl=ui.flashLine;
+  el.innerHTML='<div class="tplhead"><span class="mono">'+esc(t.name)+'</span>'+(bad?'<span class="pill bad">Error on line '+bad+'</span>':'')+'<div class="tools"><button class="btn" id="bCopyTpl">Copy</button><button class="btn" id="bTpl2">Replace template</button></div></div>'+
+    '<pre class="code mono tplview" id="tplPre">'+t.text.split('\n').map((l,i)=>'<div class="ln'+(i+1===bad?' hit':'')+(i+1===fl?' flash':'')+'" data-l="'+(i+1)+'"><span class="no">'+(i+1)+'</span><span>'+(hlFtl(l)||' ')+'</span></div>').join('')+'</pre>';
+  $('bTpl2').onclick=()=>$('fileTpl').click();$('bCopyTpl').onclick=()=>copy(t.text,'Template copied');}
+function scrollTplTo(line){const pre=$('tplPre');if(!pre||!line)return;const ln=pre.querySelector('[data-l="'+line+'"]');if(ln)pre.scrollTop=ln.offsetTop-pre.clientHeight/2;}
+
+/* ---------- tabs & controls ---------- */
+function showTab(name,line){ui.tab=name;document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x.dataset.tab===name));
+  document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==name);
+  if(name==='tpl'){ui.flashLine=line||null;renderTpl();requestAnimationFrame(()=>scrollTplTo(line||ui.tplLine));}}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>showTab(t.dataset.tab));
+$('segFmt').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;$('segFmt').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));ui.fmt=b.dataset.v;renderJson();});
+$('filter').addEventListener('input',renderMap);
+$('mapBody').addEventListener('click',e=>{const b=e.target.closest('[data-copy]');if(b)copy(b.dataset.copy,'Copied '+b.dataset.copy);const l=e.target.closest('[data-line]');if(l)showTab('tpl',+l.dataset.line);});
+
+function loadText(t){input.value=t;try{input.value=JSON.stringify(JSON.parse(t),null,2);}catch(e){}run();input.scrollTop=0;}
+$('bSample').onclick=()=>{const s=sampleOf(cur());if(s){loadText(JSON.stringify(s));toast('Sample loaded');}};
+$('bFormat').onclick=()=>{try{input.value=JSON.stringify(JSON.parse(input.value),null,2);run();toast('Formatted');}catch(e){run();toast('Fix the JSON error first');}};
+$('bClear').onclick=()=>{input.value='';run();input.focus();};
+$('bUpload').onclick=()=>$('fileIn').click();
+function readFile(f,cb){const r=new FileReader();r.onload=()=>cb(String(r.result).replace(/^\uFEFF/,''));r.readAsText(f);}
+$('fileIn').onchange=e=>{const f=e.target.files[0];if(f)readFile(f,t=>{loadText(t);toast('Loaded '+f.name);});e.target.value='';};
+$('fileTpl').onchange=e=>{const f=e.target.files[0];if(f)readFile(f,t=>setTemplate(t,f.name));e.target.value='';};
+let dc=0;const dm=$('dropmask');
+addEventListener('dragenter',e=>{if(!e.dataTransfer||![...e.dataTransfer.types].includes('Files'))return;e.preventDefault();dc++;$('dropCase').textContent=cur().name;dm.classList.add('on');});
+addEventListener('dragover',e=>e.preventDefault());
+addEventListener('dragleave',()=>{if(--dc<=0){dc=0;dm.classList.remove('on');}});
+addEventListener('drop',e=>{e.preventDefault();dc=0;dm.classList.remove('on');const f=e.dataTransfer.files[0];if(!f)return;
+  if(/\.(ftl|ftlh|ftlx)$/i.test(f.name))readFile(f,t=>setTemplate(t,f.name));else readFile(f,t=>{loadText(t);toast('Loaded '+f.name);});});
+
+async function copy(text,msg){try{await navigator.clipboard.writeText(text);}catch(e){const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();try{document.execCommand('copy');}catch(_){}t.remove();}toast(msg);}
+$('bCopy').onclick=()=>copy(outText(),'Request copied');
+$('bDownload').onclick=()=>{const r=ui.res;const no=((r.out||{}).basicInformation||{}).invoiceNo||'request';
+  const name=cur().name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'_'+no+'.json';
+  try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([outText()],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();a.remove();toast('Downloading '+name);}
+  catch(e){copy(outText(),'Download unavailable here, copied instead');}};
+
+/* ---------- start ---------- */
+(function init(){const c=cur();if(c.input==null&&sampleOf(c)){c.input=JSON.stringify(sampleOf(c),null,2);}input.value=c.input||'';run();})();
+</script>
+</body>
+</html>

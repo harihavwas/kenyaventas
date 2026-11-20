@@ -241,6 +241,18 @@ window.addEventListener('message',function(e){if(e.data&&e.data.kvTheme)window._
 .tcard.off{opacity:.5;border-style:dashed;box-shadow:none}
 .tcard.focus{outline:3px solid var(--orange)}
 </style>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet"><style id="kv-shared">
+/* one readable font everywhere; monospace only for code, JSON and data entry */
+html body,html body *:not(code):not(pre):not(pre *):not(kbd):not(samp):not(textarea):not(.json):not(.json *):not(.code):not(.code *):not(svg):not(svg *){font-family:'Open Sans','Segoe UI',Roboto,Helvetica,Arial,sans-serif!important}
+/* compact scale */
+html{zoom:.9}
+/* theme is chosen in the launcher only */
+.sixd-theme-btn,#themeBtn,.theme-btn,#themes,.themes,.topbar .seg[aria-label="Colour theme"]{display:none!important}
+</style><style id="kv-frame">html.in-frame header.banner{display:none!important}
+html.in-frame .shell{max-width:none!important;padding:14px 18px 32px!important;grid-template-columns:190px minmax(0,1fr)!important;gap:20px!important}
+.navbtn{padding:6px 10px!important;font-size:13.5px!important}
+.navgroup{margin-bottom:12px!important}
+</style>
 </head>
 <body>
 <header class="banner">
